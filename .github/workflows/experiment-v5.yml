@@ -21,6 +21,9 @@ on:
       - ".github/workflows/experiment-v5.yml"
       - "scripts/experiment-v5-potions.mjs"
       - "src/headless/experiment-v5-core.mjs"
+      - "src/game.js"
+      - "src/brain/fly-controller.js"
+      - "src/brain/fly-worker.js"
 
 permissions:
   contents: read

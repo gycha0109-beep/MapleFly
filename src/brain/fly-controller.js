@@ -464,9 +464,6 @@
         this.rate("arm pull R"),
       );
 
-      const headMotor =
-        (this.rate("neck/head L") + this.rate("neck/head R")) / 2;
-
       const extend = Math.max(
         this.rate("leg extend L"),
         this.rate("leg extend R"),
@@ -597,6 +594,9 @@
         this.rate("arm pull L"),
         this.rate("arm pull R"),
       );
+
+      const headMotor =
+        (this.rate("neck/head L") + this.rate("neck/head R")) / 2;
 
       if (this.elements.fired) {
         this.elements.fired.textContent =
