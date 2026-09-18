@@ -110,3 +110,29 @@ Workflow:
 ```
 
 Connectome asset은 pinned commit 기준으로 GitHub Actions cache에 저장된다.
+
+
+## Experiment v3 — visual-only control
+
+v2의 SENSORY OFF는 SNta까지 제거했기 때문에,
+v3에서는 ground input을 양쪽에 동일하게 유지하고 target visual channel만 제거한다.
+
+```text
+FULL
+  SNta + LC10a/LPLC1/LPLC2/LC4
+
+VISUAL_OFF
+  SNta only
+```
+
+GitHub Actions:
+
+```text
+Run MapleFly Experiment v3 Visual Control
+```
+
+로컬:
+
+```powershell
+npm run experiment:v3 -- --seconds 180 --pairs 3 --seed 64
+```

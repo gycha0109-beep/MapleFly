@@ -37,3 +37,12 @@ result_v2.md
 - 우연한 성공을 목표지향적 성공으로 과장하지 않는다.
 - upstream commit과 실험 조건을 가능한 한 고정해서 기록한다.
 - 실패한 결과도 삭제하지 않고 다음 버전의 기준점으로 남긴다.
+
+
+## v3
+
+- [development_v3.md](./development_v3.md)  
+  SNta ground input은 유지하고 target visual channel만 제거하는 paired 대조군
+
+- `result_v3.md`  
+  실제 FULL / VISUAL_OFF 실험 완료 후 작성

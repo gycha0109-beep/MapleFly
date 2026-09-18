@@ -4,7 +4,8 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "experiment:v2": "node scripts/experiment-v2-headless.mjs"
+    "experiment:v2": "node scripts/experiment-v2-headless.mjs",
+    "experiment:v3": "node scripts/experiment-v3-visual-control.mjs"
   },
   "engines": {
     "node": ">=24"
