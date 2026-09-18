@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MapleFly Experiment v2</title>
+  <title>MapleFly Experiment v5</title>
   <link rel="stylesheet" href="./src/style.css" />
 </head>
 <body>
@@ -11,12 +11,13 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">MAPLEFLY</p>
-        <h1>Experiment v2 · Flat Arena</h1>
+        <h1>Experiment v5 · Flat Arena</h1>
       </div>
       <div class="controls" aria-label="debug controls">
         <span>A/D 또는 ←/→ 이동</span>
         <span>Space 점프</span>
         <span>F 공격</span>
+        <span>P 빨간포션 (+30)</span>
         <span>R 수동 리셋</span>
       </div>
     </header>
@@ -50,7 +51,7 @@
 
         <p class="brain-copy">
           실제 초파리 MaleCNS connectome을 브라우저 Worker에서 돌립니다.
-          v2 자동실험은 같은 seed로 SENSORY ON/OFF를 짝지어 비교합니다.
+          HP가 깎이면 빨간포션을 taste cue로 제시하고, taste-responsive head motor proxy가 임계치를 넘으면 포션을 사용합니다.
         </p>
 
         <div class="brain-actions">
@@ -91,6 +92,7 @@
           <div><span>DNa02 R</span><strong id="brain-steer-r">—</strong></div>
           <div><span>DNp01 ESCAPE</span><strong id="brain-escape">—</strong></div>
           <div><span>ARM PULL</span><strong id="brain-arm">—</strong></div>
+          <div><span>HEAD MOTOR / POTION</span><strong id="brain-head">—</strong></div>
         </div>
 
         <div class="brain-decision">
@@ -107,7 +109,7 @@
     <section class="experiment-panel">
       <div class="experiment-heading">
         <div>
-          <p class="eyebrow">AUTOMATED A/B TEST</p>
+          <p class="eyebrow">AUTOMATED A/B TEST · LEGACY V2</p>
           <h2>SENSORY ON vs OFF</h2>
         </div>
         <strong id="exp-status" class="experiment-status">IDLE</strong>

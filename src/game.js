@@ -31,6 +31,12 @@
     impactDrive: 0.7,
   });
 
+  const POTION = Object.freeze({
+    maxCount: 30,
+    heal: 30,
+    quickWindowMs: 1000,
+  });
+
   const PLAYER_SPAWN_X = WORLD.width / 2 - 17;
 
   const RESPAWN = Object.freeze({
@@ -84,6 +90,11 @@
     impactSide: null,
     touchingMushroom: false,
     dead: false,
+    potions: POTION.maxCount,
+    potionUses: 0,
+    healed: 0,
+    wastedHealing: 0,
+    lastContactAt: null,
   };
 
   const mushroom = {
@@ -133,6 +144,10 @@
     if (event.code === "KeyF" && !event.repeat) {
       tryAttack();
     }
+
+    if (event.code === "KeyP" && !event.repeat) {
+      tryPotion();
+    }
   });
 
   window.addEventListener("keyup", (event) => {
@@ -162,6 +177,11 @@
     player.impactSide = null;
     player.touchingMushroom = false;
     player.dead = false;
+    player.potions = POTION.maxCount;
+    player.potionUses = 0;
+    player.healed = 0;
+    player.wastedHealing = 0;
+    player.lastContactAt = null;
 
     mushroom.spawnIndex = 0;
     mushroom.x = spawnPosition(seed, mushroom.spawnIndex);
@@ -214,6 +234,7 @@
         DOWN: 0,
         JUMP: 0,
         ATTACK: 0,
+        POTION: 0,
         IDLE: 0,
       },
       hits: 0,
@@ -226,6 +247,12 @@
       damageTaken: 0,
       firstContactMs: null,
       deathAtMs: null,
+      potionUses: 0,
+      quickPotionUses: 0,
+      totalHealed: 0,
+      wastedHealing: 0,
+      hpAtUseTotal: 0,
+      potionEvents: [],
     };
     return getTrialSnapshot();
   }
@@ -317,6 +344,67 @@
     return true;
   }
 
+  function tryPotion() {
+    if (
+      player.dead ||
+      player.potions <= 0 ||
+      player.hp >= player.maxHp
+    ) {
+      return false;
+    }
+
+    const hpBefore = player.hp;
+    const missingHp = player.maxHp - player.hp;
+    const healed = Math.min(POTION.heal, missingHp);
+    const wasted = POTION.heal - healed;
+    const now = performance.now();
+
+    player.potions -= 1;
+    player.potionUses += 1;
+    player.healed += healed;
+    player.wastedHealing += wasted;
+    player.hp += healed;
+
+    if (trial?.active) {
+      trial.potionUses += 1;
+      trial.totalHealed += healed;
+      trial.wastedHealing += wasted;
+      trial.hpAtUseTotal += hpBefore;
+
+      const sinceContact =
+        player.lastContactAt === null
+          ? Infinity
+          : now - player.lastContactAt;
+
+      if (sinceContact <= POTION.quickWindowMs) {
+        trial.quickPotionUses += 1;
+      }
+
+      trial.potionEvents.push({
+        atMs: now - trial.startedAt,
+        hpBefore,
+        hpAfter: player.hp,
+        healed,
+        wasted,
+        sinceContactMs:
+          Number.isFinite(sinceContact)
+            ? sinceContact
+            : null,
+      });
+    }
+
+    damagePopups.push({
+      x: player.x + player.width / 2,
+      y: player.y - 12,
+      value: healed,
+      life: 0.7,
+      maxLife: 0.7,
+      target: "heal",
+    });
+
+    return true;
+  }
+
   function getPlayerAttackHitbox() {
     const width = COMBAT.attackRange;
     const x =
@@ -367,6 +455,7 @@
     player.hitFlashTimer = 0.18;
     player.impactPulseMs = PLAYER_STATUS.impactPulseMs;
     player.impactSide = impactSide;
+    player.lastContactAt = performance.now();
 
     if (trial?.active) {
       trial.contacts += 1;
@@ -470,6 +559,11 @@
           player.impactPulseMs > 0
             ? PLAYER_STATUS.impactDrive
             : 0,
+        potions: player.potions,
+        potionCue:
+          !player.dead &&
+          player.potions > 0 &&
+          player.hp < player.maxHp,
       },
       mushrooms: [
         {
@@ -506,6 +600,10 @@
 
     if (!player.dead && flyControlled && flyIntent.attack) {
       tryAttack();
+    }
+
+    if (!player.dead && flyControlled && flyIntent.potion) {
+      tryPotion();
     }
 
     const horizontalInput = (right ? 1 : 0) - (left ? 1 : 0);
@@ -640,6 +738,16 @@
       damageTaken: trial.damageTaken,
       firstContactMs: trial.firstContactMs,
       deathAtMs: trial.deathAtMs,
+      potionUses: trial.potionUses,
+      quickPotionUses: trial.quickPotionUses,
+      totalHealed: trial.totalHealed,
+      wastedHealing: trial.wastedHealing,
+      averageHpAtUse:
+        trial.potionUses > 0
+          ? trial.hpAtUseTotal / trial.potionUses
+          : null,
+      potionEvents: [...trial.potionEvents],
+      potionsRemaining: player.potions,
       finalTargetHp: mushroom.hp,
       finalPlayerHp: player.hp,
       playerDead: player.dead,
@@ -659,7 +767,7 @@
     positionEl.textContent =
       `x ${Math.round(player.x)} · y ${Math.round(player.y)}`;
     combatEl.textContent =
-      `HP ${player.hp}/${player.maxHp} · TOUCH -${PLAYER_STATUS.contactDamage} · HITS ${player.hits} · KILLS ${player.kills}`;
+      `HP ${player.hp}/${player.maxHp} · 🧪 ${player.potions}/${POTION.maxCount} (+${POTION.heal}) · TOUCH -${PLAYER_STATUS.contactDamage} · KILLS ${player.kills}`;
 
     stateEl.textContent = player.dead
       ? "KO"
@@ -741,13 +849,13 @@
     ctx.font = "800 16px Inter, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(
-      "EXPERIMENT V4 · CONTACT DAMAGE",
+      "EXPERIMENT V5 · RED POTION",
       WORLD.width / 2,
       100,
     );
     ctx.font = "600 12px Inter, sans-serif";
     ctx.fillText(
-      "PLAYER HP 100 · 버섯 접촉 1회당 -10 · LgLG knock",
+      "HP 100 · 접촉 -10 · 빨간포션 30개 · 1개당 +30",
       WORLD.width / 2,
       122,
     );
@@ -879,10 +987,15 @@
       const alpha = Math.max(0, popup.life / popup.maxLife);
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = "#c4473d";
+      const healing = popup.target === "heal";
+      ctx.fillStyle = healing ? "#32a95c" : "#c4473d";
       ctx.font = "900 22px Inter, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`-${popup.value}`, popup.x, popup.y);
+      ctx.fillText(
+        `${healing ? "+" : "-"}${popup.value}`,
+        popup.x,
+        popup.y,
+      );
       ctx.restore();
     }
   }
@@ -992,6 +1105,7 @@
     WORLD,
     COMBAT,
     PLAYER_STATUS,
+    POTION,
     getBrainController() {
       return brainController;
     },

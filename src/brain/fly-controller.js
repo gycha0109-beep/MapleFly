@@ -20,6 +20,9 @@
     climbMarginHz: 0.8,
     jumpCooldownMs: 750,
     attackCooldownMs: 420,
+    drinkHz: 1.6,
+    drinkCooldownMs: 800,
+    potionTasteDrive: 0.8,
     sensoryUpdateSteps: 2,
     brainStepMs: 20,
   });
@@ -45,6 +48,7 @@
       this.intent = this.emptyIntent();
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
+      this.nextPotionAt = 0;
       this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
@@ -69,6 +73,7 @@
         steerR: document.getElementById("brain-steer-r"),
         escape: document.getElementById("brain-escape"),
         arm: document.getElementById("brain-arm"),
+        head: document.getElementById("brain-head"),
         action: document.getElementById("brain-action"),
         source: document.getElementById("brain-source"),
         sensory: document.getElementById("brain-sensory"),
@@ -91,6 +96,7 @@
         down: false,
         jump: false,
         attack: false,
+        potion: false,
         label: "IDLE",
       };
     }
@@ -185,6 +191,7 @@
         this.intent = this.emptyIntent();
         this.nextJumpAt = 0;
         this.nextAttackAt = 0;
+        this.nextPotionAt = 0;
         this.lastObservationStep = -Infinity;
         this.lastTargetId = null;
         this.lastTargetDistance = null;
@@ -262,6 +269,7 @@
     async reset(seed = 64) {
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
+      this.nextPotionAt = 0;
       this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
@@ -347,6 +355,11 @@
           0,
           0.8,
         );
+      }
+
+      if (observation.player.potionCue) {
+        drive.taste_L = DECODER.potionTasteDrive;
+        drive.taste_R = DECODER.potionTasteDrive;
       }
 
       if (living.length === 0) {
@@ -451,6 +464,9 @@
         this.rate("arm pull R"),
       );
 
+      const headMotor =
+        (this.rate("neck/head L") + this.rate("neck/head R")) / 2;
+
       const extend = Math.max(
         this.rate("leg extend L"),
         this.rate("leg extend R"),
@@ -461,8 +477,13 @@
         this.rate("leg flex R"),
       );
 
+      const headL = this.rate("neck/head L");
+      const headR = this.rate("neck/head R");
+      const headMotor = (headL + headR) / 2;
+
       let jump = false;
       let attack = false;
+      let potion = false;
       let up = false;
       let down = false;
 
@@ -474,6 +495,14 @@
       if (armPull >= DECODER.attackHz && now >= this.nextAttackAt) {
         attack = true;
         this.nextAttackAt = now + DECODER.attackCooldownMs;
+      }
+
+      if (
+        headMotor >= DECODER.drinkHz &&
+        now >= this.nextPotionAt
+      ) {
+        potion = true;
+        this.nextPotionAt = now + DECODER.drinkCooldownMs;
       }
 
       if (
@@ -490,7 +519,9 @@
 
       let label = "IDLE";
 
-      if (jump) {
+      if (potion) {
+        label = "POTION";
+      } else if (jump) {
         label = "JUMP";
       } else if (attack) {
         label = "ATTACK";
@@ -511,6 +542,7 @@
         down,
         jump,
         attack,
+        potion,
         label,
       };
 
@@ -524,6 +556,9 @@
           armPull,
           extend,
           flex,
+          headL,
+          headR,
+          headMotor,
         },
       });
     }
@@ -532,6 +567,7 @@
       const current = { ...this.intent };
       this.intent.jump = false;
       this.intent.attack = false;
+      this.intent.potion = false;
       return current;
     }
 
@@ -586,6 +622,10 @@
 
       if (this.elements.arm) {
         this.elements.arm.textContent = `${formatHz(armPull)} Hz`;
+      }
+
+      if (this.elements.head) {
+        this.elements.head.textContent = `${formatHz(headMotor)} Hz`;
       }
 
       if (this.elements.action) {

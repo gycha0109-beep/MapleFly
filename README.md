@@ -186,3 +186,36 @@ away ratio       38.0%        38.0%
 Every trial reached KO after exactly 10 contact-enter damage events.
 No measured game-behavior difference was observed from the current LgLG knock pulse.
 See `history/result_v4.md`.
+
+
+## Experiment v5 — red potion
+
+```text
+player HP        100
+contact damage    10
+red potions       30
+heal / potion     30
+```
+
+HP가 100 미만이고 포션이 남아 있으면 potion taste cue를 사용할 수 있다.
+Pinned fly.ai의 taste probe(`LB3 + claw_tpGRN`)에서 가장 일관되게 증가한
+`cb_motor` neck/head population을 **engineered DRINK proxy**로 읽는다.
+
+이것은 실제 초파리의 "포션 마시기 뉴런"이라는 뜻이 아니다.
+게임 행동을 연결하기 위한 명시적 interface assumption이다.
+
+v5 headless paired 조건:
+
+```text
+POTION_CUE_ON
+  visual + SNta + LgLG impact
+  injured -> LB3/claw_tpGRN taste cue
+  head motor >= 1.6 Hz -> POTION
+
+POTION_CUE_OFF
+  same game / same decoder / same potions
+  taste cue만 제거
+```
+
+측정에는 포션 사용 수, 피격 1초 이내 사용 수, 실제 회복량,
+overheal 낭비량, 평균 포션 사용 HP, 남은 포션, 생존 시간이 포함된다.

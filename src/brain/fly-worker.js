@@ -266,6 +266,7 @@ function buildInputGroups(meta) {
 
     groups.set(`SNta_${side}`, cellsWithPrefix(meta, "SNta", side));
     groups.set(`LgLG_${side}`, cells(meta, ["LgLG"], side));
+    groups.set(`taste_${side}`, cells(meta, ["LB3", "claw_tpGRN"], side));
   }
 
   return groups;
@@ -282,6 +283,8 @@ function buildOutputGroups(meta) {
     output.push([`wing power ${side}`, cells(meta, WING_POWER, side)]);
     output.push([`leg extend ${side}`, cells(meta, LEG_EXTEND, side)]);
     output.push([`leg flex ${side}`, cells(meta, LEG_FLEX, side)]);
+
+    output.push([`neck/head ${side}`, cells(meta, ["cb_motor"], side)]);
 
     output.push([
       `arm pull ${side}`,
