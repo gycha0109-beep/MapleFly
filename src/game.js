@@ -43,7 +43,7 @@
   };
 
   const dummies = Object.freeze([
-    { x: 165, y: 210, surface: "upper" },
+    { x: 290, y: 210, surface: "upper" },
     { x: 785, y: 210, surface: "upper" },
     { x: 850, y: WORLD.groundY, surface: "ground" },
   ]);
@@ -120,7 +120,11 @@
     const withinHorizontalReach =
       Math.abs(playerCenterX - ladderCenterX) <= ladder.width * 0.72;
 
-    return withinHorizontalReach && verticalOverlap(player, ladder);
+    const feetNearLadderTop =
+      Math.abs(player.y + player.height - ladder.y) <= 8;
+    const insideLadderSpan = verticalOverlap(player, ladder);
+
+    return withinHorizontalReach && (insideLadderSpan || feetNearLadderTop);
   }
 
   function update(dt) {
