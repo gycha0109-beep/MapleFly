@@ -25,15 +25,35 @@
   });
 
   const PLAYER_SPAWN_X = WORLD.width / 2 - 17;
-  const TARGET_POSITIONS = Object.freeze({
-    L: 180,
-    R: 820,
-  });
 
   const RESPAWN = Object.freeze({
     delayMs: 700,
-    offsets: Object.freeze([-90, -60, -30, 30, 60, 90]),
+    minX: 55,
+    maxX: WORLD.width - 55,
   });
+
+  function hashUnit(seed, spawnIndex) {
+    let value = (
+      Math.trunc(Number(seed) || 0) ^
+      Math.imul(spawnIndex + 1, 0x9e3779b1)
+    ) >>> 0;
+
+    value ^= value >>> 16;
+    value = Math.imul(value, 0x7feb352d);
+    value ^= value >>> 15;
+    value = Math.imul(value, 0x846ca68b);
+    value ^= value >>> 16;
+
+    return (value >>> 0) / 4294967296;
+  }
+
+  function spawnPosition(seed, spawnIndex) {
+    const unit = hashUnit(seed, spawnIndex);
+    return Math.round(
+      RESPAWN.minX +
+        unit * (RESPAWN.maxX - RESPAWN.minX),
+    );
+  }
 
   const player = {
     x: PLAYER_SPAWN_X,
@@ -52,7 +72,7 @@
 
   const mushroom = {
     id: "M-TEST",
-    x: TARGET_POSITIONS.R,
+    x: spawnPosition(64, 0),
     baselineY: WORLD.groundY,
     maxHp: 30,
     hp: 30,
@@ -83,7 +103,7 @@
     keys.add(event.code);
 
     if (event.code === "KeyR" && !event.repeat && !trial?.active) {
-      resetArena("R");
+      resetArena(64);
     }
 
     if (brainController?.isEnabled() || trial?.active) {
@@ -108,36 +128,27 @@
     player.vx = 0;
   });
 
-  function resetArena(targetSide = "R") {
+  function resetArena(seed = 64) {
     player.x = PLAYER_SPAWN_X;
     player.y = WORLD.groundY - player.height;
     player.vx = 0;
     player.vy = 0;
     player.grounded = true;
-    player.facing = targetSide === "L" ? -1 : 1;
     player.attackCooldownTimer = 0;
     player.attackTimer = 0;
     player.hits = 0;
     player.kills = 0;
 
-    mushroom.x = TARGET_POSITIONS[targetSide] ?? TARGET_POSITIONS.R;
+    mushroom.spawnIndex = 0;
+    mushroom.x = spawnPosition(seed, mushroom.spawnIndex);
+    player.facing =
+      mushroom.x < player.x + player.width / 2 ? -1 : 1;
+
     mushroom.hp = mushroom.maxHp;
     mushroom.alive = true;
     mushroom.hitFlashTimer = 0;
     mushroom.respawnTimerMs = 0;
-    mushroom.spawnIndex = 0;
     damagePopups.length = 0;
-  }
-
-  function respawnPosition(seed, spawnIndex, targetSide) {
-    const base = TARGET_POSITIONS[targetSide] ?? TARGET_POSITIONS.R;
-    const offsets = RESPAWN.offsets;
-    const seedIndex =
-      Math.abs(Math.trunc(Number(seed) || 0)) % offsets.length;
-    const offset =
-      offsets[(seedIndex + spawnIndex - 1) % offsets.length];
-
-    return Math.max(70, Math.min(WORLD.width - 70, base + offset));
   }
 
   function respawnMushroom() {
@@ -146,10 +157,9 @@
     }
 
     mushroom.spawnIndex += 1;
-    mushroom.x = respawnPosition(
+    mushroom.x = spawnPosition(
       trial.seed,
       mushroom.spawnIndex,
-      trial.targetSide,
     );
     mushroom.hp = mushroom.maxHp;
     mushroom.alive = true;
@@ -160,11 +170,10 @@
     trial.spawnPositions.push(Math.round(mushroom.x));
   }
 
-  function startTrial({ targetSide = "R", seed = 64 } = {}) {
-    resetArena(targetSide);
+  function startTrial({ seed = 64 } = {}) {
+    resetArena(seed);
     trial = {
       active: true,
-      targetSide,
       seed,
       startedAt: performance.now(),
       lastX: player.x,
@@ -479,7 +488,6 @@
       trial.towardDistance + trial.awayDistance;
 
     return {
-      targetSide: trial.targetSide,
       durationMs: performance.now() - trial.startedAt,
       totalDistancePx: trial.distance,
       towardDistancePx: trial.towardDistance,
@@ -831,6 +839,6 @@
     requestAnimationFrame(frame);
   }
 
-  resetArena("R");
+  resetArena(64);
   requestAnimationFrame(frame);
 })();

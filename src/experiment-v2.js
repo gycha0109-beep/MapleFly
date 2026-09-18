@@ -61,7 +61,6 @@
 
     for (let pair = 0; pair < pairs; pair += 1) {
       const seed = baseSeed + pair;
-      const targetSide = pair % 2 === 0 ? "R" : "L";
       const order =
         pair % 2 === 0
           ? ["ON", "OFF"]
@@ -71,7 +70,6 @@
         schedule.push({
           pair: pair + 1,
           seed,
-          targetSide,
           sensory: condition === "ON",
           condition,
         });
@@ -145,17 +143,19 @@
 
     ui.trial.textContent = `${trialIndex + 1} / ${totalTrials} · pair ${spec.pair} · seed ${spec.seed}`;
     ui.condition.textContent =
-      `SENSORY ${spec.condition} · target ${spec.targetSide}`;
+      `SENSORY ${spec.condition} · 전체 하단 랜덤 spawn`;
 
     setStatus("brain reset");
     brain.setSensoryEnabled(spec.sensory);
     brain.setEnabled(true);
     await brain.reset(spec.seed);
 
-    game.startTrial({
-      targetSide: spec.targetSide,
+    const initialTrial = game.startTrial({
       seed: spec.seed,
     });
+
+    ui.condition.textContent =
+      `SENSORY ${spec.condition} · start x ${initialTrial?.spawnPositions?.[0] ?? "—"}`;
     startTelemetrySampling();
 
     const startedAt = performance.now();
@@ -195,7 +195,7 @@
     return {
       pair: spec.pair,
       seed: spec.seed,
-      targetSide: spec.targetSide,
+      startTargetX: trialResult?.spawnPositions?.[0] ?? null,
       sensory: spec.condition,
       durationMs: trialResult?.durationMs ?? wallDurationMs,
       requestedSimSeconds: durationMs / 1000,
@@ -242,7 +242,7 @@
       const cells = [
         `P${row.pair}`,
         row.seed,
-        row.targetSide,
+        row.startTargetX,
         row.sensory,
         formatNumber(row.towardMovementRatio * 100, 1) + "%",
         formatNumber(row.minTargetDistancePx, 0),
@@ -299,7 +299,7 @@
 
   function persist() {
     const payload = {
-      schema: "maplefly.experiment-v2.2",
+      schema: "maplefly.experiment-v2.3",
       meta: runMeta,
       results,
     };
@@ -334,7 +334,7 @@
 
   function exportJson() {
     const payload = {
-      schema: "maplefly.experiment-v2.2",
+      schema: "maplefly.experiment-v2.3",
       meta: runMeta,
       results,
     };
@@ -350,7 +350,7 @@
     const columns = [
       "pair",
       "seed",
-      "targetSide",
+      "startTargetX",
       "sensory",
       "durationMs",
       "requestedSimSeconds",
@@ -415,11 +415,11 @@
       durationSeconds: seconds,
       pairs,
       baseSeed,
-      schedule: "paired-seed, alternating-order, alternating-target-side",
+      schedule: "paired-seed, alternating-order, deterministic-full-width-spawn-sequence",
       brainCommit:
         global.MapleFlyBrain?.SOURCE?.commit ?? null,
       notes:
-        "SENSORY OFF sets all external sensory drive to zero. Same seed is reused within each ON/OFF pair. Trial length is fixed by brain steps (50 Hz), not wall-clock time. KO targets respawn after 700ms at a deterministic nearby position; the nth respawn position is identical inside each paired seed.",
+        "SENSORY OFF sets all external sensory drive to zero. Same seed is reused within each ON/OFF pair. Trial length is fixed by brain steps (50 Hz), not wall-clock time. Initial and respawn target X positions are pseudo-random across the full lower arena and deterministic from pair seed + spawn index, so paired ON/OFF trials share the same nth spawn position.",
     };
 
     ui.start.disabled = true;

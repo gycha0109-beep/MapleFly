@@ -10,7 +10,7 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 - upper platforms and ladder are temporarily removed from the active arena
 - one mushroom target on flat ground
 - killed targets respawn after 700 ms at deterministic nearby positions
-- target alternates left/right by paired trial
+- target spawns pseudo-randomly across the full lower arena
 - real MaleCNS browser connectome controller
 - SENSORY ON vs SENSORY OFF paired comparison
 - same pseudo-random seed reused inside each ON/OFF pair
@@ -53,7 +53,7 @@ Long baseline preset:
 ```
 
 Each pair uses the same brain noise seed for SENSORY ON and OFF.
-Target side and condition order alternate between pairs.
+Target positions are deterministic pseudo-random values derived from the paired seed and spawn index, so ON/OFF trials share the same nth spawn position. Condition order alternates between pairs.
 
 Logged metrics include movement toward target, minimum distance, attack/hit/kill,
 jump count, hit rate, and brain runtime telemetry.
