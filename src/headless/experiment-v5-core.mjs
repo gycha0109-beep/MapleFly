@@ -127,6 +127,7 @@ export class PotionArena extends DamageArena {
 
     this.potionsRemaining = POTION.maxCount;
     this.lastContactMs = null;
+    this.metrics.decisions.POTION = 0;
 
     this.potionMetrics = {
       uses: 0,

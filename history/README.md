@@ -62,5 +62,5 @@ result_v2.md
 - [development_v5.md](./development_v5.md)  
   빨간포션 30개(+30)와 taste-responsive head-motor 기반 POTION action을 추가한 실험 설계
 
-- `result_v5.md`  
-  POTION_CUE_ON/OFF paired 실험 완료 후 작성
+- [result_v5.md](./result_v5.md)  
+  빨간포션 30개(+30) POTION_CUE_ON/OFF 180초 × 3 paired 결과

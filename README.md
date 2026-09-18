@@ -219,3 +219,23 @@ POTION_CUE_OFF
 
 측정에는 포션 사용 수, 피격 1초 이내 사용 수, 실제 회복량,
 overheal 낭비량, 평균 포션 사용 HP, 남은 포션, 생존 시간이 포함된다.
+
+
+### Experiment v5 result
+
+Run `35362106281`, 180 simulated seconds × 3 pairs:
+
+```text
+                         CUE_ON    CUE_OFF
+potion uses                30.0       30.0
+quick potion uses          30.0       29.0
+average HP at use          89.3       87.4
+wasted healing            580.0      523.3
+survival                   42.7s      51.6s
+```
+
+Both conditions emptied all 30 potions.
+With the taste cue ON, every potion use happened within one second of a hit and the average use HP was 89.3.
+The current 1.6 Hz drink proxy is therefore not selective enough: spontaneous head-motor activity also empties the inventory when the taste cue is OFF.
+
+Interpretation: `history/result_v5.md`

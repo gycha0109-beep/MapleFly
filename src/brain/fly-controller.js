@@ -49,6 +49,7 @@
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
       this.nextPotionAt = 0;
+      this.potionAvailable = false;
       this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
@@ -192,6 +193,7 @@
         this.nextJumpAt = 0;
         this.nextAttackAt = 0;
         this.nextPotionAt = 0;
+        this.potionAvailable = false;
         this.lastObservationStep = -Infinity;
         this.lastTargetId = null;
         this.lastTargetDistance = null;
@@ -270,6 +272,7 @@
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
       this.nextPotionAt = 0;
+      this.potionAvailable = false;
       this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
@@ -317,6 +320,9 @@
       }
 
       this.lastObservationStep = step;
+      this.potionAvailable = Boolean(
+        observation?.player?.potionCue,
+      );
       const drive =
         this.enabled && this.sensoryEnabled
           ? this.encodeObservation(observation)
@@ -495,6 +501,7 @@
       }
 
       if (
+        this.potionAvailable &&
         headMotor >= DECODER.drinkHz &&
         now >= this.nextPotionAt
       ) {
