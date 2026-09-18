@@ -271,6 +271,11 @@ export function buildInputGroups(meta) {
       `SNta_${side}`,
       cellsWithPrefix(meta, "SNta", side),
     );
+
+    groups.set(
+      `LgLG_${side}`,
+      cells(meta, ["LgLG"], side),
+    );
   }
 
   return groups;

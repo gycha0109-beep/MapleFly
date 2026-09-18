@@ -150,3 +150,23 @@ kills / trial    29.00      2.33
 ```
 
 Interpretation: `history/result_v3.md`
+
+
+## Experiment v4 — contact damage
+
+캐릭터에 HP를 추가한다.
+
+```text
+player HP     100
+mushroom touch -10
+damage rule   contact-enter 1회당 10
+```
+
+겹쳐 있는 매 frame마다 피해를 주지 않고,
+버섯과 **새로 접촉한 순간**에만 -10이다. 다시 떨어졌다가 닿아야 다음 피해가 들어간다.
+
+Pinned fly.ai의 `LgLG`는 hair plate / campaniform 계열의 **load / knock** mechanosensory input으로 정의되어 있어,
+접촉 순간을 pain이라고 부르지 않고 **knock proxy**로 연결한다.
+
+Headless v4는 HP 감소 자체는 양쪽에 동일하게 적용하고,
+접촉 순간 LgLG pulse만 ON/OFF해서 반응 차이를 본다.

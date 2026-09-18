@@ -24,6 +24,13 @@
     attackDuration: 0.16,
   });
 
+  const PLAYER_STATUS = Object.freeze({
+    maxHp: 100,
+    contactDamage: 10,
+    impactPulseMs: 120,
+    impactDrive: 0.7,
+  });
+
   const PLAYER_SPAWN_X = WORLD.width / 2 - 17;
 
   const RESPAWN = Object.freeze({
@@ -68,6 +75,15 @@
     attackTimer: 0,
     hits: 0,
     kills: 0,
+    maxHp: PLAYER_STATUS.maxHp,
+    hp: PLAYER_STATUS.maxHp,
+    damageTaken: 0,
+    contacts: 0,
+    hitFlashTimer: 0,
+    impactPulseMs: 0,
+    impactSide: null,
+    touchingMushroom: false,
+    dead: false,
   };
 
   const mushroom = {
@@ -138,6 +154,14 @@
     player.attackTimer = 0;
     player.hits = 0;
     player.kills = 0;
+    player.hp = player.maxHp;
+    player.damageTaken = 0;
+    player.contacts = 0;
+    player.hitFlashTimer = 0;
+    player.impactPulseMs = 0;
+    player.impactSide = null;
+    player.touchingMushroom = false;
+    player.dead = false;
 
     mushroom.spawnIndex = 0;
     mushroom.x = spawnPosition(seed, mushroom.spawnIndex);
@@ -198,6 +222,10 @@
       spawnPositions: [Math.round(mushroom.x)],
       firstHitMs: null,
       firstKillMs: null,
+      contacts: 0,
+      damageTaken: 0,
+      firstContactMs: null,
+      deathAtMs: null,
     };
     return getTrialSnapshot();
   }
@@ -229,7 +257,7 @@
   }
 
   function tryJump() {
-    if (!player.grounded) {
+    if (player.dead || !player.grounded) {
       return false;
     }
 
@@ -239,7 +267,7 @@
   }
 
   function tryAttack() {
-    if (player.attackCooldownTimer > 0) {
+    if (player.dead || player.attackCooldownTimer > 0) {
       return false;
     }
 
@@ -313,6 +341,94 @@
     };
   }
 
+  function getPlayerBodyHitbox() {
+    return {
+      x: player.x + 3,
+      y: player.y + 3,
+      width: player.width - 6,
+      height: player.height - 3,
+    };
+  }
+
+  function applyContactDamage() {
+    if (player.dead || !mushroom.alive) {
+      return;
+    }
+
+    const playerCenterX = player.x + player.width / 2;
+    const impactSide = mushroom.x < playerCenterX ? "L" : "R";
+
+    player.hp = Math.max(
+      0,
+      player.hp - PLAYER_STATUS.contactDamage,
+    );
+    player.damageTaken += PLAYER_STATUS.contactDamage;
+    player.contacts += 1;
+    player.hitFlashTimer = 0.18;
+    player.impactPulseMs = PLAYER_STATUS.impactPulseMs;
+    player.impactSide = impactSide;
+
+    if (trial?.active) {
+      trial.contacts += 1;
+      trial.damageTaken += PLAYER_STATUS.contactDamage;
+
+      if (trial.firstContactMs === null) {
+        trial.firstContactMs = performance.now() - trial.startedAt;
+      }
+    }
+
+    damagePopups.push({
+      x: playerCenterX,
+      y: player.y - 10,
+      value: PLAYER_STATUS.contactDamage,
+      life: 0.55,
+      maxLife: 0.55,
+      target: "player",
+    });
+
+    if (player.hp === 0) {
+      player.dead = true;
+      player.vx = 0;
+
+      if (trial?.active && trial.deathAtMs === null) {
+        trial.deathAtMs = performance.now() - trial.startedAt;
+      }
+    }
+  }
+
+  function updateContactDamage(dt) {
+    player.hitFlashTimer = Math.max(
+      0,
+      player.hitFlashTimer - dt,
+    );
+    player.impactPulseMs = Math.max(
+      0,
+      player.impactPulseMs - dt * 1000,
+    );
+
+    if (player.impactPulseMs === 0) {
+      player.impactSide = null;
+    }
+
+    const touching =
+      !player.dead &&
+      mushroom.alive &&
+      rectanglesOverlap(
+        getPlayerBodyHitbox(),
+        getMushroomHitbox(),
+      );
+
+    if (touching && !player.touchingMushroom) {
+      applyContactDamage();
+    }
+
+    player.touchingMushroom = touching;
+
+    if (!mushroom.alive) {
+      player.touchingMushroom = false;
+    }
+  }
+
   function rectanglesOverlap(a, b) {
     return (
       a.x < b.x + b.width &&
@@ -346,6 +462,14 @@
         grounded: player.grounded,
         climbing: false,
         facing: player.facing,
+        hp: player.hp,
+        maxHp: player.maxHp,
+        dead: player.dead,
+        impactSide: player.impactSide,
+        impactPulse:
+          player.impactPulseMs > 0
+            ? PLAYER_STATUS.impactDrive
+            : 0,
       },
       mushrooms: [
         {
@@ -365,18 +489,22 @@
       ? brainController.consumeIntent()
       : null;
 
-    const left = flyControlled
-      ? flyIntent.left
-      : isPressed("KeyA", "ArrowLeft");
-    const right = flyControlled
-      ? flyIntent.right
-      : isPressed("KeyD", "ArrowRight");
+    const left = !player.dead && (
+      flyControlled
+        ? flyIntent.left
+        : isPressed("KeyA", "ArrowLeft")
+    );
+    const right = !player.dead && (
+      flyControlled
+        ? flyIntent.right
+        : isPressed("KeyD", "ArrowRight")
+    );
 
-    if (flyControlled && flyIntent.jump) {
+    if (!player.dead && flyControlled && flyIntent.jump) {
       tryJump();
     }
 
-    if (flyControlled && flyIntent.attack) {
+    if (!player.dead && flyControlled && flyIntent.attack) {
       tryAttack();
     }
 
@@ -406,6 +534,7 @@
       player.grounded = true;
     }
 
+    updateContactDamage(dt);
     updateCombat(dt);
     updateTrialMetrics(dt, previousX, previousY);
     brainController?.observe(buildBrainObservation());
@@ -507,7 +636,13 @@
       spawnPositions: [...trial.spawnPositions],
       firstHitMs: trial.firstHitMs,
       firstKillMs: trial.firstKillMs,
+      contacts: trial.contacts,
+      damageTaken: trial.damageTaken,
+      firstContactMs: trial.firstContactMs,
+      deathAtMs: trial.deathAtMs,
       finalTargetHp: mushroom.hp,
+      finalPlayerHp: player.hp,
+      playerDead: player.dead,
       finalPlayerX: player.x,
     };
   }
@@ -524,9 +659,13 @@
     positionEl.textContent =
       `x ${Math.round(player.x)} · y ${Math.round(player.y)}`;
     combatEl.textContent =
-      `ATK ${COMBAT.attackDamage} · HITS ${player.hits} · KILLS ${player.kills}`;
+      `HP ${player.hp}/${player.maxHp} · TOUCH -${PLAYER_STATUS.contactDamage} · HITS ${player.hits} · KILLS ${player.kills}`;
 
-    stateEl.textContent = player.grounded ? "GROUND" : "AIR";
+    stateEl.textContent = player.dead
+      ? "KO"
+      : player.grounded
+        ? "GROUND"
+        : "AIR";
 
     if (controlModeEl) {
       controlModeEl.textContent = brainController?.isEnabled()
@@ -602,13 +741,13 @@
     ctx.font = "800 16px Inter, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(
-      "EXPERIMENT V2 · FLAT ARENA",
+      "EXPERIMENT V4 · CONTACT DAMAGE",
       WORLD.width / 2,
       100,
     );
     ctx.font = "600 12px Inter, sans-serif";
     ctx.fillText(
-      "2층·사다리 제거 · 단일 버섯 대조실험",
+      "PLAYER HP 100 · 버섯 접촉 1회당 -10 · LgLG knock",
       WORLD.width / 2,
       122,
     );
@@ -754,6 +893,10 @@
 
     ctx.save();
 
+    if (player.dead) {
+      ctx.globalAlpha = 0.45;
+    }
+
     if (brainController?.isEnabled()) {
       ctx.fillStyle = "rgba(88, 183, 112, 0.18)";
       ctx.beginPath();
@@ -761,7 +904,8 @@
       ctx.fill();
     }
 
-    ctx.fillStyle = "#4f91dd";
+    ctx.fillStyle =
+      player.hitFlashTimer > 0 ? "#ff8b82" : "#4f91dd";
     ctx.beginPath();
     ctx.roundRect(
       player.x + 5,
@@ -801,6 +945,33 @@
     );
 
     ctx.restore();
+
+    const barWidth = 58;
+    const barX = centerX - barWidth / 2;
+    const barY = player.y - 22;
+    const hpRatio = player.hp / player.maxHp;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(35, 44, 54, 0.24)";
+    ctx.fillRect(barX, barY, barWidth, 7);
+    ctx.fillStyle =
+      hpRatio > 0.5
+        ? "#4eb86b"
+        : hpRatio > 0.2
+          ? "#e0a83d"
+          : "#d84f48";
+    ctx.fillRect(barX, barY, barWidth * hpRatio, 7);
+    ctx.strokeStyle = "rgba(35, 44, 54, 0.55)";
+    ctx.strokeRect(barX, barY, barWidth, 7);
+    ctx.fillStyle = "#34404a";
+    ctx.font = "800 10px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      player.dead ? "KO" : `HP ${player.hp}`,
+      centerX,
+      barY - 3,
+    );
+    ctx.restore();
   }
 
   brainController = window.MapleFlyBrain?.createController({
@@ -820,6 +991,7 @@
   window.MapleFlyGame = Object.freeze({
     WORLD,
     COMBAT,
+    PLAYER_STATUS,
     getBrainController() {
       return brainController;
     },

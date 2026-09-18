@@ -46,3 +46,12 @@ result_v2.md
 
 - [result_v3.md](./result_v3.md)  
   SNta를 유지한 FULL / VISUAL_OFF 180초 × 3 paired 대조실험 결과
+
+
+## v4
+
+- [development_v4.md](./development_v4.md)  
+  캐릭터 HP 100 / 버섯 접촉 -10과 LgLG knock 입력을 추가한 contact-damage 실험 설계
+
+- `result_v4.md`  
+  IMPACT_ON / IMPACT_OFF headless paired 실험 완료 후 작성

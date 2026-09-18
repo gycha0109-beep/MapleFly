@@ -335,6 +335,20 @@
         SNta_R: observation.player.grounded ? 0.05 : 0,
       };
 
+      const impactSide = observation.player.impactSide;
+      const impactPulse = Number(observation.player.impactPulse ?? 0);
+
+      if (
+        impactPulse > 0 &&
+        (impactSide === "L" || impactSide === "R")
+      ) {
+        drive[`LgLG_${impactSide}`] = clamp(
+          impactPulse,
+          0,
+          0.8,
+        );
+      }
+
       if (living.length === 0) {
         this.lastTargetId = null;
         this.lastTargetDistance = null;
