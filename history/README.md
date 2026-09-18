@@ -53,5 +53,5 @@ result_v2.md
 - [development_v4.md](./development_v4.md)  
   캐릭터 HP 100 / 버섯 접촉 -10과 LgLG knock 입력을 추가한 contact-damage 실험 설계
 
-- `result_v4.md`  
-  IMPACT_ON / IMPACT_OFF headless paired 실험 완료 후 작성
+- [result_v4.md](./result_v4.md)  
+  HP 100 / 접촉 -10과 LgLG knock IMPACT_ON/OFF 180초 × 3 paired 결과

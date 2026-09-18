@@ -170,3 +170,19 @@ Pinned fly.ai의 `LgLG`는 hair plate / campaniform 계열의 **load / knock** m
 
 Headless v4는 HP 감소 자체는 양쪽에 동일하게 적용하고,
 접촉 순간 LgLG pulse만 ON/OFF해서 반응 차이를 본다.
+
+
+### Experiment v4 result
+
+Run `35358933389`, 180 simulated seconds × 3 pairs:
+
+```text
+              IMPACT_ON   IMPACT_OFF
+contacts         10.00        10.00
+final HP          0.0          0.0
+away ratio       38.0%        38.0%
+```
+
+Every trial reached KO after exactly 10 contact-enter damage events.
+No measured game-behavior difference was observed from the current LgLG knock pulse.
+See `history/result_v4.md`.
