@@ -10,9 +10,15 @@
 - [result_v1.md](./result_v1.md)  
   첫 FLY CONTROL 실제 실행 결과와 해석
 
-## 파일명 규칙
+## v2
 
-앞으로 같은 방식으로 버전별 기록을 남긴다.
+- [development_v2.md](./development_v2.md)  
+  2층을 잠시 제거하고 SENSORY ON/OFF paired 대조실험 macro와 logger를 만든 개발 기록
+
+- `result_v2.md`  
+  아직 미작성. 자동 대조실험 실제 실행 후 결과를 기록한다.
+
+## 파일명 규칙
 
 ```text
 development_v1.md
@@ -22,8 +28,6 @@ development_v2.md
 result_v2.md
 ...
 ```
-
-`develop_v1`보다 문서 의미가 명확한 **development_v1**을 사용한다.
 
 ## 작성 원칙
 

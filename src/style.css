@@ -364,3 +364,203 @@ canvas {
     margin-top: 10px;
   }
 }
+
+
+/* Experiment v2 ---------------------------------------------------------- */
+
+.experiment-panel {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid #d7e1e9;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 16px 45px rgba(44, 72, 94, 0.08);
+}
+
+.experiment-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.experiment-heading h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.experiment-status {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #eef3f6;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #536574;
+}
+
+.experiment-copy {
+  margin: 10px 0 14px;
+  color: #667785;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.experiment-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+}
+
+.experiment-controls label {
+  display: grid;
+  gap: 4px;
+}
+
+.experiment-controls label span {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  color: #87949f;
+}
+
+.experiment-controls input {
+  width: 100px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #d5dee5;
+  border-radius: 10px;
+  background: #fbfcfd;
+  color: #293744;
+  font-weight: 800;
+}
+
+.experiment-controls button,
+.experiment-export button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #cfd9e1;
+  border-radius: 10px;
+  background: #f8fbfd;
+  color: #31404e;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.experiment-controls button.primary {
+  border-color: #72b580;
+  background: #e8f7eb;
+  color: #206333;
+}
+
+.experiment-controls button:disabled,
+.experiment-export button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.experiment-live {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.experiment-live div {
+  padding: 11px;
+  border: 1px solid #e1e8ed;
+  border-radius: 11px;
+  background: #fafcfd;
+}
+
+.experiment-live span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  color: #8a97a2;
+}
+
+.experiment-live strong {
+  font-size: 13px;
+  color: #30404d;
+}
+
+.experiment-summary {
+  overflow-x: auto;
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f3f7f9;
+  color: #405160;
+  font: 700 12px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e1e8ed;
+  border-radius: 11px;
+}
+
+.experiment-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.experiment-table th,
+.experiment-table td {
+  padding: 8px 9px;
+  border-bottom: 1px solid #edf1f4;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.experiment-table th:first-child,
+.experiment-table td:first-child,
+.experiment-table th:nth-child(3),
+.experiment-table td:nth-child(3),
+.experiment-table th:nth-child(4),
+.experiment-table td:nth-child(4) {
+  text-align: left;
+}
+
+.experiment-table th {
+  background: #f7f9fa;
+  color: #6f7e89;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+.experiment-export {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.experiment-export span,
+.experiment-warning {
+  color: #7a8995;
+  font-size: 11px;
+}
+
+.experiment-warning {
+  margin: 10px 0 0;
+}
+
+@media (max-width: 760px) {
+  .experiment-live {
+    grid-template-columns: 1fr;
+  }
+
+  .experiment-controls label,
+  .experiment-controls input,
+  .experiment-controls button {
+    width: 100%;
+  }
+}

@@ -37,22 +37,17 @@
       this.ready = false;
       this.loading = false;
       this.enabled = false;
+      this.sensoryEnabled = true;
       this.outputs = [];
       this.rates = new Map();
-      this.intent = {
-        left: false,
-        right: false,
-        up: false,
-        down: false,
-        jump: false,
-        attack: false,
-        label: "IDLE",
-      };
+      this.intent = this.emptyIntent();
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
       this.lastObservationAt = 0;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
+      this.resetSerial = 0;
+      this.pendingResets = new Map();
       this.telemetry = {
         fired: 0,
         ms: 0,
@@ -74,6 +69,7 @@
         arm: document.getElementById("brain-arm"),
         action: document.getElementById("brain-action"),
         source: document.getElementById("brain-source"),
+        sensory: document.getElementById("brain-sensory"),
       };
 
       if (this.elements.source) {
@@ -85,11 +81,20 @@
       this.render();
     }
 
-    bindUi() {
-      this.elements.load?.addEventListener("click", () => {
-        this.load();
-      });
+    emptyIntent() {
+      return {
+        left: false,
+        right: false,
+        up: false,
+        down: false,
+        jump: false,
+        attack: false,
+        label: "IDLE",
+      };
+    }
 
+    bindUi() {
+      this.elements.load?.addEventListener("click", () => this.load());
       this.elements.toggle?.addEventListener("click", () => {
         this.setEnabled(!this.enabled);
       });
@@ -103,7 +108,6 @@
       this.loading = true;
       this.setStatus("LOADING");
       this.setProgress("Worker 시작 중 · 약 58MB 다운로드 예정");
-
       this.worker = new Worker("./src/brain/fly-worker.js");
 
       this.worker.onmessage = (event) => {
@@ -150,6 +154,7 @@
 
         this.setStatus("READY");
         this.setProgress("실제 MaleCNS connectome 준비 완료");
+        this.options.onReady?.();
         this.render();
         return;
       }
@@ -175,9 +180,19 @@
 
       if (message.type === "reset") {
         this.rates = new Map(this.outputs.map((name) => [name, 0]));
-        this.intent.jump = false;
-        this.intent.attack = false;
+        this.intent = this.emptyIntent();
+        this.nextJumpAt = 0;
+        this.nextAttackAt = 0;
+        this.lastObservationAt = 0;
+        this.lastTargetId = null;
+        this.lastTargetDistance = null;
         this.renderTelemetry();
+
+        const pending = this.pendingResets.get(message.requestId);
+        if (pending) {
+          this.pendingResets.delete(message.requestId);
+          pending.resolve(message);
+        }
         return;
       }
 
@@ -193,6 +208,7 @@
       this.setStatus("ERROR");
       this.setProgress(text);
       this.options.onModeChange?.(false);
+      this.options.onError?.(text);
       this.render();
     }
 
@@ -205,16 +221,7 @@
       this.enabled = Boolean(enabled && this.ready);
 
       if (!this.enabled) {
-        this.intent = {
-          left: false,
-          right: false,
-          up: false,
-          down: false,
-          jump: false,
-          attack: false,
-          label: "IDLE",
-        };
-
+        this.intent = this.emptyIntent();
         this.worker?.postMessage({
           type: "input",
           drive: {},
@@ -226,17 +233,63 @@
       this.render();
     }
 
+    setSensoryEnabled(enabled) {
+      this.sensoryEnabled = Boolean(enabled);
+      if (!this.sensoryEnabled) {
+        this.worker?.postMessage({ type: "input", drive: {} });
+      }
+      this.renderTelemetry();
+    }
+
+    isSensoryEnabled() {
+      return this.sensoryEnabled;
+    }
+
     isEnabled() {
       return this.enabled;
     }
 
-    reset() {
+    isReady() {
+      return this.ready;
+    }
+
+    getTelemetry() {
+      return { ...this.telemetry };
+    }
+
+    async reset(seed = 64) {
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
+      this.lastObservationAt = 0;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
+      this.intent = this.emptyIntent();
 
-      this.worker?.postMessage({ type: "reset" });
+      if (!this.worker || !this.ready) {
+        return { seed, skipped: true };
+      }
+
+      const requestId = ++this.resetSerial;
+
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          this.pendingResets.delete(requestId);
+          reject(new Error("brain reset timeout"));
+        }, 3000);
+
+        this.pendingResets.set(requestId, {
+          resolve: (message) => {
+            clearTimeout(timeout);
+            resolve(message);
+          },
+        });
+
+        this.worker.postMessage({
+          type: "reset",
+          seed,
+          requestId,
+        });
+      });
     }
 
     observe(observation) {
@@ -245,16 +298,15 @@
       }
 
       const now = performance.now();
-
       if (now - this.lastObservationAt < 45) {
         return;
       }
 
       this.lastObservationAt = now;
-
-      const drive = this.enabled
-        ? this.encodeObservation(observation)
-        : {};
+      const drive =
+        this.enabled && this.sensoryEnabled
+          ? this.encodeObservation(observation)
+          : {};
 
       this.worker.postMessage({
         type: "input",
@@ -300,7 +352,6 @@
       const dx = target.x - playerCenterX;
       const side = dx < 0 ? "L" : "R";
       const closeness = clamp(1 - bestDistance / 620, 0, 1);
-
       let approaching = 0;
 
       if (
@@ -341,18 +392,6 @@
             approaching * 0.18,
           0,
           0.8,
-        );
-      }
-
-      if (observation.gapThreat?.active) {
-        const gapSide = observation.gapThreat.side;
-        drive[`LPLC2_${gapSide}`] = Math.max(
-          drive[`LPLC2_${gapSide}`] ?? 0,
-          0.58,
-        );
-        drive[`LC4_${gapSide}`] = Math.max(
-          drive[`LC4_${gapSide}`] ?? 0,
-          0.36,
         );
       }
 
@@ -453,6 +492,19 @@
         attack,
         label,
       };
+
+      this.options.onDecision?.({
+        ...this.intent,
+        at: now,
+        rates: {
+          steerL,
+          steerR,
+          escape,
+          armPull,
+          extend,
+          flex,
+        },
+      });
     }
 
     consumeIntent() {
@@ -520,12 +572,17 @@
           ? this.intent.label
           : "MANUAL";
       }
+
+      if (this.elements.sensory) {
+        this.elements.sensory.textContent = this.sensoryEnabled
+          ? "ON"
+          : "OFF";
+      }
     }
 
     render() {
       if (this.elements.load) {
-        this.elements.load.disabled =
-          this.loading || this.ready;
+        this.elements.load.disabled = this.loading || this.ready;
         this.elements.load.textContent = this.loading
           ? "🧠 뇌 불러오는 중…"
           : this.ready

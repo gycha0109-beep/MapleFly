@@ -1,26 +1,25 @@
 # MapleFly
 
 MapleFly is an experiment that connects a fruit-fly MaleCNS connectome controller
-to a deliberately simplified, MapleStory-inspired 2D platform environment.
+to a deliberately simplified, MapleStory-inspired 2D environment.
 
 ## Current scope
 
-**Test Map v1 + Brain in a Jar v1**:
+**Experiment v2 — flat sensory A/B baseline**
 
-- one continuous ground floor
-- two disconnected upper platforms
-- a jump-only upper gap
-- one ground-connected ladder
-- three mushroom entities with independent HP
-- player ATK 10 / mushroom HP 30
-- directional melee attack and KO state
+- upper platforms and ladder are temporarily removed from the active arena
+- one mushroom target on flat ground
+- target alternates left/right by paired trial
 - real MaleCNS browser connectome controller
-- MANUAL / FLY CONTROL switch
-- live neural telemetry
+- SENSORY ON vs SENSORY OFF paired comparison
+- same pseudo-random seed reused inside each ON/OFF pair
+- alternating ON/OFF order to reduce order bias
+- automatic trial macro
+- automatic metrics logger
+- CSV / JSON export
+- latest run persisted in browser localStorage
 
 ## Brain source
-
-Brain-in-a-Jar v1 is pinned to:
 
 ```text
 alextitonis/fly.ai
@@ -30,33 +29,40 @@ alextitonis/fly.ai
 ```
 
 The connectome binaries are fetched from that fixed upstream commit at runtime.
-They are not vendored into MapleFly.
 
 ## Play
 
 https://gycha0109-beep.github.io/MapleFly/
 
-### Manual controls
+## Experiment v2
 
-- `A` / `D` or `←` / `→`: move
-- `W` / `S` or `↑` / `↓`: climb ladder
-- `Space`: jump
-- `F`: attack
-- `R`: reset experiment
+Default quick run:
 
-### Fly controls
+```text
+60 seconds × 3 pairs
+= 6 trials total
+```
 
-1. Click **초파리 뇌 불러오기 (~58MB)**.
-2. Wait for **READY**.
-3. Click **FLY CONTROL 시작**.
-4. Manual movement/combat input is replaced by connectome output.
+Long baseline preset:
+
+```text
+300 seconds × 5 pairs
+= 10 trials total
+≈ 50 minutes
+```
+
+Each pair uses the same brain noise seed for SENSORY ON and OFF.
+Target side and condition order alternate between pairs.
+
+Logged metrics include movement toward target, minimum distance, attack/hit/kill,
+jump count, hit rate, and brain runtime telemetry.
 
 ## Documentation
 
-- `docs/map-v1.md` — map and combat contract
 - `docs/brain-v1.md` — connectome/controller contract
-- `history/` — Korean development notes explaining what changed, how, and why
+- `history/development_v1.md` — v1 implementation history
+- `history/result_v1.md` — v1 observed result
+- `history/development_v2.md` — v2 A/B macro/logger design
 - `THIRD_PARTY_NOTICES.md` — upstream attribution
 
-No claim is made that the fly understands MapleStory. The sensory encoder and
-motor decoder are explicit interfaces around a frozen biological connectome.
+No claim is made that the fly understands MapleStory.

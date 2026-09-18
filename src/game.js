@@ -15,7 +15,6 @@
     gravity: 1400,
     moveSpeed: 280,
     jumpVelocity: 600,
-    climbSpeed: 185,
   });
 
   const COMBAT = Object.freeze({
@@ -25,29 +24,20 @@
     attackDuration: 0.16,
   });
 
-  const platforms = Object.freeze([
-    { id: "upper-left", x: 80, y: 210, width: 310, height: 24 },
-    { id: "upper-right", x: 610, y: 210, width: 310, height: 24 },
-  ]);
-
-  const ladder = Object.freeze({
-    x: 164,
-    y: 210,
-    width: 42,
-    height: WORLD.groundY - 210,
+  const PLAYER_SPAWN_X = WORLD.width / 2 - 17;
+  const TARGET_POSITIONS = Object.freeze({
+    L: 180,
+    R: 820,
   });
 
-  const spawn = Object.freeze({ x: 480, y: WORLD.groundY - 46 });
-
   const player = {
-    x: spawn.x,
-    y: spawn.y,
+    x: PLAYER_SPAWN_X,
+    y: WORLD.groundY - 46,
     width: 34,
     height: 46,
     vx: 0,
     vy: 0,
     grounded: true,
-    climbing: false,
     facing: 1,
     attackCooldownTimer: 0,
     attackTimer: 0,
@@ -55,22 +45,20 @@
     kills: 0,
   };
 
-  const mushroomDefs = Object.freeze([
-    { id: "M-01", x: 290, baselineY: 210, maxHp: 30 },
-    { id: "M-02", x: 785, baselineY: 210, maxHp: 30 },
-    { id: "M-03", x: 850, baselineY: WORLD.groundY, maxHp: 30 },
-  ]);
-
-  const mushrooms = mushroomDefs.map((definition) => ({
-    ...definition,
-    hp: definition.maxHp,
+  const mushroom = {
+    id: "M-TEST",
+    x: TARGET_POSITIONS.R,
+    baselineY: WORLD.groundY,
+    maxHp: 30,
+    hp: 30,
     alive: true,
     hitFlashTimer: 0,
-  }));
+  };
 
   const damagePopups = [];
   const keys = new Set();
   let brainController = null;
+  let trial = null;
 
   const blockScrollKeys = new Set([
     "ArrowLeft",
@@ -87,11 +75,11 @@
 
     keys.add(event.code);
 
-    if (event.code === "KeyR" && !event.repeat) {
-      resetExperiment();
+    if (event.code === "KeyR" && !event.repeat && !trial?.active) {
+      resetArena("R");
     }
 
-    if (brainController?.isEnabled()) {
+    if (brainController?.isEnabled() || trial?.active) {
       return;
     }
 
@@ -113,83 +101,143 @@
     player.vx = 0;
   });
 
-  function resetExperiment() {
-    player.x = spawn.x;
-    player.y = spawn.y;
+  function resetArena(targetSide = "R") {
+    player.x = PLAYER_SPAWN_X;
+    player.y = WORLD.groundY - player.height;
     player.vx = 0;
     player.vy = 0;
     player.grounded = true;
-    player.climbing = false;
-    player.facing = 1;
+    player.facing = targetSide === "L" ? -1 : 1;
     player.attackCooldownTimer = 0;
     player.attackTimer = 0;
     player.hits = 0;
     player.kills = 0;
 
-    for (let index = 0; index < mushrooms.length; index += 1) {
-      const definition = mushroomDefs[index];
-      const mushroom = mushrooms[index];
-      mushroom.hp = definition.maxHp;
-      mushroom.alive = true;
-      mushroom.hitFlashTimer = 0;
+    mushroom.x = TARGET_POSITIONS[targetSide] ?? TARGET_POSITIONS.R;
+    mushroom.hp = mushroom.maxHp;
+    mushroom.alive = true;
+    mushroom.hitFlashTimer = 0;
+    damagePopups.length = 0;
+  }
+
+  function startTrial({ targetSide = "R" } = {}) {
+    resetArena(targetSide);
+    trial = {
+      active: true,
+      targetSide,
+      startedAt: performance.now(),
+      lastX: player.x,
+      lastY: player.y,
+      distance: 0,
+      towardDistance: 0,
+      awayDistance: 0,
+      minTargetDistance: targetDistance(),
+      timeWithinAttackRangeMs: 0,
+      decisions: {
+        LEFT: 0,
+        RIGHT: 0,
+        UP: 0,
+        DOWN: 0,
+        JUMP: 0,
+        ATTACK: 0,
+        IDLE: 0,
+      },
+      hits: 0,
+      kills: 0,
+      firstHitMs: null,
+      firstKillMs: null,
+    };
+    return getTrialSnapshot();
+  }
+
+  function finishTrial() {
+    if (!trial) {
+      return null;
     }
 
-    damagePopups.length = 0;
-    brainController?.reset();
+    trial.active = false;
+    const result = getTrialSnapshot();
+    trial = null;
+    return result;
+  }
+
+  function cancelTrial() {
+    trial = null;
+  }
+
+  function recordDecision(decision) {
+    if (!trial?.active) {
+      return;
+    }
+
+    const label = trial.decisions[decision.label] !== undefined
+      ? decision.label
+      : "IDLE";
+    trial.decisions[label] += 1;
   }
 
   function tryJump() {
-    if (!player.grounded || player.climbing) {
-      return;
+    if (!player.grounded) {
+      return false;
     }
 
     player.vy = -WORLD.jumpVelocity;
     player.grounded = false;
+    return true;
   }
 
   function tryAttack() {
-    if (player.climbing || player.attackCooldownTimer > 0) {
-      return;
+    if (player.attackCooldownTimer > 0) {
+      return false;
     }
 
     player.attackCooldownTimer = COMBAT.attackCooldown;
     player.attackTimer = COMBAT.attackDuration;
 
-    const hitbox = getPlayerAttackHitbox();
+    if (!mushroom.alive) {
+      return true;
+    }
 
-    for (const mushroom of mushrooms) {
-      if (!mushroom.alive) {
-        continue;
-      }
+    if (!rectanglesOverlap(getPlayerAttackHitbox(), getMushroomHitbox())) {
+      return true;
+    }
 
-      const mushroomHitbox = getMushroomHitbox(mushroom);
+    mushroom.hp = Math.max(0, mushroom.hp - COMBAT.attackDamage);
+    mushroom.hitFlashTimer = 0.14;
+    player.hits += 1;
 
-      if (!rectanglesOverlap(hitbox, mushroomHitbox)) {
-        continue;
-      }
-
-      mushroom.hp = Math.max(0, mushroom.hp - COMBAT.attackDamage);
-      mushroom.hitFlashTimer = 0.14;
-      player.hits += 1;
-
-      damagePopups.push({
-        x: mushroom.x,
-        y: mushroom.baselineY - 72,
-        value: COMBAT.attackDamage,
-        life: 0.55,
-        maxLife: 0.55,
-      });
-
-      if (mushroom.hp === 0) {
-        mushroom.alive = false;
-        player.kills += 1;
+    if (trial?.active) {
+      trial.hits += 1;
+      if (trial.firstHitMs === null) {
+        trial.firstHitMs = performance.now() - trial.startedAt;
       }
     }
+
+    damagePopups.push({
+      x: mushroom.x,
+      y: mushroom.baselineY - 72,
+      value: COMBAT.attackDamage,
+      life: 0.55,
+      maxLife: 0.55,
+    });
+
+    if (mushroom.hp === 0) {
+      mushroom.alive = false;
+      player.kills += 1;
+
+      if (trial?.active) {
+        trial.kills += 1;
+        if (trial.firstKillMs === null) {
+          trial.firstKillMs = performance.now() - trial.startedAt;
+        }
+      }
+    }
+
+    return true;
   }
 
   function getPlayerAttackHitbox() {
     const width = COMBAT.attackRange;
-    const height = player.height - 8;
     const x =
       player.facing > 0
         ? player.x + player.width - 2
@@ -199,11 +247,11 @@
       x,
       y: player.y + 4,
       width,
-      height,
+      height: player.height - 8,
     };
   }
 
-  function getMushroomHitbox(mushroom) {
+  function getMushroomHitbox() {
     return {
       x: mushroom.x - 28,
       y: mushroom.baselineY - 62,
@@ -225,52 +273,14 @@
     return codes.some((code) => keys.has(code));
   }
 
-  function horizontalOverlap(a, b) {
-    return a.x + a.width > b.x && a.x < b.x + b.width;
-  }
-
-  function verticalOverlap(a, b) {
-    return a.y + a.height > b.y && a.y < b.y + b.height;
-  }
-
-  function canUseLadder() {
+  function targetDistance() {
     const playerCenterX = player.x + player.width / 2;
-    const ladderCenterX = ladder.x + ladder.width / 2;
-    const withinHorizontalReach =
-      Math.abs(playerCenterX - ladderCenterX) <= ladder.width * 0.72;
-
-    const feetNearLadderTop =
-      Math.abs(player.y + player.height - ladder.y) <= 8;
-    const insideLadderSpan = verticalOverlap(player, ladder);
-
-    return withinHorizontalReach && (insideLadderSpan || feetNearLadderTop);
-  }
-
-  function currentGapThreat() {
-    if (player.climbing) {
-      return { active: false, side: "R" };
-    }
-
-    const feetY = player.y + player.height;
-    const onUpper = Math.abs(feetY - platforms[0].y) <= 3;
-
-    if (!onUpper) {
-      return { active: false, side: "R" };
-    }
-
-    const centerX = player.x + player.width / 2;
-    const leftEdge = platforms[0].x + platforms[0].width;
-    const rightEdge = platforms[1].x;
-
-    if (centerX <= leftEdge && leftEdge - centerX < 95) {
-      return { active: true, side: "R" };
-    }
-
-    if (centerX >= rightEdge && centerX - rightEdge < 95) {
-      return { active: true, side: "L" };
-    }
-
-    return { active: false, side: "R" };
+    const playerCenterY = player.y + player.height / 2;
+    const targetY = mushroom.baselineY - 31;
+    return Math.hypot(
+      mushroom.x - playerCenterX,
+      targetY - playerCenterY,
+    );
   }
 
   function buildBrainObservation() {
@@ -281,17 +291,18 @@
         width: player.width,
         height: player.height,
         grounded: player.grounded,
-        climbing: player.climbing,
+        climbing: false,
         facing: player.facing,
       },
-      mushrooms: mushrooms.map((mushroom) => ({
-        id: mushroom.id,
-        x: mushroom.x,
-        y: mushroom.baselineY,
-        hp: mushroom.hp,
-        alive: mushroom.alive,
-      })),
-      gapThreat: currentGapThreat(),
+      mushrooms: [
+        {
+          id: mushroom.id,
+          x: mushroom.x,
+          y: mushroom.baselineY,
+          hp: mushroom.hp,
+          alive: mushroom.alive,
+        },
+      ],
     };
   }
 
@@ -304,18 +315,9 @@
     const left = flyControlled
       ? flyIntent.left
       : isPressed("KeyA", "ArrowLeft");
-
     const right = flyControlled
       ? flyIntent.right
       : isPressed("KeyD", "ArrowRight");
-
-    const up = flyControlled
-      ? flyIntent.up
-      : isPressed("KeyW", "ArrowUp");
-
-    const down = flyControlled
-      ? flyIntent.down
-      : isPressed("KeyS", "ArrowDown");
 
     if (flyControlled && flyIntent.jump) {
       tryJump();
@@ -326,70 +328,33 @@
     }
 
     const horizontalInput = (right ? 1 : 0) - (left ? 1 : 0);
-    const verticalInput = (down ? 1 : 0) - (up ? 1 : 0);
+    player.vx = horizontalInput * WORLD.moveSpeed;
 
-    if ((up || down) && canUseLadder()) {
-      player.climbing = true;
-      player.grounded = false;
-      player.vy = 0;
-      player.x = ladder.x + ladder.width / 2 - player.width / 2;
+    if (horizontalInput !== 0) {
+      player.facing = Math.sign(horizontalInput);
     }
 
-    if (player.climbing) {
-      player.vx = horizontalInput * WORLD.moveSpeed * 0.45;
-      player.vy = verticalInput * WORLD.climbSpeed;
+    const previousX = player.x;
+    const previousY = player.y;
 
-      if (horizontalInput !== 0) {
-        player.facing = Math.sign(horizontalInput);
-      }
-
-      player.x += player.vx * dt;
-      player.y += player.vy * dt;
-
-      const platformTop = platforms[0].y;
-      const standY = platformTop - player.height;
-
-      if (player.y <= standY) {
-        player.y = standY;
-        player.vy = 0;
-        player.climbing = false;
-        player.grounded = true;
-      } else if (player.y + player.height >= WORLD.groundY) {
-        player.y = WORLD.groundY - player.height;
-        player.vy = 0;
-        player.climbing = false;
-        player.grounded = true;
-      } else if (!canUseLadder()) {
-        player.climbing = false;
-      }
-    } else {
-      player.vx = horizontalInput * WORLD.moveSpeed;
-
-      if (horizontalInput !== 0) {
-        player.facing = Math.sign(horizontalInput);
-      }
-
-      const previousBottom = player.y + player.height;
-
-      player.x += player.vx * dt;
-      player.vy += WORLD.gravity * dt;
-      player.y += player.vy * dt;
-      player.grounded = false;
-
-      resolvePlatformLandings(previousBottom);
-      resolveGround();
-    }
+    player.x += player.vx * dt;
+    player.vy += WORLD.gravity * dt;
+    player.y += player.vy * dt;
+    player.grounded = false;
 
     player.x = Math.max(
       0,
       Math.min(WORLD.width - player.width, player.x),
     );
 
-    if (player.y > WORLD.height + 100) {
-      resetExperiment();
+    if (player.y + player.height >= WORLD.groundY) {
+      player.y = WORLD.groundY - player.height;
+      player.vy = 0;
+      player.grounded = true;
     }
 
     updateCombat(dt);
+    updateTrialMetrics(dt, previousX, previousY);
     brainController?.observe(buildBrainObservation());
     updateHud();
   }
@@ -400,10 +365,7 @@
       player.attackCooldownTimer - dt,
     );
     player.attackTimer = Math.max(0, player.attackTimer - dt);
-
-    for (const mushroom of mushrooms) {
-      mushroom.hitFlashTimer = Math.max(0, mushroom.hitFlashTimer - dt);
-    }
+    mushroom.hitFlashTimer = Math.max(0, mushroom.hitFlashTimer - dt);
 
     for (let index = damagePopups.length - 1; index >= 0; index -= 1) {
       const popup = damagePopups[index];
@@ -416,53 +378,88 @@
     }
   }
 
-  function resolvePlatformLandings(previousBottom) {
-    if (player.vy < 0) {
+  function updateTrialMetrics(dt, previousX, previousY) {
+    if (!trial?.active) {
       return;
     }
 
-    const currentBottom = player.y + player.height;
+    const dx = player.x - previousX;
+    const dy = player.y - previousY;
+    const moved = Math.hypot(dx, dy);
+    trial.distance += moved;
 
-    for (const platform of platforms) {
-      const crossedTop =
-        previousBottom <= platform.y &&
-        currentBottom >= platform.y;
+    if (Math.abs(dx) > 0.0001) {
+      const directionToTarget = Math.sign(
+        mushroom.x - (previousX + player.width / 2),
+      );
 
-      if (crossedTop && horizontalOverlap(player, platform)) {
-        player.y = platform.y - player.height;
-        player.vy = 0;
-        player.grounded = true;
-        return;
+      if (Math.sign(dx) === directionToTarget) {
+        trial.towardDistance += Math.abs(dx);
+      } else {
+        trial.awayDistance += Math.abs(dx);
       }
     }
+
+    const distance = targetDistance();
+    trial.minTargetDistance = Math.min(
+      trial.minTargetDistance,
+      distance,
+    );
+
+    const meleeProximity = COMBAT.attackRange + 35;
+    if (distance <= meleeProximity && mushroom.alive) {
+      trial.timeWithinAttackRangeMs += dt * 1000;
+    }
+
+    trial.lastX = player.x;
+    trial.lastY = player.y;
   }
 
-  function resolveGround() {
-    const bottom = player.y + player.height;
-
-    if (bottom >= WORLD.groundY) {
-      player.y = WORLD.groundY - player.height;
-      player.vy = 0;
-      player.grounded = true;
+  function getTrialSnapshot() {
+    if (!trial) {
+      return null;
     }
+
+    const horizontalTravel =
+      trial.towardDistance + trial.awayDistance;
+
+    return {
+      targetSide: trial.targetSide,
+      durationMs: performance.now() - trial.startedAt,
+      totalDistancePx: trial.distance,
+      towardDistancePx: trial.towardDistance,
+      awayDistancePx: trial.awayDistance,
+      towardMovementRatio:
+        horizontalTravel > 0
+          ? trial.towardDistance / horizontalTravel
+          : 0,
+      minTargetDistancePx: trial.minTargetDistance,
+      timeWithinAttackRangeMs: trial.timeWithinAttackRangeMs,
+      decisions: { ...trial.decisions },
+      hits: trial.hits,
+      kills: trial.kills,
+      firstHitMs: trial.firstHitMs,
+      firstKillMs: trial.firstKillMs,
+      finalTargetHp: mushroom.hp,
+      finalPlayerX: player.x,
+    };
+  }
+
+  function getStateSnapshot() {
+    return {
+      player: { ...player },
+      mushroom: { ...mushroom },
+      trial: getTrialSnapshot(),
+    };
   }
 
   function updateHud() {
     positionEl.textContent =
       `x ${Math.round(player.x)} · y ${Math.round(player.y)}`;
-
     combatEl.textContent =
       `ATK ${COMBAT.attackDamage} · HITS ${player.hits} · KILLS ${player.kills}`;
 
-    if (player.climbing) {
-      stateEl.textContent = "LADDER";
-    } else if (!player.grounded) {
-      stateEl.textContent = "AIR";
-    } else if (player.y + player.height < WORLD.groundY - 2) {
-      stateEl.textContent = "UPPER";
-    } else {
-      stateEl.textContent = "GROUND";
-    }
+    stateEl.textContent = player.grounded ? "GROUND" : "AIR";
 
     if (controlModeEl) {
       controlModeEl.textContent = brainController?.isEnabled()
@@ -474,10 +471,8 @@
   function draw() {
     ctx.clearRect(0, 0, WORLD.width, WORLD.height);
     drawBackground();
-    drawPlatforms();
-    drawLadder();
-    drawGapHint();
-    drawMushrooms();
+    drawArenaLabel();
+    drawMushroom();
     drawAttackEffect();
     drawPlayer();
     drawDamagePopups();
@@ -534,97 +529,42 @@
     ctx.fill();
   }
 
-  function drawPlatforms() {
-    for (const platform of platforms) {
-      ctx.fillStyle = "#78b95c";
-      ctx.fillRect(platform.x, platform.y, platform.width, 12);
-
-      ctx.fillStyle = "#9a704a";
-      ctx.fillRect(
-        platform.x,
-        platform.y + 12,
-        platform.width,
-        platform.height - 12,
-      );
-
-      ctx.strokeStyle = "rgba(57, 82, 42, 0.28)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        platform.x,
-        platform.y,
-        platform.width,
-        platform.height,
-      );
-    }
-  }
-
-  function drawLadder() {
-    const railInset = 7;
-    const leftX = ladder.x + railInset;
-    const rightX = ladder.x + ladder.width - railInset;
-
-    ctx.strokeStyle = "#8b6846";
-    ctx.lineWidth = 6;
-    ctx.lineCap = "round";
-
-    ctx.beginPath();
-    ctx.moveTo(leftX, ladder.y + 8);
-    ctx.lineTo(leftX, WORLD.groundY);
-    ctx.moveTo(rightX, ladder.y + 8);
-    ctx.lineTo(rightX, WORLD.groundY);
-    ctx.stroke();
-
-    ctx.lineWidth = 4;
-
-    for (let y = ladder.y + 30; y < WORLD.groundY; y += 30) {
-      ctx.beginPath();
-      ctx.moveTo(leftX, y);
-      ctx.lineTo(rightX, y);
-      ctx.stroke();
-    }
-  }
-
-  function drawGapHint() {
-    const leftEdge = platforms[0].x + platforms[0].width;
-    const rightEdge = platforms[1].x;
-    const centerX = (leftEdge + rightEdge) / 2;
-
+  function drawArenaLabel() {
     ctx.save();
-    ctx.strokeStyle = "rgba(47, 76, 103, 0.48)";
-    ctx.fillStyle = "rgba(47, 76, 103, 0.68)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([7, 8]);
-
-    ctx.beginPath();
-    ctx.moveTo(leftEdge + 18, 177);
-    ctx.quadraticCurveTo(centerX, 102, rightEdge - 18, 177);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-    ctx.font = "700 13px Inter, sans-serif";
+    ctx.fillStyle = "rgba(55, 76, 94, 0.55)";
+    ctx.font = "800 16px Inter, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("JUMP-ONLY GAP", centerX, 118);
+    ctx.fillText(
+      "EXPERIMENT V2 · FLAT ARENA",
+      WORLD.width / 2,
+      100,
+    );
+    ctx.font = "600 12px Inter, sans-serif";
+    ctx.fillText(
+      "2층·사다리 제거 · 단일 버섯 대조실험",
+      WORLD.width / 2,
+      122,
+    );
     ctx.restore();
   }
 
-  function drawMushrooms() {
-    for (const mushroom of mushrooms) {
-      if (mushroom.alive) {
-        drawMushroom(mushroom);
-        drawHpBar(mushroom);
-      } else {
-        drawDefeatedMarker(mushroom);
-      }
+  function drawMushroom() {
+    if (!mushroom.alive) {
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = "#687887";
+      ctx.font = "800 13px Inter, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("KO", mushroom.x, mushroom.baselineY - 18);
+      ctx.restore();
+      return;
     }
-  }
 
-  function drawMushroom(mushroom) {
     const centerX = mushroom.x;
     const baselineY = mushroom.baselineY;
     const capY = baselineY - 62;
 
     ctx.save();
-
     ctx.fillStyle =
       mushroom.hitFlashTimer > 0 ? "#fff5f2" : "#d9655d";
     ctx.beginPath();
@@ -663,30 +603,21 @@
     ctx.arc(centerX, baselineY - 13, 7, 0.2, Math.PI - 0.2);
     ctx.stroke();
 
-    ctx.fillStyle = "#ffd2cc";
-    ctx.beginPath();
-    ctx.arc(centerX - 17, capY + 20, 5, 0, Math.PI * 2);
-    ctx.arc(centerX + 15, capY + 10, 4, 0, Math.PI * 2);
-    ctx.fill();
-
+    drawHpBar();
     ctx.restore();
   }
 
-  function drawHpBar(mushroom) {
+  function drawHpBar() {
     const width = 70;
     const height = 8;
     const x = mushroom.x - width / 2;
     const y = mushroom.baselineY - 86;
     const ratio = mushroom.hp / mushroom.maxHp;
 
-    ctx.save();
-
     ctx.fillStyle = "rgba(24, 31, 38, 0.75)";
     ctx.fillRect(x - 1, y - 1, width + 2, height + 2);
-
     ctx.fillStyle = "#dfe5e9";
     ctx.fillRect(x, y, width, height);
-
     ctx.fillStyle = ratio > 0.34 ? "#57ad63" : "#d85f55";
     ctx.fillRect(x, y, width * ratio, height);
 
@@ -698,18 +629,6 @@
       mushroom.x,
       y - 6,
     );
-
-    ctx.restore();
-  }
-
-  function drawDefeatedMarker(mushroom) {
-    ctx.save();
-    ctx.globalAlpha = 0.55;
-    ctx.fillStyle = "#687887";
-    ctx.font = "800 13px Inter, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("KO", mushroom.x, mushroom.baselineY - 18);
-    ctx.restore();
   }
 
   function drawAttackEffect() {
@@ -729,10 +648,7 @@
     ctx.lineWidth = 7;
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(
-      centerX + direction * 10,
-      centerY - 17,
-    );
+    ctx.moveTo(centerX + direction * 10, centerY - 17);
     ctx.quadraticCurveTo(
       centerX + direction * reach,
       centerY - 8,
@@ -740,7 +656,6 @@
       centerY + 16,
     );
     ctx.stroke();
-
     ctx.strokeStyle = "rgba(255, 246, 211, 0.95)";
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -750,7 +665,6 @@
   function drawDamagePopups() {
     for (const popup of damagePopups) {
       const alpha = Math.max(0, popup.life / popup.maxLife);
-
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.fillStyle = "#c4473d";
@@ -819,27 +733,41 @@
   brainController = window.MapleFlyBrain?.createController({
     onModeChange(enabled) {
       keys.clear();
-
       if (controlModeEl) {
         controlModeEl.textContent = enabled
           ? "🪰 FLY"
           : "👤 MANUAL";
       }
     },
+    onDecision(decision) {
+      recordDecision(decision);
+    },
   }) ?? null;
+
+  window.MapleFlyGame = Object.freeze({
+    WORLD,
+    COMBAT,
+    getBrainController() {
+      return brainController;
+    },
+    startTrial,
+    finishTrial,
+    cancelTrial,
+    resetArena,
+    getStateSnapshot,
+    getTrialSnapshot,
+  });
 
   let lastTime = performance.now();
 
   function frame(now) {
     const dt = Math.min((now - lastTime) / 1000, 1 / 30);
     lastTime = now;
-
     update(dt);
     draw();
-
     requestAnimationFrame(frame);
   }
 
-  resetExperiment();
+  resetArena("R");
   requestAnimationFrame(frame);
 })();

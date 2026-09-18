@@ -366,19 +366,27 @@ let hits = null;
 let rollingStepMs = 0;
 let loopStarted = false;
 
-function resetRuntime() {
+function resetRuntime(seed = 64, requestId = null) {
   if (!meta || !weights) {
     return;
   }
 
-  brain = new ConnectomeBrain(weights, meta.params, 64);
+  const normalizedSeed = Number.isFinite(Number(seed))
+    ? Math.trunc(Number(seed))
+    : 64;
+
+  brain = new ConnectomeBrain(weights, meta.params, normalizedSeed);
   drive = {};
   hz = new Float64Array(outputGroups.length);
   count = new Float64Array(outputGroups.length);
   hits = new Float64Array(outputGroups.length);
   rollingStepMs = 0;
 
-  self.postMessage({ type: "reset" });
+  self.postMessage({
+    type: "reset",
+    seed: normalizedSeed,
+    requestId,
+  });
 }
 
 function startLoop() {
@@ -525,6 +533,6 @@ self.onmessage = (event) => {
   }
 
   if (message.type === "reset") {
-    resetRuntime();
+    resetRuntime(message.seed ?? 64, message.requestId ?? null);
   }
 };

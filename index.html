@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MapleFly Test Map v1</title>
+  <title>MapleFly Experiment v2</title>
   <link rel="stylesheet" href="./src/style.css" />
 </head>
 <body>
@@ -11,14 +11,13 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">MAPLEFLY</p>
-        <h1>Test Map v1</h1>
+        <h1>Experiment v2 · Flat Arena</h1>
       </div>
       <div class="controls" aria-label="debug controls">
         <span>A/D 또는 ←/→ 이동</span>
-        <span>W/S 또는 ↑/↓ 사다리</span>
         <span>Space 점프</span>
         <span>F 공격</span>
-        <span>R 전체 리셋</span>
+        <span>R 수동 리셋</span>
       </div>
     </header>
 
@@ -28,7 +27,7 @@
           id="game"
           width="1000"
           height="600"
-          aria-label="MapleFly simplified test map"
+          aria-label="MapleFly flat experiment arena"
         ></canvas>
         <div class="statusbar">
           <span id="position">x 0 · y 0</span>
@@ -51,7 +50,7 @@
 
         <p class="brain-copy">
           실제 초파리 MaleCNS connectome을 브라우저 Worker에서 돌립니다.
-          내부 배선은 학습시키거나 수정하지 않습니다.
+          v2 자동실험은 같은 seed로 SENSORY ON/OFF를 짝지어 비교합니다.
         </p>
 
         <div class="brain-actions">
@@ -87,6 +86,7 @@
         </dl>
 
         <div class="brain-readouts">
+          <div><span>SENSORY DRIVE</span><strong id="brain-sensory">ON</strong></div>
           <div><span>DNa02 L</span><strong id="brain-steer-l">—</strong></div>
           <div><span>DNa02 R</span><strong id="brain-steer-r">—</strong></div>
           <div><span>DNp01 ESCAPE</span><strong id="brain-escape">—</strong></div>
@@ -104,13 +104,81 @@
       </aside>
     </section>
 
-    <p class="note">
-      수동 모드에서 먼저 맵을 확인한 뒤 뇌를 불러오고 FLY CONTROL을 켜면
-      사람 키 입력 대신 초파리 connectome 출력이 캐릭터를 조종합니다.
-    </p>
+    <section class="experiment-panel">
+      <div class="experiment-heading">
+        <div>
+          <p class="eyebrow">AUTOMATED A/B TEST</p>
+          <h2>SENSORY ON vs OFF</h2>
+        </div>
+        <strong id="exp-status" class="experiment-status">IDLE</strong>
+      </div>
+
+      <p class="experiment-copy">
+        같은 seed를 ON/OFF에 재사용해 connectome 내부 noise sequence를 맞춥니다.
+        pair마다 버섯 좌우 위치와 ON/OFF 실행 순서를 번갈아 바꿔 방향·순서 편향을 줄입니다.
+      </p>
+
+      <div class="experiment-controls">
+        <label>
+          <span>TRIAL 초</span>
+          <input id="exp-seconds" type="number" min="10" max="1800" value="60" />
+        </label>
+        <label>
+          <span>PAIRS</span>
+          <input id="exp-pairs" type="number" min="1" max="20" value="3" />
+        </label>
+        <label>
+          <span>BASE SEED</span>
+          <input id="exp-seed" type="number" min="1" max="999999" value="64" />
+        </label>
+        <button id="exp-preset" type="button">5분 × 5 pair 프리셋</button>
+        <button id="exp-start" type="button" class="primary">자동 대조실험 시작</button>
+        <button id="exp-stop" type="button" disabled>중지</button>
+      </div>
+
+      <div class="experiment-live">
+        <div><span>TRIAL</span><strong id="exp-trial">—</strong></div>
+        <div><span>CONDITION</span><strong id="exp-condition">—</strong></div>
+        <div><span>REMAIN</span><strong id="exp-countdown">—</strong></div>
+      </div>
+
+      <pre id="exp-summary" class="experiment-summary">ON/OFF가 모두 끝나면 평균 비교가 표시됩니다.</pre>
+
+      <div class="table-wrap">
+        <table class="experiment-table">
+          <thead>
+            <tr>
+              <th>Pair</th>
+              <th>Seed</th>
+              <th>Target</th>
+              <th>Sensory</th>
+              <th>Toward%</th>
+              <th>MinDist</th>
+              <th>ATK</th>
+              <th>Hit</th>
+              <th>Hit%</th>
+              <th>Kill</th>
+              <th>Jump</th>
+            </tr>
+          </thead>
+          <tbody id="exp-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="experiment-export">
+        <button id="exp-csv" type="button" disabled>CSV 내보내기</button>
+        <button id="exp-json" type="button" disabled>JSON 내보내기</button>
+        <span>완료 결과는 브라우저 localStorage에도 자동 저장됩니다.</span>
+      </div>
+
+      <p class="experiment-warning">
+        실험 중 다른 탭으로 전환하거나 브라우저를 최소화하면 타이머 throttling으로 조건이 달라질 수 있어 자동 중단합니다.
+      </p>
+    </section>
   </main>
 
   <script src="./src/brain/fly-controller.js"></script>
   <script src="./src/game.js"></script>
+  <script src="./src/experiment-v2.js"></script>
 </body>
 </html>
