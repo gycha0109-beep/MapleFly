@@ -300,7 +300,7 @@ function toMarkdown(meta, summary) {
 - KILL: ${delta.kills.toFixed(2)}
 - 최소거리: ${delta.minTargetDistancePx.toFixed(1)} px
 
-> 이 파일은 자동 산출물이다. 결과 해석은 별도 `history/result_v2.md`에서 작성한다.
+> 이 파일은 자동 산출물이다. 결과 해석은 별도 \`history/result_v2.md\`에서 작성한다.
 `;
 }
 
