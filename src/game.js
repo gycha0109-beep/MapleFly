@@ -6,6 +6,7 @@
   const positionEl = document.getElementById("position");
   const combatEl = document.getElementById("combat");
   const stateEl = document.getElementById("state");
+  const controlModeEl = document.getElementById("control-mode");
 
   const WORLD = Object.freeze({
     width: 1000,
@@ -69,6 +70,7 @@
 
   const damagePopups = [];
   const keys = new Set();
+  let brainController = null;
 
   const blockScrollKeys = new Set([
     "ArrowLeft",
@@ -87,6 +89,10 @@
 
     if (event.code === "KeyR" && !event.repeat) {
       resetExperiment();
+    }
+
+    if (brainController?.isEnabled()) {
+      return;
     }
 
     if (event.code === "Space" && !event.repeat) {
@@ -129,6 +135,7 @@
     }
 
     damagePopups.length = 0;
+    brainController?.reset();
   }
 
   function tryJump() {
@@ -239,11 +246,84 @@
     return withinHorizontalReach && (insideLadderSpan || feetNearLadderTop);
   }
 
+  function currentGapThreat() {
+    if (player.climbing) {
+      return { active: false, side: "R" };
+    }
+
+    const feetY = player.y + player.height;
+    const onUpper = Math.abs(feetY - platforms[0].y) <= 3;
+
+    if (!onUpper) {
+      return { active: false, side: "R" };
+    }
+
+    const centerX = player.x + player.width / 2;
+    const leftEdge = platforms[0].x + platforms[0].width;
+    const rightEdge = platforms[1].x;
+
+    if (centerX <= leftEdge && leftEdge - centerX < 95) {
+      return { active: true, side: "R" };
+    }
+
+    if (centerX >= rightEdge && centerX - rightEdge < 95) {
+      return { active: true, side: "L" };
+    }
+
+    return { active: false, side: "R" };
+  }
+
+  function buildBrainObservation() {
+    return {
+      player: {
+        x: player.x,
+        y: player.y,
+        width: player.width,
+        height: player.height,
+        grounded: player.grounded,
+        climbing: player.climbing,
+        facing: player.facing,
+      },
+      mushrooms: mushrooms.map((mushroom) => ({
+        id: mushroom.id,
+        x: mushroom.x,
+        y: mushroom.baselineY,
+        hp: mushroom.hp,
+        alive: mushroom.alive,
+      })),
+      gapThreat: currentGapThreat(),
+    };
+  }
+
   function update(dt) {
-    const left = isPressed("KeyA", "ArrowLeft");
-    const right = isPressed("KeyD", "ArrowRight");
-    const up = isPressed("KeyW", "ArrowUp");
-    const down = isPressed("KeyS", "ArrowDown");
+    const flyControlled = brainController?.isEnabled() ?? false;
+    const flyIntent = flyControlled
+      ? brainController.consumeIntent()
+      : null;
+
+    const left = flyControlled
+      ? flyIntent.left
+      : isPressed("KeyA", "ArrowLeft");
+
+    const right = flyControlled
+      ? flyIntent.right
+      : isPressed("KeyD", "ArrowRight");
+
+    const up = flyControlled
+      ? flyIntent.up
+      : isPressed("KeyW", "ArrowUp");
+
+    const down = flyControlled
+      ? flyIntent.down
+      : isPressed("KeyS", "ArrowDown");
+
+    if (flyControlled && flyIntent.jump) {
+      tryJump();
+    }
+
+    if (flyControlled && flyIntent.attack) {
+      tryAttack();
+    }
 
     const horizontalInput = (right ? 1 : 0) - (left ? 1 : 0);
     const verticalInput = (down ? 1 : 0) - (up ? 1 : 0);
@@ -310,6 +390,7 @@
     }
 
     updateCombat(dt);
+    brainController?.observe(buildBrainObservation());
     updateHud();
   }
 
@@ -382,6 +463,12 @@
     } else {
       stateEl.textContent = "GROUND";
     }
+
+    if (controlModeEl) {
+      controlModeEl.textContent = brainController?.isEnabled()
+        ? "🪰 FLY"
+        : "👤 MANUAL";
+    }
   }
 
   function draw() {
@@ -415,7 +502,12 @@
     ctx.fillRect(0, WORLD.groundY, WORLD.width, 16);
 
     ctx.fillStyle = "#b98f61";
-    ctx.fillRect(0, WORLD.groundY + 16, WORLD.width, WORLD.height - WORLD.groundY);
+    ctx.fillRect(
+      0,
+      WORLD.groundY + 16,
+      WORLD.width,
+      WORLD.height - WORLD.groundY,
+    );
   }
 
   function drawCloud(x, y, scale) {
@@ -537,9 +629,19 @@
       mushroom.hitFlashTimer > 0 ? "#fff5f2" : "#d9655d";
     ctx.beginPath();
     ctx.arc(centerX, capY + 19, 32, Math.PI, 0);
-    ctx.quadraticCurveTo(centerX + 32, capY + 34, centerX + 25, capY + 38);
+    ctx.quadraticCurveTo(
+      centerX + 32,
+      capY + 34,
+      centerX + 25,
+      capY + 38,
+    );
     ctx.lineTo(centerX - 25, capY + 38);
-    ctx.quadraticCurveTo(centerX - 32, capY + 34, centerX - 32, capY + 19);
+    ctx.quadraticCurveTo(
+      centerX - 32,
+      capY + 34,
+      centerX - 32,
+      capY + 19,
+    );
     ctx.closePath();
     ctx.fill();
 
@@ -665,9 +767,22 @@
 
     ctx.save();
 
+    if (brainController?.isEnabled()) {
+      ctx.fillStyle = "rgba(88, 183, 112, 0.18)";
+      ctx.beginPath();
+      ctx.arc(centerX, player.y + 20, 29, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     ctx.fillStyle = "#4f91dd";
     ctx.beginPath();
-    ctx.roundRect(player.x + 5, player.y + 17, player.width - 10, 27, 8);
+    ctx.roundRect(
+      player.x + 5,
+      player.y + 17,
+      player.width - 10,
+      27,
+      8,
+    );
     ctx.fill();
 
     ctx.fillStyle = "#ffe2bd";
@@ -691,10 +806,27 @@
 
     ctx.fillStyle = "#2d6cb7";
     ctx.fillRect(player.x + 7, feetY - 3, 8, 3);
-    ctx.fillRect(player.x + player.width - 15, feetY - 3, 8, 3);
+    ctx.fillRect(
+      player.x + player.width - 15,
+      feetY - 3,
+      8,
+      3,
+    );
 
     ctx.restore();
   }
+
+  brainController = window.MapleFlyBrain?.createController({
+    onModeChange(enabled) {
+      keys.clear();
+
+      if (controlModeEl) {
+        controlModeEl.textContent = enabled
+          ? "🪰 FLY"
+          : "👤 MANUAL";
+      }
+    },
+  }) ?? null;
 
   let lastTime = performance.now();
 

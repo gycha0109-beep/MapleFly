@@ -22,26 +22,95 @@
       </div>
     </header>
 
-    <section class="game-frame">
-      <canvas
-        id="game"
-        width="1000"
-        height="600"
-        aria-label="MapleFly simplified test map"
-      ></canvas>
-      <div class="statusbar">
-        <span id="position">x 0 · y 0</span>
-        <span id="combat">ATK 10 · HITS 0 · KILLS 0</span>
-        <span id="state">GROUND</span>
-      </div>
+    <section class="lab-layout">
+      <section class="game-frame">
+        <canvas
+          id="game"
+          width="1000"
+          height="600"
+          aria-label="MapleFly simplified test map"
+        ></canvas>
+        <div class="statusbar">
+          <span id="position">x 0 · y 0</span>
+          <span id="combat">ATK 10 · HITS 0 · KILLS 0</span>
+          <span id="control-mode">👤 MANUAL</span>
+          <span id="state">GROUND</span>
+        </div>
+      </section>
+
+      <aside class="brain-panel" aria-label="fruit fly brain control panel">
+        <div class="brain-panel__heading">
+          <div>
+            <p class="brain-kicker">BRAIN IN A JAR</p>
+            <h2>🪰 MaleCNS</h2>
+          </div>
+          <span id="brain-status" class="brain-status" data-state="offline">
+            OFFLINE
+          </span>
+        </div>
+
+        <p class="brain-copy">
+          실제 초파리 MaleCNS connectome을 브라우저 Worker에서 돌립니다.
+          내부 배선은 학습시키거나 수정하지 않습니다.
+        </p>
+
+        <div class="brain-actions">
+          <button id="brain-load" type="button">
+            🧠 초파리 뇌 불러오기 (~58MB)
+          </button>
+          <button id="brain-toggle" type="button" disabled>
+            🪰 FLY CONTROL 시작
+          </button>
+        </div>
+
+        <p id="brain-progress" class="brain-progress">
+          아직 connectome을 다운로드하지 않았습니다.
+        </p>
+
+        <dl class="brain-grid">
+          <div>
+            <dt>NEURONS</dt>
+            <dd id="brain-neurons">—</dd>
+          </div>
+          <div>
+            <dt>SYNAPSES</dt>
+            <dd id="brain-synapses">—</dd>
+          </div>
+          <div>
+            <dt>FIRED / STEP</dt>
+            <dd id="brain-fired">—</dd>
+          </div>
+          <div>
+            <dt>BRAIN STEP</dt>
+            <dd id="brain-step">—</dd>
+          </div>
+        </dl>
+
+        <div class="brain-readouts">
+          <div><span>DNa02 L</span><strong id="brain-steer-l">—</strong></div>
+          <div><span>DNa02 R</span><strong id="brain-steer-r">—</strong></div>
+          <div><span>DNp01 ESCAPE</span><strong id="brain-escape">—</strong></div>
+          <div><span>ARM PULL</span><strong id="brain-arm">—</strong></div>
+        </div>
+
+        <div class="brain-decision">
+          <span>ACTION</span>
+          <strong id="brain-action">MANUAL</strong>
+        </div>
+
+        <p class="brain-source">
+          SOURCE <code id="brain-source">fly.ai</code>
+        </p>
+      </aside>
     </section>
 
     <p class="note">
-      전투 베이스라인: 버섯은 개체별 HP를 가지며, 현재 플레이어 공격력은 10입니다.
-      초파리 connectome과 몬스터 AI는 아직 연결하지 않습니다.
+      수동 모드에서 먼저 맵을 확인한 뒤 뇌를 불러오고 FLY CONTROL을 켜면
+      사람 키 입력 대신 초파리 connectome 출력이 캐릭터를 조종합니다.
     </p>
   </main>
 
+  <script src="./src/brain/fly-controller.js"></script>
   <script src="./src/game.js"></script>
 </body>
 </html>
