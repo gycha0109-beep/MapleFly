@@ -156,6 +156,7 @@
     startTelemetrySampling();
 
     const startedAt = performance.now();
+    const targetBrainSteps = Math.round(durationMs / 20);
     setStatus("RUNNING");
 
     while (true) {
@@ -165,19 +166,24 @@
         throw new Error("aborted");
       }
 
-      const elapsed = performance.now() - startedAt;
-      const remaining = Math.max(0, durationMs - elapsed);
+      const brainSteps = brain.getTelemetry().steps ?? 0;
+      const remainingSteps = Math.max(
+        0,
+        targetBrainSteps - brainSteps,
+      );
 
       ui.countdown.textContent =
-        `${(remaining / 1000).toFixed(1)} s`;
+        `${(remainingSteps * 0.02).toFixed(1)} sim-s`;
 
-      if (remaining <= 0) {
+      if (brainSteps >= targetBrainSteps) {
         break;
       }
 
-      await sleep(100);
+      await sleep(80);
     }
 
+    const wallDurationMs = performance.now() - startedAt;
+    const finalBrainSteps = brain.getTelemetry().steps ?? 0;
     const trialResult = game.finishTrial();
     const telemetry = stopTelemetrySampling();
     const attacks = trialResult?.decisions?.ATTACK ?? 0;
@@ -188,7 +194,11 @@
       seed: spec.seed,
       targetSide: spec.targetSide,
       sensory: spec.condition,
-      durationMs: trialResult?.durationMs ?? durationMs,
+      durationMs: trialResult?.durationMs ?? wallDurationMs,
+      requestedSimSeconds: durationMs / 1000,
+      brainSteps: finalBrainSteps,
+      simulatedSeconds: finalBrainSteps * 0.02,
+      wallDurationMs,
       totalDistancePx: trialResult?.totalDistancePx ?? 0,
       towardDistancePx: trialResult?.towardDistancePx ?? 0,
       awayDistancePx: trialResult?.awayDistancePx ?? 0,
@@ -337,6 +347,10 @@
       "targetSide",
       "sensory",
       "durationMs",
+      "requestedSimSeconds",
+      "brainSteps",
+      "simulatedSeconds",
+      "wallDurationMs",
       "totalDistancePx",
       "towardDistancePx",
       "awayDistancePx",
@@ -397,11 +411,15 @@
       brainCommit:
         global.MapleFlyBrain?.SOURCE?.commit ?? null,
       notes:
-        "SENSORY OFF sets all external sensory drive to zero. Same seed is reused within each ON/OFF pair.",
+        "SENSORY OFF sets all external sensory drive to zero. Same seed is reused within each ON/OFF pair. Trial length is fixed by brain steps (50 Hz), not wall-clock time.",
     };
 
     ui.start.disabled = true;
     ui.stop.disabled = false;
+    ui.seconds.disabled = true;
+    ui.pairs.disabled = true;
+    ui.seed.disabled = true;
+    ui.preset.disabled = true;
     ui.csv.disabled = true;
     ui.json.disabled = true;
     renderRows();
@@ -458,6 +476,10 @@
       brain.setEnabled(false);
       ui.start.disabled = false;
       ui.stop.disabled = true;
+      ui.seconds.disabled = false;
+      ui.pairs.disabled = false;
+      ui.seed.disabled = false;
+      ui.preset.disabled = false;
     }
   }
 

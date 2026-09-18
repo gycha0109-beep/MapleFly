@@ -133,8 +133,24 @@ DNa02의 좌우 편향 또는 맵 방향 편향이 한쪽 조건에만 누적되
 긴 baseline용 프리셋:
 
 ```text
-300초 × 5 pair = 총 10 trials = 약 50분
+300 simulated seconds × 5 pair = 총 10 trials
 ```
+
+### 왜 wall-clock이 아니라 brain step으로 끊는가
+
+같은 seed를 ON/OFF에 재사용해도 wall-clock 60초 동안 실행하면
+조건별 계산량 차이 때문에 실제 brain step 수가 달라질 수 있다.
+
+MaleCNS runtime은 20ms timestep, 즉 50 Hz이므로
+v2 macro는 trial 길이를 다음처럼 고정한다.
+
+```text
+60초  -> 3,000 brain steps
+300초 -> 15,000 brain steps
+```
+
+따라서 paired ON/OFF가 같은 수의 random draws와 simulation steps를 거치도록 맞춘다.
+실제 벽시계 실행 시간(wallDurationMs)은 별도로 기록한다.
 
 실험 시작 버튼을 누르면:
 
@@ -143,7 +159,7 @@ DNa02의 좌우 편향 또는 맵 방향 편향이 한쪽 조건에만 누적되
 3. brain seed reset
 4. sensory ON/OFF 설정
 5. player와 target 위치 reset
-6. 지정 시간 자동 실행
+6. 지정한 "초"를 50 Hz brain step 수로 변환해 정확히 그 step 수만큼 실행
 7. 결과 기록
 8. 2초 간격
 9. 다음 trial 진행
