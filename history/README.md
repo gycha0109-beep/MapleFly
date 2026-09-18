@@ -44,5 +44,5 @@ result_v2.md
 - [development_v3.md](./development_v3.md)  
   SNta ground input은 유지하고 target visual channel만 제거하는 paired 대조군
 
-- `result_v3.md`  
-  실제 FULL / VISUAL_OFF 실험 완료 후 작성
+- [result_v3.md](./result_v3.md)  
+  SNta를 유지한 FULL / VISUAL_OFF 180초 × 3 paired 대조실험 결과

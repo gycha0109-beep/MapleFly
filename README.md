@@ -136,3 +136,17 @@ Run MapleFly Experiment v3 Visual Control
 ```powershell
 npm run experiment:v3 -- --seconds 180 --pairs 3 --seed 64
 ```
+
+
+### Experiment v3 result
+
+Run `35353782679`, 180 simulated seconds × 3 pairs:
+
+```text
+                 FULL   VISUAL_OFF
+toward target    65.5%     49.8%
+hit rate         24.6%      7.7%
+kills / trial    29.00      2.33
+```
+
+Interpretation: `history/result_v3.md`

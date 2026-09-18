@@ -32,8 +32,8 @@ jobs:
     timeout-minutes: 120
 
     env:
-      EXP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.seconds || '180' }}
-      EXP_PAIRS: ${{ github.event_name == 'workflow_dispatch' && inputs.pairs || '3' }}
+      EXP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.seconds || '2' }}
+      EXP_PAIRS: ${{ github.event_name == 'workflow_dispatch' && inputs.pairs || '1' }}
       EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '64' }}
 
     steps:
