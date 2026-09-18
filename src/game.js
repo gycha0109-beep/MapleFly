@@ -30,6 +30,11 @@
     R: 820,
   });
 
+  const RESPAWN = Object.freeze({
+    delayMs: 700,
+    offsets: Object.freeze([-90, -60, -30, 30, 60, 90]),
+  });
+
   const player = {
     x: PLAYER_SPAWN_X,
     y: WORLD.groundY - 46,
@@ -53,6 +58,8 @@
     hp: 30,
     alive: true,
     hitFlashTimer: 0,
+    respawnTimerMs: 0,
+    spawnIndex: 0,
   };
 
   const damagePopups = [];
@@ -117,14 +124,48 @@
     mushroom.hp = mushroom.maxHp;
     mushroom.alive = true;
     mushroom.hitFlashTimer = 0;
+    mushroom.respawnTimerMs = 0;
+    mushroom.spawnIndex = 0;
     damagePopups.length = 0;
   }
 
-  function startTrial({ targetSide = "R" } = {}) {
+  function respawnPosition(seed, spawnIndex, targetSide) {
+    const base = TARGET_POSITIONS[targetSide] ?? TARGET_POSITIONS.R;
+    const offsets = RESPAWN.offsets;
+    const seedIndex =
+      Math.abs(Math.trunc(Number(seed) || 0)) % offsets.length;
+    const offset =
+      offsets[(seedIndex + spawnIndex - 1) % offsets.length];
+
+    return Math.max(70, Math.min(WORLD.width - 70, base + offset));
+  }
+
+  function respawnMushroom() {
+    if (!trial?.active) {
+      return;
+    }
+
+    mushroom.spawnIndex += 1;
+    mushroom.x = respawnPosition(
+      trial.seed,
+      mushroom.spawnIndex,
+      trial.targetSide,
+    );
+    mushroom.hp = mushroom.maxHp;
+    mushroom.alive = true;
+    mushroom.hitFlashTimer = 0;
+    mushroom.respawnTimerMs = 0;
+
+    trial.respawns += 1;
+    trial.spawnPositions.push(Math.round(mushroom.x));
+  }
+
+  function startTrial({ targetSide = "R", seed = 64 } = {}) {
     resetArena(targetSide);
     trial = {
       active: true,
       targetSide,
+      seed,
       startedAt: performance.now(),
       lastX: player.x,
       lastY: player.y,
@@ -144,6 +185,8 @@
       },
       hits: 0,
       kills: 0,
+      respawns: 0,
+      spawnPositions: [Math.round(mushroom.x)],
       firstHitMs: null,
       firstKillMs: null,
     };
@@ -223,6 +266,7 @@
 
     if (mushroom.hp === 0) {
       mushroom.alive = false;
+      mushroom.respawnTimerMs = RESPAWN.delayMs;
       player.kills += 1;
 
       if (trial?.active) {
@@ -367,6 +411,17 @@
     player.attackTimer = Math.max(0, player.attackTimer - dt);
     mushroom.hitFlashTimer = Math.max(0, mushroom.hitFlashTimer - dt);
 
+    if (!mushroom.alive && trial?.active) {
+      mushroom.respawnTimerMs = Math.max(
+        0,
+        mushroom.respawnTimerMs - dt * 1000,
+      );
+
+      if (mushroom.respawnTimerMs === 0) {
+        respawnMushroom();
+      }
+    }
+
     for (let index = damagePopups.length - 1; index >= 0; index -= 1) {
       const popup = damagePopups[index];
       popup.life -= dt;
@@ -438,6 +493,8 @@
       decisions: { ...trial.decisions },
       hits: trial.hits,
       kills: trial.kills,
+      respawns: trial.respawns,
+      spawnPositions: [...trial.spawnPositions],
       firstHitMs: trial.firstHitMs,
       firstKillMs: trial.firstKillMs,
       finalTargetHp: mushroom.hp,
@@ -556,6 +613,12 @@
       ctx.font = "800 13px Inter, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("KO", mushroom.x, mushroom.baselineY - 18);
+      ctx.font = "700 10px Inter, sans-serif";
+      ctx.fillText(
+        `RESPAWN ${Math.max(0, mushroom.respawnTimerMs / 1000).toFixed(1)}s`,
+        mushroom.x,
+        mushroom.baselineY - 3,
+      );
       ctx.restore();
       return;
     }

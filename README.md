@@ -9,6 +9,7 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 
 - upper platforms and ladder are temporarily removed from the active arena
 - one mushroom target on flat ground
+- killed targets respawn after 700 ms at deterministic nearby positions
 - target alternates left/right by paired trial
 - real MaleCNS browser connectome controller
 - SENSORY ON vs SENSORY OFF paired comparison

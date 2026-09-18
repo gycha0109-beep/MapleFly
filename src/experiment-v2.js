@@ -152,7 +152,10 @@
     brain.setEnabled(true);
     await brain.reset(spec.seed);
 
-    game.startTrial({ targetSide: spec.targetSide });
+    game.startTrial({
+      targetSide: spec.targetSide,
+      seed: spec.seed,
+    });
     startTelemetrySampling();
 
     const startedAt = performance.now();
@@ -216,6 +219,8 @@
       hits,
       hitRate: attacks > 0 ? hits / attacks : 0,
       kills: trialResult?.kills ?? 0,
+      respawns: trialResult?.respawns ?? 0,
+      spawnPositions: trialResult?.spawnPositions ?? [],
       firstHitMs: trialResult?.firstHitMs ?? null,
       firstKillMs: trialResult?.firstKillMs ?? null,
       finalTargetHp: trialResult?.finalTargetHp ?? 30,
@@ -245,6 +250,7 @@
         row.hits,
         formatNumber(row.hitRate * 100, 1) + "%",
         row.kills,
+        row.respawns,
         row.jump,
       ];
 
@@ -293,7 +299,7 @@
 
   function persist() {
     const payload = {
-      schema: "maplefly.experiment-v2.1",
+      schema: "maplefly.experiment-v2.2",
       meta: runMeta,
       results,
     };
@@ -328,7 +334,7 @@
 
   function exportJson() {
     const payload = {
-      schema: "maplefly.experiment-v2.1",
+      schema: "maplefly.experiment-v2.2",
       meta: runMeta,
       results,
     };
@@ -365,6 +371,8 @@
       "hits",
       "hitRate",
       "kills",
+      "respawns",
+      "spawnPositions",
       "firstHitMs",
       "firstKillMs",
       "finalTargetHp",
@@ -411,7 +419,7 @@
       brainCommit:
         global.MapleFlyBrain?.SOURCE?.commit ?? null,
       notes:
-        "SENSORY OFF sets all external sensory drive to zero. Same seed is reused within each ON/OFF pair. Trial length is fixed by brain steps (50 Hz), not wall-clock time.",
+        "SENSORY OFF sets all external sensory drive to zero. Same seed is reused within each ON/OFF pair. Trial length is fixed by brain steps (50 Hz), not wall-clock time. KO targets respawn after 700ms at a deterministic nearby position; the nth respawn position is identical inside each paired seed.",
     };
 
     ui.start.disabled = true;
