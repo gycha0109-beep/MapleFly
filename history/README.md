@@ -15,8 +15,8 @@
 - [development_v2.md](./development_v2.md)  
   2층을 잠시 제거하고 SENSORY ON/OFF paired 대조실험 macro와 logger를 만든 개발 기록
 
-- `result_v2.md`  
-  아직 미작성. 자동 대조실험 실제 실행 후 결과를 기록한다.
+- [result_v2.md](./result_v2.md)  
+  180초 × 3 paired headless SENSORY ON/OFF 대조실험 결과와 해석
 
 ## 파일명 규칙
 

@@ -64,6 +64,7 @@ jump count, hit rate, and brain runtime telemetry.
 - `history/development_v1.md` — v1 implementation history
 - `history/result_v1.md` — v1 observed result
 - `history/development_v2.md` — v2 A/B macro/logger design
+- `history/result_v2.md` — v2 180s × 3 paired headless result
 - `THIRD_PARTY_NOTICES.md` — upstream attribution
 
 No claim is made that the fly understands MapleStory.
