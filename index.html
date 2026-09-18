@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MapleFly Test Map v1</title>
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">MAPLEFLY</p>
+        <h1>Test Map v1</h1>
+      </div>
+      <div class="controls" aria-label="debug controls">
+        <span>A/D 또는 ←/→ 이동</span>
+        <span>W/S 또는 ↑/↓ 사다리</span>
+        <span>Space 점프</span>
+        <span>R 리셋</span>
+      </div>
+    </header>
+
+    <section class="game-frame">
+      <canvas
+        id="game"
+        width="1000"
+        height="600"
+        aria-label="MapleFly simplified test map"
+      ></canvas>
+      <div class="statusbar">
+        <span id="position">x 0 · y 0</span>
+        <span id="state">GROUND</span>
+      </div>
+    </section>
+
+    <p class="note">
+      현재 단계는 맵/이동 검증용입니다. 초파리 connectome, 전투, AI는 아직 연결하지 않습니다.
+    </p>
+  </main>
+
+  <script src="./src/game.js"></script>
+</body>
+</html>
