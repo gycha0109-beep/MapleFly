@@ -4,6 +4,7 @@
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
   const positionEl = document.getElementById("position");
+  const combatEl = document.getElementById("combat");
   const stateEl = document.getElementById("state");
 
   const WORLD = Object.freeze({
@@ -14,6 +15,13 @@
     moveSpeed: 280,
     jumpVelocity: 600,
     climbSpeed: 185,
+  });
+
+  const COMBAT = Object.freeze({
+    attackDamage: 10,
+    attackRange: 76,
+    attackCooldown: 0.32,
+    attackDuration: 0.16,
   });
 
   const platforms = Object.freeze([
@@ -40,14 +48,26 @@
     grounded: true,
     climbing: false,
     facing: 1,
+    attackCooldownTimer: 0,
+    attackTimer: 0,
+    hits: 0,
+    kills: 0,
   };
 
-  const dummies = Object.freeze([
-    { x: 290, y: 210, surface: "upper" },
-    { x: 785, y: 210, surface: "upper" },
-    { x: 850, y: WORLD.groundY, surface: "ground" },
+  const mushroomDefs = Object.freeze([
+    { id: "M-01", x: 290, baselineY: 210, maxHp: 30 },
+    { id: "M-02", x: 785, baselineY: 210, maxHp: 30 },
+    { id: "M-03", x: 850, baselineY: WORLD.groundY, maxHp: 30 },
   ]);
 
+  const mushrooms = mushroomDefs.map((definition) => ({
+    ...definition,
+    hp: definition.maxHp,
+    alive: true,
+    hitFlashTimer: 0,
+  }));
+
+  const damagePopups = [];
   const keys = new Set();
 
   const blockScrollKeys = new Set([
@@ -65,12 +85,16 @@
 
     keys.add(event.code);
 
-    if (event.code === "KeyR") {
-      resetPlayer();
+    if (event.code === "KeyR" && !event.repeat) {
+      resetExperiment();
     }
 
     if (event.code === "Space" && !event.repeat) {
       tryJump();
+    }
+
+    if (event.code === "KeyF" && !event.repeat) {
+      tryAttack();
     }
   });
 
@@ -83,7 +107,7 @@
     player.vx = 0;
   });
 
-  function resetPlayer() {
+  function resetExperiment() {
     player.x = spawn.x;
     player.y = spawn.y;
     player.vx = 0;
@@ -91,6 +115,20 @@
     player.grounded = true;
     player.climbing = false;
     player.facing = 1;
+    player.attackCooldownTimer = 0;
+    player.attackTimer = 0;
+    player.hits = 0;
+    player.kills = 0;
+
+    for (let index = 0; index < mushrooms.length; index += 1) {
+      const definition = mushroomDefs[index];
+      const mushroom = mushrooms[index];
+      mushroom.hp = definition.maxHp;
+      mushroom.alive = true;
+      mushroom.hitFlashTimer = 0;
+    }
+
+    damagePopups.length = 0;
   }
 
   function tryJump() {
@@ -100,6 +138,80 @@
 
     player.vy = -WORLD.jumpVelocity;
     player.grounded = false;
+  }
+
+  function tryAttack() {
+    if (player.climbing || player.attackCooldownTimer > 0) {
+      return;
+    }
+
+    player.attackCooldownTimer = COMBAT.attackCooldown;
+    player.attackTimer = COMBAT.attackDuration;
+
+    const hitbox = getPlayerAttackHitbox();
+
+    for (const mushroom of mushrooms) {
+      if (!mushroom.alive) {
+        continue;
+      }
+
+      const mushroomHitbox = getMushroomHitbox(mushroom);
+
+      if (!rectanglesOverlap(hitbox, mushroomHitbox)) {
+        continue;
+      }
+
+      mushroom.hp = Math.max(0, mushroom.hp - COMBAT.attackDamage);
+      mushroom.hitFlashTimer = 0.14;
+      player.hits += 1;
+
+      damagePopups.push({
+        x: mushroom.x,
+        y: mushroom.baselineY - 72,
+        value: COMBAT.attackDamage,
+        life: 0.55,
+        maxLife: 0.55,
+      });
+
+      if (mushroom.hp === 0) {
+        mushroom.alive = false;
+        player.kills += 1;
+      }
+    }
+  }
+
+  function getPlayerAttackHitbox() {
+    const width = COMBAT.attackRange;
+    const height = player.height - 8;
+    const x =
+      player.facing > 0
+        ? player.x + player.width - 2
+        : player.x - width + 2;
+
+    return {
+      x,
+      y: player.y + 4,
+      width,
+      height,
+    };
+  }
+
+  function getMushroomHitbox(mushroom) {
+    return {
+      x: mushroom.x - 28,
+      y: mushroom.baselineY - 62,
+      width: 56,
+      height: 62,
+    };
+  }
+
+  function rectanglesOverlap(a, b) {
+    return (
+      a.x < b.x + b.width &&
+      a.x + a.width > b.x &&
+      a.y < b.y + b.height &&
+      a.y + a.height > b.y
+    );
   }
 
   function isPressed(...codes) {
@@ -140,8 +252,7 @@
       player.climbing = true;
       player.grounded = false;
       player.vy = 0;
-      player.x =
-        ladder.x + ladder.width / 2 - player.width / 2;
+      player.x = ladder.x + ladder.width / 2 - player.width / 2;
     }
 
     if (player.climbing) {
@@ -195,10 +306,33 @@
     );
 
     if (player.y > WORLD.height + 100) {
-      resetPlayer();
+      resetExperiment();
     }
 
+    updateCombat(dt);
     updateHud();
+  }
+
+  function updateCombat(dt) {
+    player.attackCooldownTimer = Math.max(
+      0,
+      player.attackCooldownTimer - dt,
+    );
+    player.attackTimer = Math.max(0, player.attackTimer - dt);
+
+    for (const mushroom of mushrooms) {
+      mushroom.hitFlashTimer = Math.max(0, mushroom.hitFlashTimer - dt);
+    }
+
+    for (let index = damagePopups.length - 1; index >= 0; index -= 1) {
+      const popup = damagePopups[index];
+      popup.life -= dt;
+      popup.y -= 34 * dt;
+
+      if (popup.life <= 0) {
+        damagePopups.splice(index, 1);
+      }
+    }
   }
 
   function resolvePlatformLandings(previousBottom) {
@@ -236,6 +370,9 @@
     positionEl.textContent =
       `x ${Math.round(player.x)} · y ${Math.round(player.y)}`;
 
+    combatEl.textContent =
+      `ATK ${COMBAT.attackDamage} · HITS ${player.hits} · KILLS ${player.kills}`;
+
     if (player.climbing) {
       stateEl.textContent = "LADDER";
     } else if (!player.grounded) {
@@ -253,8 +390,10 @@
     drawPlatforms();
     drawLadder();
     drawGapHint();
-    drawDummies();
+    drawMushrooms();
+    drawAttackEffect();
     drawPlayer();
+    drawDamagePopups();
   }
 
   function drawBackground() {
@@ -306,12 +445,7 @@
   function drawPlatforms() {
     for (const platform of platforms) {
       ctx.fillStyle = "#78b95c";
-      ctx.fillRect(
-        platform.x,
-        platform.y,
-        platform.width,
-        12,
-      );
+      ctx.fillRect(platform.x, platform.y, platform.width, 12);
 
       ctx.fillStyle = "#9a704a";
       ctx.fillRect(
@@ -381,23 +515,26 @@
     ctx.restore();
   }
 
-  function drawDummies() {
-    for (const dummy of dummies) {
-      const baseline =
-        dummy.surface === "upper"
-          ? dummy.y
-          : WORLD.groundY;
-
-      drawMushroom(dummy.x, baseline);
+  function drawMushrooms() {
+    for (const mushroom of mushrooms) {
+      if (mushroom.alive) {
+        drawMushroom(mushroom);
+        drawHpBar(mushroom);
+      } else {
+        drawDefeatedMarker(mushroom);
+      }
     }
   }
 
-  function drawMushroom(centerX, baselineY) {
+  function drawMushroom(mushroom) {
+    const centerX = mushroom.x;
+    const baselineY = mushroom.baselineY;
     const capY = baselineY - 62;
 
     ctx.save();
 
-    ctx.fillStyle = "#d9655d";
+    ctx.fillStyle =
+      mushroom.hitFlashTimer > 0 ? "#fff5f2" : "#d9655d";
     ctx.beginPath();
     ctx.arc(centerX, capY + 19, 32, Math.PI, 0);
     ctx.quadraticCurveTo(centerX + 32, capY + 34, centerX + 25, capY + 38);
@@ -406,7 +543,8 @@
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = "#fff4dd";
+    ctx.fillStyle =
+      mushroom.hitFlashTimer > 0 ? "#ffffff" : "#fff4dd";
     ctx.beginPath();
     ctx.roundRect(centerX - 18, baselineY - 32, 36, 32, 10);
     ctx.fill();
@@ -430,6 +568,95 @@
     ctx.fill();
 
     ctx.restore();
+  }
+
+  function drawHpBar(mushroom) {
+    const width = 70;
+    const height = 8;
+    const x = mushroom.x - width / 2;
+    const y = mushroom.baselineY - 86;
+    const ratio = mushroom.hp / mushroom.maxHp;
+
+    ctx.save();
+
+    ctx.fillStyle = "rgba(24, 31, 38, 0.75)";
+    ctx.fillRect(x - 1, y - 1, width + 2, height + 2);
+
+    ctx.fillStyle = "#dfe5e9";
+    ctx.fillRect(x, y, width, height);
+
+    ctx.fillStyle = ratio > 0.34 ? "#57ad63" : "#d85f55";
+    ctx.fillRect(x, y, width * ratio, height);
+
+    ctx.fillStyle = "#33404b";
+    ctx.font = "700 10px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      `${mushroom.id}  HP ${mushroom.hp}/${mushroom.maxHp}`,
+      mushroom.x,
+      y - 6,
+    );
+
+    ctx.restore();
+  }
+
+  function drawDefeatedMarker(mushroom) {
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = "#687887";
+    ctx.font = "800 13px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("KO", mushroom.x, mushroom.baselineY - 18);
+    ctx.restore();
+  }
+
+  function drawAttackEffect() {
+    if (player.attackTimer <= 0) {
+      return;
+    }
+
+    const progress =
+      1 - player.attackTimer / COMBAT.attackDuration;
+    const centerX = player.x + player.width / 2;
+    const centerY = player.y + player.height / 2;
+    const direction = player.facing;
+    const reach = 30 + 40 * progress;
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 176, 54, 0.92)";
+    ctx.lineWidth = 7;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(
+      centerX + direction * 10,
+      centerY - 17,
+    );
+    ctx.quadraticCurveTo(
+      centerX + direction * reach,
+      centerY - 8,
+      centerX + direction * (reach + 8),
+      centerY + 16,
+    );
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255, 246, 211, 0.95)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawDamagePopups() {
+    for (const popup of damagePopups) {
+      const alpha = Math.max(0, popup.life / popup.maxLife);
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "#c4473d";
+      ctx.font = "900 22px Inter, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`-${popup.value}`, popup.x, popup.y);
+      ctx.restore();
+    }
   }
 
   function drawPlayer() {
@@ -481,6 +708,6 @@
     requestAnimationFrame(frame);
   }
 
-  resetPlayer();
+  resetExperiment();
   requestAnimationFrame(frame);
 })();

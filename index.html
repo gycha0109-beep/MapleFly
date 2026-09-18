@@ -17,7 +17,8 @@
         <span>A/D 또는 ←/→ 이동</span>
         <span>W/S 또는 ↑/↓ 사다리</span>
         <span>Space 점프</span>
-        <span>R 리셋</span>
+        <span>F 공격</span>
+        <span>R 전체 리셋</span>
       </div>
     </header>
 
@@ -30,12 +31,14 @@
       ></canvas>
       <div class="statusbar">
         <span id="position">x 0 · y 0</span>
+        <span id="combat">ATK 10 · HITS 0 · KILLS 0</span>
         <span id="state">GROUND</span>
       </div>
     </section>
 
     <p class="note">
-      현재 단계는 맵/이동 검증용입니다. 초파리 connectome, 전투, AI는 아직 연결하지 않습니다.
+      전투 베이스라인: 버섯은 개체별 HP를 가지며, 현재 플레이어 공격력은 10입니다.
+      초파리 connectome과 몬스터 AI는 아직 연결하지 않습니다.
     </p>
   </main>
 
