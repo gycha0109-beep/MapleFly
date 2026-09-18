@@ -67,3 +67,45 @@ jump count, hit rate, and brain runtime telemetry.
 - `THIRD_PARTY_NOTICES.md` — upstream attribution
 
 No claim is made that the fly understands MapleStory.
+
+
+## Headless experiment runner
+
+브라우저 화면을 켜 두지 않고 실험하려면 Node.js headless runner를 사용한다.
+
+### 로컬 PC
+
+Node.js 24+:
+
+```powershell
+npm run experiment:v2 -- --seconds 180 --pairs 3 --seed 64
+```
+
+결과:
+
+```text
+results/experiment-v2/
+├─ experiment_v2.json
+├─ experiment_v2.csv
+└─ summary.md
+```
+
+브라우저는 필요 없지만 로컬 실행 중에는 터미널/PC가 켜져 있어야 한다.
+
+### GitHub Actions
+
+PC까지 꺼도 되는 방식:
+
+1. repository의 **Actions**
+2. **Run MapleFly Experiment v2**
+3. **Run workflow**
+4. seconds / pairs / seed 입력
+5. 실행 후 artifact 다운로드
+
+Workflow:
+
+```text
+.github/workflows/experiment-v2.yml
+```
+
+Connectome asset은 pinned commit 기준으로 GitHub Actions cache에 저장된다.

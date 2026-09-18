@@ -20,6 +20,8 @@
     climbMarginHz: 0.8,
     jumpCooldownMs: 750,
     attackCooldownMs: 420,
+    sensoryUpdateSteps: 2,
+    brainStepMs: 20,
   });
 
   function clamp(value, min, max) {
@@ -43,7 +45,7 @@
       this.intent = this.emptyIntent();
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
-      this.lastObservationAt = 0;
+      this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
       this.resetSerial = 0;
@@ -183,7 +185,7 @@
         this.intent = this.emptyIntent();
         this.nextJumpAt = 0;
         this.nextAttackAt = 0;
-        this.lastObservationAt = 0;
+        this.lastObservationStep = -Infinity;
         this.lastTargetId = null;
         this.lastTargetDistance = null;
         this.renderTelemetry();
@@ -260,7 +262,7 @@
     async reset(seed = 64) {
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
-      this.lastObservationAt = 0;
+      this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
       this.intent = this.emptyIntent();
@@ -297,12 +299,16 @@
         return;
       }
 
-      const now = performance.now();
-      if (now - this.lastObservationAt < 45) {
+      const step = this.telemetry.steps ?? 0;
+
+      if (
+        step - this.lastObservationStep <
+        DECODER.sensoryUpdateSteps
+      ) {
         return;
       }
 
-      this.lastObservationAt = now;
+      this.lastObservationStep = step;
       const drive =
         this.enabled && this.sensoryEnabled
           ? this.encodeObservation(observation)
@@ -403,7 +409,8 @@
     }
 
     decode() {
-      const now = performance.now();
+      const now =
+        (this.telemetry.steps ?? 0) * DECODER.brainStepMs;
       const steerL = this.rate("DNa02 L");
       const steerR = this.rate("DNa02 R");
       const strongestSteer = Math.max(steerL, steerR);

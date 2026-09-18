@@ -1,0 +1,12 @@
+{
+  "name": "maplefly",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "experiment:v2": "node scripts/experiment-v2-headless.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

@@ -1,0 +1,69 @@
+name: Run MapleFly Experiment v2
+
+on:
+  workflow_dispatch:
+    inputs:
+      seconds:
+        description: "Simulated seconds per trial"
+        required: true
+        default: "180"
+      pairs:
+        description: "SENSORY ON/OFF pairs"
+        required: true
+        default: "3"
+      seed:
+        description: "Base seed"
+        required: true
+        default: "64"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v2.yml"
+      - "scripts/experiment-v2-headless.mjs"
+      - "src/headless/**"
+      - "package.json"
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      EXP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.seconds || '2' }}
+      EXP_PAIRS: ${{ github.event_name == 'workflow_dispatch' && inputs.pairs || '1' }}
+      EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '64' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run headless experiment
+        run: >
+          npm run experiment:v2 --
+          --seconds "$EXP_SECONDS"
+          --pairs "$EXP_PAIRS"
+          --seed "$EXP_SEED"
+          --out results/experiment-v2
+          --cache .cache/maplefly-connectome
+
+      - name: Upload experiment results
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-experiment-v2-${{ github.run_id }}
+          path: results/experiment-v2
+          if-no-files-found: error
+          retention-days: 30

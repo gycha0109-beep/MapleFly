@@ -293,3 +293,104 @@ spawn 위치는 `seed + spawnIndex`의 deterministic hash로 계산한다.
 
 > 초파리가 한쪽에 고정된 대상을 우연히 때리는 것이 아니라,
 > 계속 바뀌는 위치의 target에 대해 SENSORY ON일 때 접근·적중 성능이 달라지는가?
+
+
+---
+
+## 11. 브라우저 종속성 제거 — Headless Runner
+
+실제로 180초 이상 실험을 반복해 보니 브라우저 화면을 계속 띄워둬야 하는 구조가 실험 운영에 적합하지 않았다.
+
+백그라운드 탭에서는 브라우저가 `requestAnimationFrame`과 timer를 throttling할 수 있으므로,
+사이트를 최소화하거나 다른 작업을 하는 순간 실험 조건이 달라질 수 있다.
+
+따라서 v2에 **브라우저와 완전히 분리된 Node.js Headless Runner**를 추가했다.
+
+### 구조
+
+```text
+src/headless/connectome-runtime.mjs
+  ├─ pinned MaleCNS 다운로드/캐시
+  ├─ FLYM / FLYW parser
+  ├─ LIF connectome runtime
+  └─ output spike-rate tracker
+
+src/headless/experiment-v2-core.mjs
+  ├─ sensory encoder
+  ├─ motor decoder
+  ├─ flat arena fixed-step simulator
+  ├─ deterministic random spawn
+  └─ trial metrics
+
+scripts/experiment-v2-headless.mjs
+  ├─ CLI
+  ├─ paired ON/OFF scheduler
+  ├─ CSV / JSON
+  └─ 한국어 summary.md
+```
+
+브라우저 renderer나 DOM은 headless 실행 경로에 전혀 필요하지 않다.
+
+### fixed-step
+
+Headless 실험은 다음 기준으로만 진행한다.
+
+```text
+brain step = 20 ms
+game step  = 20 ms
+decoder    = 2 brain steps마다
+sensory    = 2 brain steps마다
+```
+
+따라서 컴퓨터가 빠르면 실제 벽시계 시간보다 빨리 계산될 수 있고,
+느리면 더 오래 걸릴 수 있지만 **180 simulated seconds는 항상 같은 step 수**다.
+
+### 브라우저 쪽도 simulation time으로 정렬
+
+기존 browser controller의 jump / attack cooldown은 `performance.now()`를 기준으로 했다.
+이를 brain step × 20ms 기준으로 바꿨다.
+
+sensory update도 wall-clock 45ms 대신 brain step 수를 기준으로 전송한다.
+
+이 변경의 목적은 화면 실험과 headless 실험이 가능한 한 같은 제어 계약을 사용하게 만드는 것이다.
+
+### GitHub Actions
+
+`.github/workflows/experiment-v2.yml`을 추가했다.
+
+Actions 화면에서 다음 세 값만 입력한다.
+
+- seconds
+- pairs
+- seed
+
+그 뒤 브라우저를 닫거나 PC를 꺼도 GitHub hosted runner가 실험을 끝까지 수행한다.
+
+결과 artifact:
+
+```text
+experiment_v2.json
+experiment_v2.csv
+summary.md
+```
+
+MaleCNS 약 58MB asset은 commit 기준 cache key로 캐시한다.
+
+### 자동 smoke test
+
+headless 코드나 workflow가 main에 변경되면 push 이벤트에서
+
+```text
+2 simulated seconds × 1 pair
+```
+
+의 짧은 smoke experiment를 자동 실행한다.
+
+이 smoke가 성공해야 최소한 다음을 확인할 수 있다.
+
+- Node에서 connectome 다운로드/캐시 가능
+- binary parse 성공
+- 실제 connectome step 실행
+- ON/OFF 2개 trial 종료
+- 결과 파일 생성
+- artifact 업로드 성공

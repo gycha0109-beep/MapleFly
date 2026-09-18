@@ -452,27 +452,29 @@
     const moved = Math.hypot(dx, dy);
     trial.distance += moved;
 
-    if (Math.abs(dx) > 0.0001) {
-      const directionToTarget = Math.sign(
-        mushroom.x - (previousX + player.width / 2),
+    if (mushroom.alive) {
+      if (Math.abs(dx) > 0.0001) {
+        const directionToTarget = Math.sign(
+          mushroom.x - (previousX + player.width / 2),
+        );
+
+        if (Math.sign(dx) === directionToTarget) {
+          trial.towardDistance += Math.abs(dx);
+        } else {
+          trial.awayDistance += Math.abs(dx);
+        }
+      }
+
+      const distance = targetDistance();
+      trial.minTargetDistance = Math.min(
+        trial.minTargetDistance,
+        distance,
       );
 
-      if (Math.sign(dx) === directionToTarget) {
-        trial.towardDistance += Math.abs(dx);
-      } else {
-        trial.awayDistance += Math.abs(dx);
+      const meleeProximity = COMBAT.attackRange + 35;
+      if (distance <= meleeProximity) {
+        trial.timeWithinAttackRangeMs += dt * 1000;
       }
-    }
-
-    const distance = targetDistance();
-    trial.minTargetDistance = Math.min(
-      trial.minTargetDistance,
-      distance,
-    );
-
-    const meleeProximity = COMBAT.attackRange + 35;
-    if (distance <= meleeProximity && mushroom.alive) {
-      trial.timeWithinAttackRangeMs += dt * 1000;
     }
 
     trial.lastX = player.x;
