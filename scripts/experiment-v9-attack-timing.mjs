@@ -262,12 +262,10 @@ function makeFeature({
 
   const norm = Math.sqrt(normSquared);
 
-  if (norm > 1e-9) {
-    for (let index = 0; index < dnCount; index += 1) {
-      feature[index] /= norm;
-    }
-  }
-
+  // v9 ATTACK timing must retain neural response magnitude.
+  // L2-normalizing the DN vector is appropriate for a direction-only
+  // skill like LEFT/RIGHT, but it erases a major candidate signal for
+  // target proximity. Values are already scaled by the 50 Hz ceiling.
   feature[dnCount] = 1;
 
   return { feature, norm };
@@ -926,7 +924,7 @@ async function main() {
     reward:
       "ATTACK hit=+1; ATTACK whiff=-1; WAIT=0",
     leakageGuard:
-      "policy receives only normalized DN cue-minus-baseline activity + bias; distance/side/hittable are not features",
+      "policy receives only DN cue-minus-baseline firing-rate deltas scaled by 50Hz + bias; distance/side/hittable are not features",
     gate:
       "ON accuracy>=75%; ON-OFF>=15pp; hittable attack>=70%; unhittable attack<=30%; attack precision>=70%; every run ON>=70%",
   };

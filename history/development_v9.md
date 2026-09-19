@@ -250,3 +250,72 @@ unconditional WAIT도 0이다.
 
 사전 gate와 evaluation distance는 변경하지 않는다.
 결과를 본 뒤 gate를 완화하지 않는다.
+
+
+---
+
+## Phase B push 결과 — 방향용 normalization이 거리 정보를 지운 문제
+
+balanced reward 수정 run:
+
+~~~text
+run      35444727950
+commit   ff5295e94546642a00eae41413e76b602bbc31d4
+artifact 10585077493
+~~~
+
+결과:
+
+~~~text
+run 1 VISUAL_ON 65.3%
+run 2 VISUAL_ON 50.0%
+
+mean ON            57.6%
+mean OFF           50.0%
+near ATTACK        91.7%
+far ATTACK         76.4%
+precision          55.6%
+
+V9-GATE FAIL
+~~~
+
+reward economics 오류는 해소됐지만
+두 번째 run은 다시 unconditional ATTACK 쪽으로 무너졌다.
+
+### feature preprocessing 재검토
+
+v7 LEFT/RIGHT에서는 target이 어느 쪽인가를 구분해야 했기 때문에
+DN delta vector를 L2 normalize했다.
+
+~~~text
+normalized(DN cue - DN baseline)
+~~~
+
+하지만 ATTACK timing의 핵심 정보는
+"패턴 방향"뿐 아니라 **시각 자극에 따른 neural response의 크기**일 수 있다.
+
+현재 visual encoder 자체도 target closeness에 따라
+LC10a / LPLC1 / LPLC2 / LC4 drive 크기가 달라진다.
+
+그런데 L2 normalization은 vector 전체 크기를 항상 1로 만들어
+이 proximity-related neural magnitude를 제거한다.
+
+### Phase C 변경
+
+정답 distance를 feature로 넣지 않는다.
+
+대신 이미 계산하던 full MaleCNS DN response를:
+
+~~~text
+(DN cue Hz - baseline Hz) / 50
+~~~
+
+그대로 사용한다.
+
+50 Hz는 현재 simulation ceiling의 scale일 뿐
+target distance 정보가 아니다.
+
+즉 추가되는 정보는 없다.
+**기존 neural signal에서 버리던 amplitude를 더 이상 버리지 않는 것**뿐이다.
+
+reward / train distance / held-out eval distance / 사전 gate는 그대로 유지한다.
