@@ -1,0 +1,72 @@
+name: Verify MapleFly v8 Live Skill
+
+on:
+  workflow_dispatch:
+    inputs:
+      seconds:
+        description: "Simulated seconds per trial"
+        required: true
+        default: "90"
+      pairs:
+        description: "Paired VISUAL_ON/OFF trials"
+        required: true
+        default: "4"
+      seed:
+        description: "Base seed"
+        required: true
+        default: "64"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v8-live-skill.yml"
+      - "scripts/experiment-v8-live-skill.mjs"
+      - "src/brain/fly-skill-v7.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      EXP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.seconds || '60' }}
+      EXP_PAIRS: ${{ github.event_name == 'workflow_dispatch' && inputs.pairs || '3' }}
+      EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '64' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/experiment-v8-live-skill.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Verify continuous browser-style skill
+        run: >
+          node scripts/experiment-v8-live-skill.mjs
+          --seconds "$EXP_SECONDS"
+          --pairs "$EXP_PAIRS"
+          --seed "$EXP_SEED"
+          --out results/experiment-v8-live
+          --cache .cache/maplefly-connectome
+
+      - name: Upload result
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v8-live-${{ github.run_id }}
+          path: results/experiment-v8-live
+          if-no-files-found: error
+          retention-days: 30

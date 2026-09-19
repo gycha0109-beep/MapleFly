@@ -111,3 +111,38 @@ Fly #001 LEFT/RIGHT action을 IDLE로 막는다.
 - GitHub Pages deploy
 
 실제 브라우저에서의 장시간 플레이 성능은 별도 result에서 기록한다.
+
+
+## continuous-live headless gate
+
+브라우저 실제 구현은 최초 baseline 하나를 저장한 뒤
+target visual input을 계속 받으며 약 0.52초마다 새 LEFT/RIGHT를 고른다.
+
+이 동작은 v7의 독립 episode 평가와 다르므로 별도 gate를 둔다.
+
+headless live 모델:
+
+~~~text
+1D flat ground
+실제 MapleFly visual encoder 식
+실제 280 px/s 좌우 이동
+동일 Fly #001 top64 policy
+0.52 s settle
+0.52 s baseline
+이후 continuous cue / 0.52 s decision window
+target 도달 시 deterministic respawn
+~~~
+
+paired VISUAL_ON/OFF를 같은 seed로 실행한다.
+
+사전 PASS:
+
+~~~text
+mean VISUAL_ON toward >= 70%
+mean ON-OFF             >= 15%p
+모든 VISUAL_ON          >= 60%
+mean VISUAL_ON reaches  >= 1
+~~~
+
+이 gate가 실패하면 Pages가 떠 있어도
+'실제 맵에서 학습 skill이 검증됐다'고 기록하지 않는다.
