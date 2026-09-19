@@ -239,3 +239,28 @@ With the taste cue ON, every potion use happened within one second of a hit and 
 The current 1.6 Hz drink proxy is therefore not selective enough: spontaneous head-motor activity also empties the inventory when the taste cue is OFF.
 
 Interpretation: `history/result_v5.md`
+
+
+## Experiment v6 — learning readiness
+
+Full MaleCNS 내부에 곧바로 plasticity를 넣기 전에
+KC sparse code와 dopamine teacher baseline을 확인했다.
+
+Phase A에서 원본 brain은 rest에서 KC 100% active,
+PAM 50 Hz였고 vinegar/cVA KC signature Jaccard도 1.00이었다.
+
+정적 KC inhibition sweep은 `-0.30` 한 지점에서만 Gate 1/2를 통과했다.
+인접한 안정 구간이 없어 production 값으로 채택하지 않았다.
+
+Phase B에서는 pinned connectome의 APL 2개 뉴런 outgoing edge만 강화했지만
+gain 1~16 어디에서도 최종 readiness gate를 통과하지 못했다.
+
+~~~text
+internal KC -> MBON plasticity
+NOT READY
+~~~
+
+그래서 다음 단계는 connectome을 frozen neural reservoir로 유지하고,
+descending-neuron state에서 게임 action을 배우는 trainable motor readout으로 진행한다.
+
+Details: `history/result_v6.md`
