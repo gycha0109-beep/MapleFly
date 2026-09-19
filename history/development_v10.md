@@ -468,3 +468,128 @@ movement reach rate >= 85%
 
 이 값이 FAIL이면 ATTACK learner를 탓하기 전에
 Skill 01 접근 경로부터 다시 본다.
+
+
+---
+
+## Phase B 실제 결과 — 이동은 통과, ATTACK Q-policy는 아직 불안정
+
+GitHub Actions:
+
+~~~text
+run      35448647479
+commit   bd092fa9c4041b1887761f689ea8981b9c8860d9
+artifact 10585602299
+
+digest
+sha256:d5a2c355a9c4932c94cf6cb36f7f7cce7a443130b94c514a554b8a12fae58bf8
+~~~
+
+Phase B는 다음을 실제로 적용했다.
+
+~~~text
+4-stage distance curriculum
+linear Q-learning
+backward replay
+100 ms ATTACK decision window
+movement reach diagnostic
+FULL / NEURAL_OFF / TEMPORAL_OFF
+~~~
+
+### Run 1
+
+~~~text
+movement reach   95.8%
+
+FULL hit         45.8%
+NEURAL_OFF hit    0.0%
+TEMPORAL_OFF     66.7%
+~~~
+
+FULL에서는 실제 neural input이 없을 때보다 공격 성공이 크게 높았다.
+
+하지만 temporal feature를 제거한 TEMPORAL_OFF가
+오히려 FULL보다 높았다.
+
+즉 현재의 fast/slow temporal channel은
+도움을 주기보다 noise / optimization burden을 추가했을 가능성이 있다.
+
+### Run 2
+
+~~~text
+movement reach  100.0%
+
+FULL hit          0.0%
+NEURAL_OFF        0.0%
+TEMPORAL_OFF      0.0%
+~~~
+
+이 run은 greedy evaluation에서 다시 WAIT 쪽으로 붕괴했다.
+
+따라서 같은 architecture가 seed가 달라져도 안정적으로 학습된다고 볼 수 없다.
+
+### 평균
+
+~~~text
+movement reach        97.9%
+
+FULL hit              22.9%
+NEURAL_OFF hit         0.0%
+FULL - NEURAL_OFF    +22.9%p
+
+TEMPORAL_OFF hit      33.3%
+FULL - TEMPORAL_OFF  -10.4%p
+
+FULL whiff            27.1%
+FULL timeout          50.0%
+
+V10-GATE
+FAIL
+~~~
+
+### 해석
+
+가장 중요한 분리는 성공했다.
+
+~~~text
+Skill 01 movement reach
+97.9%
+~~~
+
+즉 이번 실패의 주원인은
+"버섯까지 못 가서 공격을 못 했다"가 아니다.
+
+현재 병목은 ATTACK policy다.
+
+또한:
+
+~~~text
+NEURAL_OFF 0%
+TEMPORAL_OFF > FULL
+~~~
+
+이므로 다음 단계에서 temporal feature를 무조건 늘리는 방향은 중단한다.
+
+현재 evidence는 오히려 다음을 지지한다.
+
+> **full temporal stack보다 현재 DN response 하나를 안정적으로 읽는 쪽을 먼저 해결해야 한다.**
+
+### 다음 수정 원칙
+
+다음 iteration에서는 gate를 낮추지 않는다.
+
+먼저:
+
+~~~text
+1. current DN channel만 사용
+2. feature dimension / scale 안정화
+3. WAIT collapse 방지
+4. independent seed consistency 확인
+5. 그 뒤 temporal trace를 하나씩 다시 추가
+~~~
+
+순서로 간다.
+
+ATTACK distance / hit 가능 여부 / 정답 timing은 계속 policy input에 넣지 않는다.
+
+Fly #001 Skill 02는 여전히 승격하지 않는다.
