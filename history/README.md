@@ -82,3 +82,12 @@ result_v2.md
 
 - [result_v7.md](./result_v7.md)  
   reward-only LEFT/RIGHT motor readout 실제 학습 결과. VISUAL_ON 100%, VISUAL_OFF 50%, 사전 gate PASS
+
+
+## v8
+
+- [development_v8.md](./development_v8.md)  
+  v7 PASS Fly #001 LEFT/RIGHT skill을 localStorage에 저장하고 실제 브라우저 MaleCNS game loop에 연결
+
+- `result_v8.md`  
+  sparse deploy gate / Pages 배치와 실제 브라우저 runtime 확인 뒤 작성

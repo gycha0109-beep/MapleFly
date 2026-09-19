@@ -17,6 +17,10 @@ on:
       - ".github/workflows/experiment-v7-deploy.yml"
       - "scripts/experiment-v7-deploy-check.mjs"
       - "src/brain/fly-skill-v7.js"
+      - "src/brain/fly-worker.js"
+      - "src/brain/fly-controller.js"
+      - "src/game.js"
+      - "index.html"
       - "src/headless/connectome-runtime.mjs"
 
 permissions:
@@ -43,6 +47,9 @@ jobs:
       - name: Syntax check
         run: |
           node --check src/brain/fly-skill-v7.js
+          node --check src/brain/fly-worker.js
+          node --check src/brain/fly-controller.js
+          node --check src/game.js
           node --check scripts/experiment-v7-deploy-check.mjs
 
       - name: Cache pinned MaleCNS assets

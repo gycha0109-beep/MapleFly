@@ -367,6 +367,9 @@ let drive = {};
 let hz = null;
 let count = null;
 let hits = null;
+let skillSlot = null;
+let skillHits = null;
+let skillSelectedCount = 0;
 let rollingStepMs = 0;
 let loopStarted = false;
 
@@ -384,12 +387,69 @@ function resetRuntime(seed = 64, requestId = null) {
   hz = new Float64Array(outputGroups.length);
   count = new Float64Array(outputGroups.length);
   hits = new Float64Array(outputGroups.length);
+  skillHits?.fill(0);
   rollingStepMs = 0;
 
   self.postMessage({
     type: "reset",
     seed: normalizedSeed,
     requestId,
+  });
+}
+
+function configureSkill(featureIndices, expectedDnCount) {
+  if (!meta) {
+    throw new Error("connectome metadata not ready");
+  }
+
+  const allDn = cells(
+    meta,
+    ["descending_neuron", "descending_neuron_tbc"],
+  );
+
+  if (
+    Number.isInteger(expectedDnCount) &&
+    allDn.length !== expectedDnCount
+  ) {
+    throw new Error(
+      "Fly skill DN contract mismatch: " +
+      allDn.length +
+      " != " +
+      expectedDnCount,
+    );
+  }
+
+  if (
+    !Array.isArray(featureIndices) ||
+    featureIndices.length === 0
+  ) {
+    throw new Error("Fly skill featureIndices missing");
+  }
+
+  skillSlot = new Int16Array(meta.n).fill(-1);
+
+  featureIndices.forEach((relativeIndex, slot) => {
+    if (
+      !Number.isInteger(relativeIndex) ||
+      relativeIndex < 0 ||
+      relativeIndex >= allDn.length
+    ) {
+      throw new Error(
+        "Fly skill feature index out of range: " +
+        relativeIndex,
+      );
+    }
+
+    skillSlot[allDn[relativeIndex]] = slot;
+  });
+
+  skillSelectedCount = featureIndices.length;
+  skillHits = new Uint16Array(skillSelectedCount);
+
+  self.postMessage({
+    type: "skill-ready",
+    dnCount: allDn.length,
+    selectedCount: skillSelectedCount,
   });
 }
 
@@ -420,10 +480,18 @@ function startLoop() {
     count.fill(0);
 
     for (let index = 0; index < brain.firedCount; index += 1) {
-      const group = groupOf[brain.fired[index]];
+      const neuron = brain.fired[index];
+      const group = groupOf[neuron];
 
       if (group >= 0) {
         count[group] += 1;
+      }
+
+      if (skillSlot && skillHits) {
+        const skillIndex = skillSlot[neuron];
+        if (skillIndex >= 0) {
+          skillHits[skillIndex] += 1;
+        }
       }
     }
 
@@ -448,8 +516,12 @@ function startLoop() {
         fired: brain.firedCount,
         ms: rollingStepMs,
         steps: brain.steps,
+        skillSpikes: skillHits
+          ? Array.from(skillHits)
+          : null,
       });
       hits.fill(0);
+      skillHits?.fill(0);
     }
 
     setTimeout(tick, Math.max(0, meta.params.dt * 1000 - took));
@@ -528,6 +600,24 @@ self.onmessage = (event) => {
         text: error instanceof Error ? error.message : String(error),
       });
     });
+    return;
+  }
+
+  if (message.type === "configure-skill") {
+    try {
+      configureSkill(
+        message.featureIndices,
+        message.expectedDnCount,
+      );
+    } catch (error) {
+      self.postMessage({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      });
+    }
     return;
   }
 

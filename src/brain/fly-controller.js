@@ -27,6 +27,11 @@
     brainStepMs: 20,
   });
 
+  const SKILL_RUNTIME = Object.freeze({
+    stepSeconds: 0.02,
+    windowSteps: 26,
+  });
+
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -61,6 +66,22 @@
         steps: 0,
       };
 
+      this.skillApi = global.MapleFlySkillV7 ?? null;
+      this.skillState =
+        this.skillApi?.loadState?.() ?? null;
+      this.skillConfigured = !this.skillState;
+      this.skillPhase = this.skillState
+        ? "WAITING"
+        : "DISABLED";
+      this.skillPhaseSteps = 0;
+      this.skillLastSteps = 0;
+      this.skillBaselineSpikes = null;
+      this.skillCueSpikes = null;
+      this.skillBaselineHz = null;
+      this.skillAction = "IDLE";
+      this.skillScore = 0;
+      this.skillTargetAvailable = false;
+
       this.elements = {
         status: document.getElementById("brain-status"),
         progress: document.getElementById("brain-progress"),
@@ -78,6 +99,8 @@
         action: document.getElementById("brain-action"),
         source: document.getElementById("brain-source"),
         sensory: document.getElementById("brain-sensory"),
+        skill: document.getElementById("brain-skill"),
+        skillState: document.getElementById("brain-skill-state"),
       };
 
       if (this.elements.source) {
@@ -161,9 +184,56 @@
             Number(message.nnz ?? SOURCE.synapses).toLocaleString();
         }
 
+        if (this.skillState) {
+          this.setProgress(
+            "MaleCNS 준비 완료 · Fly #001 skill 연결 중",
+          );
+          this.worker.postMessage({
+            type: "configure-skill",
+            featureIndices:
+              this.skillState.featureIndices,
+            expectedDnCount:
+              this.skillState.originalFeatureCount,
+          });
+        } else {
+          this.setProgress(
+            "실제 MaleCNS connectome 준비 완료",
+          );
+        }
+
         this.setStatus("READY");
-        this.setProgress("실제 MaleCNS connectome 준비 완료");
         this.options.onReady?.();
+        this.render();
+        return;
+      }
+
+      if (message.type === "skill-ready") {
+        if (!this.skillState) {
+          return;
+        }
+
+        if (
+          message.selectedCount !==
+          this.skillState.sparseFeatureCount
+        ) {
+          this.fail(
+            "Fly #001 skill feature count mismatch",
+          );
+          return;
+        }
+
+        this.skillConfigured = true;
+        this.skillBaselineSpikes =
+          new Float64Array(message.selectedCount);
+        this.skillCueSpikes =
+          new Float64Array(message.selectedCount);
+        this.skillBaselineHz =
+          new Float64Array(message.selectedCount);
+        this.skillPhase = "WAITING";
+
+        this.setProgress(
+          "Fly #001 v7 skill 준비 완료 · 브라우저에 저장됨",
+        );
         this.render();
         return;
       }
@@ -178,6 +248,11 @@
         this.telemetry.fired = message.fired ?? 0;
         this.telemetry.ms = message.ms ?? 0;
         this.telemetry.steps = message.steps ?? 0;
+
+        this.ingestSkillSample(
+          message.skillSpikes ?? null,
+          this.telemetry.steps,
+        );
 
         if (this.enabled) {
           this.decode();
@@ -197,6 +272,7 @@
         this.lastObservationStep = -Infinity;
         this.lastTargetId = null;
         this.lastTargetDistance = null;
+        this.resetSkillRuntime(this.enabled);
         this.renderTelemetry();
 
         const pending = this.pendingResets.get(message.requestId);
@@ -229,7 +305,22 @@
         return;
       }
 
+      if (
+        enabled &&
+        this.skillState &&
+        !this.skillConfigured
+      ) {
+        this.setProgress(
+          "Fly #001 skill 연결을 기다리는 중",
+        );
+        return;
+      }
+
       this.enabled = Boolean(enabled && this.ready);
+
+      if (this.enabled && this.skillState) {
+        this.startSkillCalibration();
+      }
 
       if (!this.enabled) {
         this.intent = this.emptyIntent();
@@ -237,9 +328,16 @@
           type: "input",
           drive: {},
         });
+        this.resetSkillRuntime(false);
       }
 
-      this.setStatus(this.enabled ? "FLY CONTROL" : "READY");
+      this.setStatus(
+        this.enabled
+          ? this.skillState
+            ? "CALIBRATING"
+            : "FLY CONTROL"
+          : "READY",
+      );
       this.options.onModeChange?.(this.enabled);
       this.render();
     }
@@ -277,6 +375,7 @@
       this.lastTargetId = null;
       this.lastTargetDistance = null;
       this.intent = this.emptyIntent();
+      this.resetSkillRuntime(this.enabled);
 
       if (!this.worker || !this.ready) {
         return { seed, skipped: true };
@@ -323,9 +422,25 @@
       this.potionAvailable = Boolean(
         observation?.player?.potionCue,
       );
+      this.skillTargetAvailable = Boolean(
+        (observation?.mushrooms ?? []).some(
+          (mushroom) => mushroom.alive,
+        ),
+      );
+
+      const calibrating =
+        this.enabled &&
+        this.skillState &&
+        this.skillConfigured &&
+        this.skillPhase !== "LIVE";
+
       const drive =
         this.enabled && this.sensoryEnabled
-          ? this.encodeObservation(observation)
+          ? calibrating
+            ? this.encodeSkillBaselineObservation(
+                observation,
+              )
+            : this.encodeObservation(observation)
           : {};
 
       this.worker.postMessage({
@@ -437,6 +552,184 @@
       return drive;
     }
 
+    encodeSkillBaselineObservation(observation) {
+      return {
+        SNta_L: observation.player.grounded ? 0.05 : 0,
+        SNta_R: observation.player.grounded ? 0.05 : 0,
+      };
+    }
+
+    resetSkillRuntime(active = false) {
+      if (!this.skillState) {
+        this.skillPhase = "DISABLED";
+        return;
+      }
+
+      this.skillPhase = active
+        ? "SETTLE"
+        : "WAITING";
+      this.skillPhaseSteps = 0;
+      this.skillLastSteps =
+        this.telemetry.steps ?? 0;
+      this.skillBaselineSpikes?.fill(0);
+      this.skillCueSpikes?.fill(0);
+      this.skillBaselineHz?.fill(0);
+      this.skillAction = "IDLE";
+      this.skillScore = 0;
+    }
+
+    startSkillCalibration() {
+      this.resetSkillRuntime(true);
+      this.setProgress(
+        "Fly #001 calibration · visual OFF baseline 1.04초",
+      );
+    }
+
+    ingestSkillSample(spikes, steps) {
+      if (
+        !this.enabled ||
+        !this.skillState ||
+        !this.skillConfigured ||
+        !Array.isArray(spikes) ||
+        spikes.length !==
+          this.skillState.sparseFeatureCount
+      ) {
+        this.skillLastSteps = steps;
+        return;
+      }
+
+      let deltaSteps = steps - this.skillLastSteps;
+      this.skillLastSteps = steps;
+
+      if (
+        !Number.isFinite(deltaSteps) ||
+        deltaSteps <= 0
+      ) {
+        return;
+      }
+
+      if (this.skillPhase === "SETTLE") {
+        this.skillPhaseSteps += deltaSteps;
+
+        if (
+          this.skillPhaseSteps >=
+          SKILL_RUNTIME.windowSteps
+        ) {
+          this.skillPhase = "BASELINE";
+          this.skillPhaseSteps = 0;
+          this.skillBaselineSpikes.fill(0);
+          this.setProgress(
+            "Fly #001 calibration · baseline 수집 중",
+          );
+        }
+        return;
+      }
+
+      const target =
+        this.skillPhase === "BASELINE"
+          ? this.skillBaselineSpikes
+          : this.skillPhase === "LIVE"
+            ? this.skillCueSpikes
+            : null;
+
+      if (!target) {
+        return;
+      }
+
+      for (
+        let index = 0;
+        index < target.length;
+        index += 1
+      ) {
+        target[index] += spikes[index] ?? 0;
+      }
+
+      this.skillPhaseSteps += deltaSteps;
+
+      if (
+        this.skillPhaseSteps <
+        SKILL_RUNTIME.windowSteps
+      ) {
+        return;
+      }
+
+      const seconds =
+        this.skillPhaseSteps *
+        SKILL_RUNTIME.stepSeconds;
+
+      if (this.skillPhase === "BASELINE") {
+        for (
+          let index = 0;
+          index < this.skillBaselineHz.length;
+          index += 1
+        ) {
+          this.skillBaselineHz[index] =
+            this.skillBaselineSpikes[index] /
+            seconds;
+        }
+
+        this.skillPhase = "LIVE";
+        this.skillPhaseSteps = 0;
+        this.skillCueSpikes.fill(0);
+        this.skillAction = "IDLE";
+        this.setStatus("FLY SKILL");
+        this.setProgress(
+          "Fly #001 LIVE · 학습된 LEFT/RIGHT skill 사용 중",
+        );
+        return;
+      }
+
+      const feature =
+        new Float64Array(target.length);
+      let normSquared = 0;
+
+      for (
+        let index = 0;
+        index < target.length;
+        index += 1
+      ) {
+        const cueHz =
+          target[index] / seconds;
+        const delta =
+          (cueHz -
+            this.skillBaselineHz[index]) /
+          50;
+        feature[index] = delta;
+        normSquared += delta * delta;
+      }
+
+      const norm = Math.sqrt(normSquared);
+
+      if (norm > 1e-9) {
+        for (
+          let index = 0;
+          index < feature.length;
+          index += 1
+        ) {
+          feature[index] /= norm;
+        }
+      }
+
+      if (
+        this.skillTargetAvailable &&
+        norm > 1e-9
+      ) {
+        const decision =
+          this.skillApi.choose(
+            feature,
+            this.skillState,
+          );
+        this.skillAction = decision.action;
+        this.skillScore = decision.leftScore;
+      } else {
+        this.skillAction = "IDLE";
+        this.skillScore = 0;
+      }
+
+      this.skillPhaseSteps = 0;
+      this.skillCueSpikes.fill(0);
+    }
+
     rate(name) {
       return this.rates.get(name) ?? 0;
     }
@@ -452,12 +745,44 @@
       let left = false;
       let right = false;
 
+      if (
+        this.skillState &&
+        this.skillConfigured &&
+        this.skillPhase !== "LIVE"
+      ) {
+        this.intent = {
+          ...this.emptyIntent(),
+          label: "CALIBRATE",
+        };
+        this.options.onDecision?.({
+          ...this.intent,
+          at: now,
+          rates: {
+            skillPhase: this.skillPhase,
+            skillScore: this.skillScore,
+          },
+        });
+        return;
+      }
+
       if (strongestSteer >= DECODER.steerFloorHz) {
         if (steerDifference >= DECODER.steerMarginHz) {
           left = true;
         } else if (steerDifference <= -DECODER.steerMarginHz) {
           right = true;
         }
+      }
+
+      if (
+        this.skillState &&
+        this.skillConfigured
+      ) {
+        left =
+          this.skillTargetAvailable &&
+          this.skillAction === "LEFT";
+        right =
+          this.skillTargetAvailable &&
+          this.skillAction === "RIGHT";
       }
 
       const escape = Math.max(
@@ -563,6 +888,8 @@
           headL,
           headR,
           headMotor,
+          skillPhase: this.skillPhase,
+          skillScore: this.skillScore,
         },
       });
     }
@@ -637,8 +964,37 @@
 
       if (this.elements.action) {
         this.elements.action.textContent = this.enabled
-          ? this.intent.label
+          ? this.skillState &&
+            this.skillPhase !== "LIVE"
+            ? "CALIBRATE"
+            : this.intent.label
           : "MANUAL";
+      }
+
+      if (this.elements.skill) {
+        this.elements.skill.textContent =
+          this.skillState
+            ? this.skillState.flyId +
+              " · " +
+              this.skillState.version
+            : "LEGACY";
+      }
+
+      if (this.elements.skillState) {
+        const score =
+          Number.isFinite(this.skillScore)
+            ? this.skillScore.toFixed(3)
+            : "—";
+        this.elements.skillState.textContent =
+          this.skillState
+            ? this.skillPhase +
+              (this.skillPhase === "LIVE"
+                ? " · " +
+                  this.skillAction +
+                  " · " +
+                  score
+                : "")
+            : "—";
       }
 
       if (this.elements.sensory) {
@@ -659,10 +1015,17 @@
       }
 
       if (this.elements.toggle) {
-        this.elements.toggle.disabled = !this.ready;
+        this.elements.toggle.disabled =
+          !this.ready ||
+          Boolean(
+            this.skillState &&
+            !this.skillConfigured,
+          );
         this.elements.toggle.textContent = this.enabled
           ? "사람이 다시 조종"
-          : "🪰 FLY CONTROL 시작";
+          : this.skillState
+            ? "🪰 FLY #001 CONTROL 시작"
+            : "🪰 FLY CONTROL 시작";
       }
 
       this.renderTelemetry();

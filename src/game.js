@@ -777,7 +777,7 @@
 
     if (controlModeEl) {
       controlModeEl.textContent = brainController?.isEnabled()
-        ? "🪰 FLY"
+        ? "🪰 FLY #001"
         : "👤 MANUAL";
     }
   }
@@ -849,13 +849,13 @@
     ctx.font = "800 16px Inter, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(
-      "EXPERIMENT V5 · RED POTION",
+      "EXPERIMENT V8 · FLY #001 SKILL",
       WORLD.width / 2,
       100,
     );
     ctx.font = "600 12px Inter, sans-serif";
     ctx.fillText(
-      "HP 100 · 접촉 -10 · 빨간포션 30개 · 1개당 +30",
+      "v7에서 학습한 LEFT/RIGHT + 기존 JUMP/ATTACK/POTION decoder",
       WORLD.width / 2,
       122,
     );
@@ -1092,7 +1092,7 @@
       keys.clear();
       if (controlModeEl) {
         controlModeEl.textContent = enabled
-          ? "🪰 FLY"
+          ? "🪰 FLY #001"
           : "👤 MANUAL";
       }
     },

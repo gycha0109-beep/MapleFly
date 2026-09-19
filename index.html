@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MapleFly Experiment v5</title>
+  <title>MapleFly Experiment v8 · Fly #001</title>
   <link rel="stylesheet" href="./src/style.css" />
 </head>
 <body>
@@ -11,7 +11,7 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">MAPLEFLY</p>
-        <h1>Experiment v5 · Flat Arena</h1>
+        <h1>Experiment v8 · Fly #001</h1>
       </div>
       <div class="controls" aria-label="debug controls">
         <span>A/D 또는 ←/→ 이동</span>
@@ -50,8 +50,9 @@
         </div>
 
         <p class="brain-copy">
-          실제 초파리 MaleCNS connectome을 브라우저 Worker에서 돌립니다.
-          HP가 깎이면 빨간포션을 taste cue로 제시하고, taste-responsive head motor proxy가 임계치를 넘으면 포션을 사용합니다.
+          실제 MaleCNS connectome은 그대로 고정하고, v7 reward-only 훈련에서 배운
+          Fly #001 LEFT/RIGHT motor skill을 브라우저에서 재사용합니다.
+          점프·공격·포션은 아직 기존 decoder입니다.
         </p>
 
         <div class="brain-actions">
@@ -93,6 +94,8 @@
           <div><span>DNp01 ESCAPE</span><strong id="brain-escape">—</strong></div>
           <div><span>ARM PULL</span><strong id="brain-arm">—</strong></div>
           <div><span>HEAD MOTOR / POTION</span><strong id="brain-head">—</strong></div>
+          <div><span>FLY #001 SKILL</span><strong id="brain-skill">SAVED</strong></div>
+          <div><span>SKILL STATE</span><strong id="brain-skill-state">WAITING</strong></div>
         </div>
 
         <div class="brain-decision">
@@ -187,6 +190,7 @@
     </section>
   </main>
 
+  <script src="./src/brain/fly-skill-v7.js"></script>
   <script src="./src/brain/fly-controller.js"></script>
   <script src="./src/game.js"></script>
   <script src="./src/experiment-v2.js"></script>

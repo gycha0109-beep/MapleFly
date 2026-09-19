@@ -148,9 +148,15 @@ canvas {
   color: #24723a;
 }
 
-.brain-status[data-state="fly-control"] {
+.brain-status[data-state="fly-control"],
+.brain-status[data-state="fly-skill"] {
   background: #d9f5e0;
   color: #16682d;
+}
+
+.brain-status[data-state="calibrating"] {
+  background: #e8e1ff;
+  color: #5a46a3;
 }
 
 .brain-status[data-state="error"] {
