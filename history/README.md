@@ -80,5 +80,5 @@ result_v2.md
 - [development_v7.md](./development_v7.md)  
   full MaleCNS를 frozen reservoir로 두고 1,316 descending-neuron activity에서 LEFT/RIGHT를 reward-only로 배우는 첫 튜토리얼
 
-- `result_v7.md`  
-  실제 Actions 학습/evaluation이 끝난 뒤 작성한다.
+- [result_v7.md](./result_v7.md)  
+  reward-only LEFT/RIGHT motor readout 실제 학습 결과. VISUAL_ON 100%, VISUAL_OFF 50%, 사전 gate PASS

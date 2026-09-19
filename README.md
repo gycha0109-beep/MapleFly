@@ -264,3 +264,27 @@ NOT READY
 descending-neuron state에서 게임 action을 배우는 trainable motor readout으로 진행한다.
 
 Details: `history/result_v6.md`
+
+
+## Experiment v7 — first learned motor skill
+
+Full MaleCNS는 frozen reservoir로 유지하고
+1,316 descending-neuron activity에서 LEFT / RIGHT를 읽는
+2-action motor readout만 reward 결과로 학습했다.
+
+Push smoke run `35409704972`:
+
+~~~text
+run 1 train first/last 57.5% -> 72.5%
+run 2 train first/last 52.5% -> 82.5%
+
+eval VISUAL_ON  100%
+eval VISUAL_OFF  50%
+delta            +50%p
+
+tutorial gate PASS
+~~~
+
+정답 target side / coordinate는 policy input에 넣지 않았다.
+
+Details: `history/result_v7.md`
