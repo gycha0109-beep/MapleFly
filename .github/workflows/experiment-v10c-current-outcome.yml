@@ -40,9 +40,9 @@ jobs:
     timeout-minutes: 120
 
     env:
-      EXP_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '2' }}
-      EXP_TRAIN: ${{ github.event_name == 'workflow_dispatch' && inputs.train || '64' }}
-      EXP_EVAL: ${{ github.event_name == 'workflow_dispatch' && inputs.eval || '24' }}
+      EXP_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '3' }}
+      EXP_TRAIN: ${{ github.event_name == 'workflow_dispatch' && inputs.train || '96' }}
+      EXP_EVAL: ${{ github.event_name == 'workflow_dispatch' && inputs.eval || '32' }}
       EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '64' }}
       EXP_MAX_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_seconds || '4.5' }}
 

@@ -777,3 +777,133 @@ PASS해도 바로 browser에 넣지 않는다.
 
 별도 sparse/deployment continuous gate를 한 번 더 거친 뒤
 Fly #001 Skill 02로 승격한다.
+
+
+---
+
+## Phase C smoke 실제 결과 — 거의 통과, gate는 유지
+
+GitHub Actions:
+
+~~~text
+run      35464901609
+commit   5e44be11ccc04f460ceaa393c8e036107a0a7ee8
+artifact 10590508517
+
+digest
+sha256:59c1dd1cccf5aca60ba5624c0ac8d1a67522fb6765f55e622ca3313dbcd1f57d
+~~~
+
+push smoke 설정:
+
+~~~text
+2 independent runs
+64 practice episodes / run
+24 held-out eval episodes / condition / run
+~~~
+
+practice에서는 random exploratory ATTACK만 사용했고,
+각 ATTACK의 실제 hit / whiff 결과만 classifier label로 사용했다.
+
+### Run 1
+
+~~~text
+practice samples 453
+hit share        30.5%
+
+MOVEMENT_ONLY reach 100.0%
+
+FULL hit         66.7%
+NEURAL_OFF hit    0.0%
+whiff            33.3%
+timeout           0.0%
+~~~
+
+### Run 2
+
+~~~text
+practice samples 457
+hit share        34.4%
+
+MOVEMENT_ONLY reach 100.0%
+
+FULL hit         70.8%
+NEURAL_OFF hit    0.0%
+whiff            29.2%
+timeout           0.0%
+~~~
+
+### 평균
+
+~~~text
+movement reach   100.0%
+
+FULL hit          68.8%
+NEURAL_OFF hit     0.0%
+difference        +68.8%p
+
+whiff              31.3%
+timeout              0.0%
+~~~
+
+사전 gate:
+
+~~~text
+FULL hit >= 70%
+whiff    <= 30%
+~~~
+
+에 각각 약 1%p 정도 모자랐다.
+
+따라서:
+
+~~~text
+V10C-GATE
+FAIL
+~~~
+
+로 유지한다.
+
+gate를 결과에 맞춰 낮추지 않는다.
+
+### 중요한 변화
+
+Phase A/B와 달리 두 independent run 모두
+실제 neural input을 이용해 공격 타이밍을 잡는 수준까지 올라왔다.
+
+~~~text
+Phase B FULL 평균 22.9%
+Phase C FULL 평균 68.8%
+~~~
+
+NEURAL_OFF는 두 run 모두 0%였다.
+
+즉 current-DN + outcome-only 경험학습 방향은
+이전 Q-learning / temporal stack보다 훨씬 안정적이다.
+
+### 다음 검증
+
+Phase C workflow에는 처음부터 full confirmation 기본값을 따로 정해 두었다.
+
+~~~text
+3 runs
+96 practice episodes / run
+32 eval episodes / condition / run
+~~~
+
+push smoke는 CI 비용 때문에 2 / 64 / 24였다.
+
+현재 결과가 gate 바로 아래까지 왔으므로
+threshold나 reward를 수정하지 않고
+**사전에 정해 둔 full confirmation 규모만 실행한다.**
+
+다음 run에서도 gate는 그대로 유지한다.
+
+~~~text
+movement reach >= 85%
+FULL hit       >= 70%
+FULL-OFF       >= 25%p
+whiff          <= 30%
+timeout        <= 25%
+모든 run FULL  >= 60%
+~~~
