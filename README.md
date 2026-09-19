@@ -5,20 +5,18 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 
 ## Current scope
 
-**Experiment v2 — flat sensory A/B baseline**
+**Experiment v8 — Fly #001 learned movement skill**
 
-- upper platforms and ladder are temporarily removed from the active arena
-- one mushroom target on flat ground
-- killed targets respawn after 700 ms at deterministic nearby positions
-- target spawns pseudo-randomly across the full lower arena
-- real MaleCNS browser connectome controller
-- SENSORY ON vs SENSORY OFF paired comparison
-- same pseudo-random seed reused inside each ON/OFF pair
-- alternating ON/OFF order to reduce order bias
-- automatic trial macro
-- automatic metrics logger
-- CSV / JSON export
-- latest run persisted in browser localStorage
+- pinned real MaleCNS connectome remains frozen
+- v7 reward-only LEFT / RIGHT motor skill is stored as Fly #001
+- 64 selected descending-neuron features drive the learned movement readout
+- skill state persists in browser localStorage
+- browser control performs a short visual-off baseline calibration before LIVE
+- learned LEFT / RIGHT overrides the legacy steering decoder
+- JUMP / ATTACK / UP / DOWN still use the legacy connectome decoder
+- POTION still uses the engineered taste / head-motor proxy
+- continuous VISUAL_ON / VISUAL_OFF headless runtime gate passed
+- no claim is made that the fly understands MapleStory
 
 ## Brain source
 
@@ -288,3 +286,36 @@ tutorial gate PASS
 정답 target side / coordinate는 policy input에 넣지 않았다.
 
 Details: `history/result_v7.md`
+
+
+## Experiment v8 — Fly #001 deployment
+
+The v7 reward-only LEFT / RIGHT policy is now versioned as a persistent
+`Fly #001` skill and connected to the browser MaleCNS runtime.
+
+Sparse deployment check:
+
+~~~text
+80 / 150 / 300 / 500 px
+VISUAL_ON  100%
+VISUAL_OFF  50%
+deploy gate PASS
+~~~
+
+Continuous browser-style headless run `35433545656`:
+
+~~~text
+VISUAL_ON toward   77.0%
+VISUAL_OFF toward  28.5%
+difference        +48.5%p
+minimum ON         72.6%
+mean reaches       22.3 / 60 s
+live gate PASS
+~~~
+
+The learned skill controls LEFT / RIGHT only.
+Jump, attack, climbing and potion behavior have not yet been learned by this readout.
+
+GitHub Pages deployment succeeded.
+
+Details: `history/result_v8.md`

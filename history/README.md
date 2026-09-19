@@ -89,5 +89,5 @@ result_v2.md
 - [development_v8.md](./development_v8.md)  
   v7 PASS Fly #001 LEFT/RIGHT skill을 localStorage에 저장하고 실제 브라우저 MaleCNS game loop에 연결
 
-- `result_v8.md`  
-  sparse deploy gate / Pages 배치와 실제 브라우저 runtime 확인 뒤 작성
+- [result_v8.md](./result_v8.md)  
+  Fly #001 sparse deployment PASS, continuous live-style gate PASS, GitHub Pages 배치 결과
