@@ -73,3 +73,12 @@ result_v2.md
 
 - [result_v6.md](./result_v6.md)  
   KC tonic-bias와 APL-feedback proxy 실제 Actions 결과. 내부 mushroom-body plasticity는 아직 NOT READY로 판정
+
+
+## v7
+
+- [development_v7.md](./development_v7.md)  
+  full MaleCNS를 frozen reservoir로 두고 1,316 descending-neuron activity에서 LEFT/RIGHT를 reward-only로 배우는 첫 튜토리얼
+
+- `result_v7.md`  
+  실제 Actions 학습/evaluation이 끝난 뒤 작성한다.

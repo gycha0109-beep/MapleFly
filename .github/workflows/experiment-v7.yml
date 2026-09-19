@@ -1,0 +1,77 @@
+name: Run MapleFly Experiment v7 Tutorial
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: "Independent training runs"
+        required: true
+        default: "3"
+      train:
+        description: "Balanced training episodes per run"
+        required: true
+        default: "240"
+      eval:
+        description: "Balanced eval episodes per condition per run"
+        required: true
+        default: "120"
+      seed:
+        description: "Base seed"
+        required: true
+        default: "64"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v7.yml"
+      - "scripts/experiment-v7-tutorial.mjs"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      EXP_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '2' }}
+      EXP_TRAIN: ${{ github.event_name == 'workflow_dispatch' && inputs.train || '120' }}
+      EXP_EVAL: ${{ github.event_name == 'workflow_dispatch' && inputs.eval || '60' }}
+      EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '64' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/experiment-v7-tutorial.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run left-right tutorial
+        run: >
+          node scripts/experiment-v7-tutorial.mjs
+          --runs "$EXP_RUNS"
+          --train "$EXP_TRAIN"
+          --eval "$EXP_EVAL"
+          --seed "$EXP_SEED"
+          --out results/experiment-v7
+          --cache .cache/maplefly-connectome
+
+      - name: Upload experiment results
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-experiment-v7-${{ github.run_id }}
+          path: results/experiment-v7
+          if-no-files-found: error
+          retention-days: 30
