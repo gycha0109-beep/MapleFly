@@ -186,3 +186,97 @@ if hit -> JUMP
 
 v6는 메이플 공략을 가르치는 단계가 아니라
 **경험을 기록할 수 있는 뇌 상태를 만드는 단계**다.
+
+
+---
+
+## Phase A 실제 결과에 따른 Phase B 설계 고정
+
+Phase A push run `35408919611`에서 pinned full MaleCNS의 문제를 MapleFly 런타임에서도 재현했다.
+
+핵심 관찰:
+
+~~~text
+KC bias 0.00
+rest KC active = 100%
+vinegar/rest = 1.00x
+cVA/rest = 1.00x
+signature Jaccard = 1.00
+PAM rest = 50 Hz
+~~~
+
+정적 KC 억제는 `-0.30`에서만 Gate 1/2를 통과했다.
+
+~~~text
+-0.29 -> FAIL
+-0.30 -> PASS
+-0.31 -> FAIL
+~~~
+
+즉 넓은 안정 구간이 아니라 knife-edge다.
+따라서 `KC tonicExtra = -0.30`을 학습용 상수로 고정하지 않는다.
+
+## Phase B — APL-feedback proxy
+
+다음 후보는 full connectome에 이미 존재하는 APL 2개 뉴런의 실제 outgoing synapse를 이용한다.
+
+기본 connectome weight와 topology는 그대로 두고,
+APL이 spike했을 때 그 presynaptic output만 같은 비율로 증폭한다.
+
+~~~text
+effective current
+= APL output gain
+  × pinned connectome synaptic weight
+~~~
+
+다른 모든 neuron의 output gain은 1이다.
+
+사전 sweep:
+
+~~~text
+1
+1.5
+2
+3
+4
+6
+8
+12
+16
+~~~
+
+`1`은 원본 connectome 그대로다.
+
+이 개입은 APL에서 KC를 포함한 실제 postsynaptic targets로 이어지는 기존 연결만 강화한다.
+새로운 `if KC active -> inhibit` 같은 정답 회로는 만들지 않는다.
+
+단, 실제 성체 초파리 APL의 전기생리는 단순한 spiking LIF 뉴런으로 정확히 표현되지 않는다.
+따라서 이것을 "실제 APL 생리 재현"이라 하지 않고 **APL-feedback proxy / output-gain intervention**이라고 부른다.
+
+## Phase B gate
+
+Phase A의 Gate 1/2를 그대로 유지한다.
+
+추가로 dopamine teacher가 평상시부터 계속 켜져 있으면 memory write가 선택적일 수 없으므로,
+결과를 보기 전에 다음 조건을 추가한다.
+
+~~~text
+teacher quiet:
+rest PAM  <= 5 Hz
+rest PPL1 <= 5 Hz
+~~~
+
+5 Hz는 upstream 작은 world의 mushroom-body memory에서 background와 teacher burst를 가르는
+기존 `MEMORY.burstHz`를 진단 기준으로 차용한 값이다.
+full MaleCNS의 정확한 생물학적 발화 임계값이라는 뜻은 아니다.
+
+최종 `plasticity-ready` 조건:
+
+~~~text
+서로 인접한 APL gain 3개가 모두
+Gate 1 PASS
++ Gate 2 PASS
++ teacher quiet PASS
+~~~
+
+한 gain에서만 통과하면 다시 실패로 판정한다.

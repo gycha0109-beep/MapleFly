@@ -1,0 +1,73 @@
+name: Run MapleFly Experiment v6 APL Feedback
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds:
+        description: "Number of deterministic seeds"
+        required: true
+        default: "4"
+      seed:
+        description: "Base seed"
+        required: true
+        default: "64"
+      gains:
+        description: "Comma-separated APL output gains"
+        required: true
+        default: "1,1.5,2,3,4,6,8,12,16"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v6-apl.yml"
+      - "scripts/experiment-v6-apl-feedback.mjs"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      EXP_SEEDS: ${{ github.event_name == 'workflow_dispatch' && inputs.seeds || '2' }}
+      EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '64' }}
+      EXP_GAINS: ${{ github.event_name == 'workflow_dispatch' && inputs.gains || '1,1.5,2,3,4,6,8,12,16' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: |
+          node --check src/headless/connectome-runtime.mjs
+          node --check scripts/experiment-v6-apl-feedback.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run APL-feedback readiness assay
+        run: >
+          node scripts/experiment-v6-apl-feedback.mjs
+          --seeds "$EXP_SEEDS"
+          --seed "$EXP_SEED"
+          --gains "$EXP_GAINS"
+          --out results/experiment-v6-apl
+          --cache .cache/maplefly-connectome
+
+      - name: Upload experiment results
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-experiment-v6-apl-${{ github.run_id }}
+          path: results/experiment-v6-apl
+          if-no-files-found: error
+          retention-days: 30

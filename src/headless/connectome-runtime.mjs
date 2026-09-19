@@ -349,6 +349,11 @@ export class ConnectomeBrain {
     this.fired = new Int32Array(weights.n);
     this.postGain = new Float32Array(weights.n).fill(1);
     this.tonicExtra = new Float32Array(weights.n);
+    // Per-presynaptic-neuron output multiplier. Default 1 keeps every
+    // existing experiment bit-for-bit on the original connectome path.
+    // v6 Phase B uses this only for the two APL neurons as a diagnostic
+    // feedback-inhibition proxy.
+    this.outGain = new Float32Array(weights.n).fill(1);
     this.reset(seed);
   }
 
@@ -386,13 +391,15 @@ export class ConnectomeBrain {
     ) {
       const presynaptic = this.fired[firedIndex];
       const end = colPtr[presynaptic + 1];
+      const outputGain = this.outGain[presynaptic];
 
       for (
         let edge = colPtr[presynaptic];
         edge < end;
         edge += 1
       ) {
-        this.current[rowIdx[edge]] += lut[code[edge]];
+        this.current[rowIdx[edge]] +=
+          outputGain * lut[code[edge]];
       }
     }
 
