@@ -7,7 +7,8 @@
     "experiment:v2": "node scripts/experiment-v2-headless.mjs",
     "experiment:v3": "node scripts/experiment-v3-visual-control.mjs",
     "experiment:v4": "node scripts/experiment-v4-contact-damage.mjs",
-    "experiment:v7": "node scripts/experiment-v7-tutorial.mjs"
+    "experiment:v7": "node scripts/experiment-v7-tutorial.mjs",
+    "experiment:v9": "node scripts/experiment-v9-attack-timing.mjs"
   },
   "engines": {
     "node": ">=24"

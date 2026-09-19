@@ -91,3 +91,12 @@ result_v2.md
 
 - [result_v8.md](./result_v8.md)  
   Fly #001 sparse deployment PASS, continuous live-style gate PASS, GitHub Pages 배치 결과
+
+
+## v9
+
+- [development_v9.md](./development_v9.md)  
+  full MaleCNS DN state만 보고 ATTACK / WAIT를 reward-only로 배우는 Fly #001 Skill 02 설계
+
+- `result_v9.md`  
+  실제 Actions training/evaluation 완료 뒤 작성
