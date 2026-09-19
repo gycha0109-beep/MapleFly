@@ -64,3 +64,12 @@ result_v2.md
 
 - [result_v5.md](./result_v5.md)  
   빨간포션 30개(+30) POTION_CUE_ON/OFF 180초 × 3 paired 결과
+
+
+## v6
+
+- [development_v6.md](./development_v6.md)  
+  full MaleCNS에서 KC sparse code / MBON 전달 / dopamine baseline을 측정하고 학습 가능성을 판정하는 readiness assay
+
+- result_v6.md  
+  실제 Actions 실험이 끝난 뒤 작성한다. 결과를 보기 전에 파일을 미리 만들지 않는다.

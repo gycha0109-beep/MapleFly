@@ -167,7 +167,7 @@ export function parseWeights(arrayBuffer) {
   };
 }
 
-function cells(meta, names, requestedSide) {
+export function cells(meta, names, requestedSide) {
   const wanted = new Set(names);
   const typeHit = meta.types.map((name) => wanted.has(name));
   const classHit = meta.superclasses.map((name) =>
@@ -202,7 +202,7 @@ function cells(meta, names, requestedSide) {
   return Int32Array.from(result);
 }
 
-function cellsWithPrefix(meta, prefix, requestedSide) {
+export function cellsWithPrefix(meta, prefix, requestedSide) {
   const typeHit = meta.types.map((name) =>
     name.startsWith(prefix),
   );
