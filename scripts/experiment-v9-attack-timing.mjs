@@ -36,7 +36,7 @@ function parseArgs(argv) {
     seed: 64,
     learningRate: 0.22,
     l2: 0.0003,
-    whiffPenalty: -0.35,
+    whiffPenalty: -1.0,
     out: "results/experiment-v9",
     cache: ".cache/maplefly-connectome",
   };
@@ -924,7 +924,7 @@ async function main() {
     trainingDistances: TRAIN_DISTANCES,
     evaluationDistances: EVAL_DISTANCES,
     reward:
-      "ATTACK hit=+1; ATTACK whiff=-0.35; WAIT=0",
+      "ATTACK hit=+1; ATTACK whiff=-1; WAIT=0",
     leakageGuard:
       "policy receives only normalized DN cue-minus-baseline activity + bias; distance/side/hittable are not features",
     gate:

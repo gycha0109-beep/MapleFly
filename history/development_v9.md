@@ -180,3 +180,73 @@ Skill 02 ATTACK timing
 ~~~
 
 으로 browser state를 확장한다.
+
+
+---
+
+## Phase A push 결과 — reward economics 오류 발견
+
+최초 push run:
+
+~~~text
+run      35444445392
+commit   77fa57b0e2a192c2d439fab78f2b2c326a4578bb
+artifact 10584547761
+~~~
+
+최초 reward:
+
+~~~text
+ATTACK hit    +1
+ATTACK whiff  -0.35
+WAIT           0
+~~~
+
+training context는 hittable / unhittable가 정확히 50:50이다.
+
+따라서 시각 신호를 전혀 구분하지 않고 무조건 ATTACK해도 기대 reward가:
+
+~~~text
+0.5 × (+1) + 0.5 × (-0.35)
+= +0.325
+~~~
+
+이다.
+
+실제 결과도 정확히 그 방향으로 붕괴했다.
+
+~~~text
+VISUAL_ON accuracy   50%
+VISUAL_OFF accuracy  50%
+
+hittable ATTACK     100%
+unhittable ATTACK   100%
+precision            50%
+
+V9-GATE FAIL
+~~~
+
+이것은 "DN state에 timing 정보가 없다"는 결과가 아니다.
+**reward 설계가 무조건 공격을 유리하게 만든 오류**다.
+
+### 수정 원칙
+
+정답 label이나 거리 조건식을 추가하지 않는다.
+
+환경 outcome만 유지하면서 reward economics를 중립화한다.
+
+~~~text
+ATTACK hit    +1
+ATTACK whiff  -1
+WAIT           0
+~~~
+
+balanced 50:50 context에서
+시각 정보를 무시한 unconditional ATTACK 기대 reward는 0,
+unconditional WAIT도 0이다.
+
+따라서 양의 reward를 지속적으로 얻으려면
+**실제 neural state를 이용해 hit 가능한 상황과 whiff 상황을 구분해야 한다.**
+
+사전 gate와 evaluation distance는 변경하지 않는다.
+결과를 본 뒤 gate를 완화하지 않는다.
