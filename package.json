@@ -9,7 +9,8 @@
     "experiment:v4": "node scripts/experiment-v4-contact-damage.mjs",
     "experiment:v7": "node scripts/experiment-v7-tutorial.mjs",
     "experiment:v9": "node scripts/experiment-v9-attack-timing.mjs",
-    "experiment:v10": "node scripts/experiment-v10-approach-strike.mjs"
+    "experiment:v10": "node scripts/experiment-v10-approach-strike.mjs",
+    "experiment:v10c": "node scripts/experiment-v10c-current-outcome.mjs"
   },
   "engines": {
     "node": ">=24"

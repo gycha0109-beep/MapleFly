@@ -593,3 +593,187 @@ TEMPORAL_OFF > FULL
 ATTACK distance / hit 가능 여부 / 정답 timing은 계속 policy input에 넣지 않는다.
 
 Fly #001 Skill 02는 여전히 승격하지 않는다.
+
+
+---
+
+## Phase C — current DN + outcome-only motor babbling
+
+Phase B 결과에서:
+
+~~~text
+movement reach      97.9%
+FULL hit            22.9%
+TEMPORAL_OFF hit    33.3%
+~~~
+
+가 나왔다.
+
+따라서 temporal channel을 더 추가하거나 Q-learning 파라미터를 더 만지지 않는다.
+
+Phase C는 학습 문제를 더 단순하게 분리한다.
+
+### 핵심 아이디어
+
+초파리에게 "언제 공격해야 하는지" label을 주지 않는다.
+
+대신 practice 동안 임의 시점에 ATTACK을 실제로 시도하게 한다.
+
+~~~text
+현재 full MaleCNS DN state
+        ↓
+무작위 exploratory ATTACK
+        ↓
+실제 hitbox 결과
+
+HIT
+또는
+WHIFF
+~~~
+
+이 경험만 모은다.
+
+WAIT한 state에는 정답 label을 붙이지 않는다.
+
+즉:
+
+~~~text
+"이때 WAIT가 정답"
+"이 거리에서는 ATTACK"
+~~~
+
+같은 교사 정보는 없다.
+
+공격을 실제로 해본 상태에 대해서만
+그 공격이 맞았는지 빗나갔는지를 기억한다.
+
+### 왜 이 방식으로 바꾸는가
+
+Phase A/B는 sparse terminal reward를
+ATTACK뿐 아니라 수십 개 WAIT decision에까지
+credit assignment해야 했다.
+
+Phase C는 그 문제를 제거한다.
+
+~~~text
+공격함
+-> 결과가 바로 나옴
+-> 그때 neural state와 outcome만 학습
+~~~
+
+즉 처음에는 **motor babbling / 시행착오 데이터 수집**에 집중한다.
+
+### feature
+
+temporal stack을 제거한다.
+
+~~~text
+(current DN Hz - baseline DN Hz) / 50
+~~~
+
+1,316개 current DN response만 사용한다.
+
+그리고 label과 무관하게
+training sample에서 variance가 큰 DN 상위 128개만 선택한다.
+
+~~~text
+feature selection에 HIT/WHIFF label 사용 안 함
+distance 사용 안 함
+~~~
+
+선택된 DN은 training mean / standard deviation으로 standardize한다.
+
+### classifier
+
+실제 ATTACK outcome:
+
+~~~text
+HIT   -> 1
+WHIFF -> 0
+~~~
+
+만으로 class-balanced logistic classifier를 학습한다.
+
+hit / whiff 표본 수가 달라도
+한쪽 class가 무조건 policy를 먹어버리지 않도록
+class weight를 50:50으로 맞춘다.
+
+evaluation에서는:
+
+~~~text
+P(hit | current DN) >= 0.5
+-> ATTACK
+
+그 미만
+-> WAIT
+~~~
+
+한다.
+
+이 0.5 threshold는 결과를 보고 조정하지 않는다.
+
+### practice curriculum
+
+~~~text
+Stage 1
+120 / 180 px
+
+Stage 2
+220 / 280 px
+
+Stage 3
+320 / 380 px
+
+Stage 4
+420 / 460 px
+~~~
+
+각 episode에서 100ms decision window마다
+18% 확률로 exploratory ATTACK probe를 수행한다.
+
+episode당 최대 8회다.
+
+probe 시점은 target distance나 hittable 여부를 보고 정하지 않는다.
+
+이것은 정답 제공이 아니라
+**여러 시점에서 직접 칼을 휘둘러보고 맞았는지 경험하게 하는 탐색**이다.
+
+### evaluation
+
+held-out start distance:
+
+~~~text
+150 / 250 / 350 / 440 px
+~~~
+
+세 조건:
+
+~~~text
+MOVEMENT_ONLY
+공격 없이 Skill 01 접근 성능만 확인
+
+FULL
+current DN classifier 사용
+
+NEURAL_OFF
+movement는 정상
+ATTACK classifier에는 neural feature를 주지 않고 bias만 사용
+~~~
+
+### gate
+
+Phase B에서 정한 기준을 낮추지 않는다.
+
+~~~text
+MOVEMENT_ONLY reach >= 85%
+FULL hit            >= 70%
+FULL - NEURAL_OFF   >= 25%p
+FULL whiff          <= 30%
+FULL timeout        <= 25%
+모든 run FULL hit   >= 60%
+~~~
+
+PASS해도 바로 browser에 넣지 않는다.
+
+별도 sparse/deployment continuous gate를 한 번 더 거친 뒤
+Fly #001 Skill 02로 승격한다.
