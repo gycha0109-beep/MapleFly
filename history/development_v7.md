@@ -171,3 +171,39 @@ PASS하면 다음에는 이 readout state를 실제 game loop에 저장 가능�
 
 FAIL이면 target-side 정보를 직접 feature로 넣지 않고
 DN trace window / learning rule / sensory duration부터 수정한다.
+
+
+---
+
+## 브라우저 배치 전 sparse policy 검증
+
+Actions에서 학습한 run 2 policy는 1,316 DN feature를 사용했다.
+
+브라우저에서 매 40 ms마다 1,316개 값을 main thread로 보내는 대신,
+LEFT logit weight의 절대값이 큰 상위 64개 DN feature만 쓰는
+**deployment sparse policy**를 별도 버전으로 고정한다.
+
+~~~text
+Fly #001
+version: v7-run2-top64
+source run: 35409704972
+selected DN: 64 / 1,316
+~~~
+
+상위 64개 weight는 원래 LEFT weight L2 mass의 약 92.6%를 보존한다.
+
+이 pruning이 실제 행동을 망가뜨리지 않는지 결과를 보기 전에 다음 gate를 고정한다.
+
+~~~text
+distance 150px VISUAL_ON >= 90%
+80 / 150 / 300 / 500px 중 최저 VISUAL_ON >= 75%
+모든 VISUAL_OFF <= 60%
+~~~
+
+PASS한 경우에만 브라우저 실제 맵에 이 sparse skill을 연결한다.
+
+skill state는 `maplefly.fly-skill.v1` schema와
+`localStorage` key `maplefly.fly-001.skill.v1`를 사용한다.
+
+현재 단계에서는 브라우저에서 weight를 새로 학습하지 않는다.
+v7에서 검증된 weight를 저장/재사용하는 배치 단계다.
