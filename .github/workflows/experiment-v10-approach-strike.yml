@@ -10,7 +10,7 @@ on:
       train:
         description: "Training episodes per run (multiple of 8)"
         required: true
-        default: "64"
+        default: "80"
       eval:
         description: "Evaluation episodes per condition per run (multiple of 8)"
         required: true
@@ -41,7 +41,7 @@ jobs:
 
     env:
       EXP_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '2' }}
-      EXP_TRAIN: ${{ github.event_name == 'workflow_dispatch' && inputs.train || '48' }}
+      EXP_TRAIN: ${{ github.event_name == 'workflow_dispatch' && inputs.train || '64' }}
       EXP_EVAL: ${{ github.event_name == 'workflow_dispatch' && inputs.eval || '24' }}
       EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '64' }}
       EXP_MAX_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_seconds || '4.5' }}

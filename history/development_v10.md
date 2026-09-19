@@ -275,3 +275,196 @@ DEPLOY
 으로 승격한다.
 
 v10 training PASS만으로 browser에 바로 넣지 않는다.
+
+
+---
+
+## Phase A 실제 결과 — policy-gradient가 WAIT로 붕괴
+
+첫 Approach-to-Strike push:
+
+~~~text
+run      35448210630
+commit   49d1c6a81a7aa932cb9a284d7ccd217057c27205
+artifact 10586526904
+
+digest
+sha256:f033ac5a8fdadee7cc22bb3fd503aecc8bed94f260d8ef372e557b1a139c7feb
+~~~
+
+training 중 가끔 hit가 발생했다.
+
+예:
+
+~~~text
+run 1 일부 8-episode window
+hit 37.5%
+
+run 2 마지막 8-episode window
+hit 25.0%
+~~~
+
+하지만 greedy evaluation은 두 run 모두:
+
+~~~text
+FULL
+hit      0%
+whiff    0%
+timeout 100%
+
+NEURAL_OFF
+hit      0%
+timeout 100%
+
+TEMPORAL_OFF
+hit      0%
+timeout 100%
+~~~
+
+로 완전히 WAIT에 붕괴했다.
+
+최종 ATTACK bias도 큰 음수로 내려갔다.
+
+~~~text
+attackBias = -1.4196
+~~~
+
+### 원인 해석
+
+이 결과를 "temporal DN 정보가 없다"로 해석하지 않는다.
+
+Phase A learner는 terminal reward 하나를
+trajectory 전체에 REINFORCE 방식으로 전달했다.
+
+초기에는 50% ATTACK 때문에 먼 거리 whiff가 매우 많이 발생한다.
+
+그 whiff의 -1이
+그 전에 했던 WAIT까지 함께 불리하게 업데이트하면서
+credit assignment가 거칠어졌다.
+
+반대로 실제 hit 경험은 너무 희소해서
+"먼 곳에서는 WAIT -> 가까워지면 ATTACK"의
+두 단계 value structure를 안정적으로 만들지 못했다.
+
+결과적으로 greedy policy는
+가장 안전해 보이는 WAIT 쪽으로 잠겼다.
+
+---
+
+## Phase B — curriculum + Q-learning optimal stopping
+
+정답 timing label은 여전히 주지 않는다.
+
+학습 문제를 ATTACK/WAIT의 **Q-value** 문제로 바꾼다.
+
+~~~text
+Q(neural state, ATTACK)
+Q(neural state, WAIT)
+~~~
+
+ATTACK:
+
+~~~text
+실제 hit   -> +1 terminal
+실제 whiff -> -1 terminal
+~~~
+
+WAIT:
+
+~~~text
+즉시 reward 0
+다음 neural state의 최선 Q로 bootstrap
+~~~
+
+timeout:
+
+~~~text
+-1 terminal
+~~~
+
+### backward replay
+
+episode가 끝난 뒤 시간 역순으로 transition을 다시 본다.
+
+whiff가 났을 때:
+
+- 마지막 ATTACK state는 -1로 직접 학습
+- 그 앞의 WAIT는 "다음 state에서 ATTACK 말고 더 WAIT할 수도 있었다"는 max-Q를 사용
+
+즉 early whiff 때문에
+그 전의 모든 WAIT까지 일괄 -1로 찍지 않는다.
+
+반대로 hit가 나면
+near-state ATTACK의 +1이
+앞선 WAIT value로 점차 전파된다.
+
+### curriculum
+
+처음부터 500px 접근을 배우지 않는다.
+
+~~~text
+Stage 1 near
+140 / 180 px
+
+Stage 2 near-mid
+220 / 280 px
+
+Stage 3 mid
+320 / 380 px
+
+Stage 4 far
+420 / 480 px
+~~~
+
+각 stage에서 LEFT / RIGHT를 같은 수로 경험한다.
+
+정책은 stage 이름이나 start distance를 feature로 받지 않는다.
+
+이것은 답을 알려주는 것이 아니라
+**게임 튜토리얼처럼 성공 경험을 먼저 발견할 수 있는 쉬운 환경부터 주는 것**이다.
+
+evaluation은 held-out:
+
+~~~text
+160 / 250 / 350 / 450 px
+~~~
+
+로 고정한다.
+
+### 더 촘촘한 timing
+
+ATTACK decision window를:
+
+~~~text
+200 ms -> 100 ms
+~~~
+
+로 줄인다.
+
+280 px/s 이동에서 200 ms는 약 56 px 이동이라
+사거리 경계를 너무 거칠게 건너뛸 수 있었다.
+
+100 ms는 약 28 px이다.
+
+### 추가 diagnostic
+
+이번부터 movement 자체가 실패한 것과
+ATTACK policy가 실패한 것을 분리하기 위해:
+
+~~~text
+closest distance
+movement reach rate
+~~~
+
+를 별도 기록한다.
+
+사전 gate에:
+
+~~~text
+movement reach rate >= 85%
+~~~
+
+도 추가한다.
+
+이 값이 FAIL이면 ATTACK learner를 탓하기 전에
+Skill 01 접근 경로부터 다시 본다.
