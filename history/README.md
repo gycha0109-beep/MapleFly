@@ -98,5 +98,14 @@ result_v2.md
 - [development_v9.md](./development_v9.md)  
   full MaleCNS DN state만 보고 ATTACK / WAIT를 reward-only로 배우는 Fly #001 Skill 02 설계
 
-- `result_v9.md`  
+- [result_v9.md](./result_v9.md)  
+  세 차례 실제 Actions 결과 모두 FAIL. static ATTACK 분류를 중단하고 continuous Approach-to-Strike로 전환한 근거
+
+
+## v10
+
+- [development_v10.md](./development_v10.md)  
+  Fly #001 Skill 01로 실제 접근하면서 temporal DN trajectory만으로 첫 ATTACK 시점을 배우는 Approach-to-Strike 설계
+
+- `result_v10.md`  
   실제 Actions training/evaluation 완료 뒤 작성
