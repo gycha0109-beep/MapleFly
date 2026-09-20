@@ -1,3 +1,4 @@
+# synced with main bootstrap; branch gate enabled until merge
 # PR + post-merge v10F browser gate
 name: Verify v10F Browser ATTACK Deployment
 
