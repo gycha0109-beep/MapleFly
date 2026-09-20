@@ -706,3 +706,240 @@ tutorial actuator constraint다.
 
 Phase C가 PASS해도 이 single-jump budget 상태를 바로 browser에 배치하지 않는다.
 후속 multi-jump/self-retry generalization을 별도로 통과해야 한다.
+
+
+# Phase C — single-jump reward-only tutorial preregistration
+
+Phase B에서 obstacle LC4 cue의 DN separability가 PASS했으므로
+sensory encoder는 변경하지 않는다.
+
+Phase C의 목적은 Phase A에서 관찰된 반복 jump 전략을 제거하고,
+frozen MaleCNS DN state만으로 **첫 jump 시점**을 reward-only로 학습할 수 있는지 검증하는 것이다.
+
+## invariant
+
+다음은 Phase A와 동일하게 금지한다.
+
+~~~text
+obstacle distance
+obstacle coordinate
+player coordinate
+jump arc
+can-clear / should-jump flag
+correct jump timing
+episode cohort
+~~~
+
+policy input은 1,316 DN feature뿐이다.
+
+## actuator constraint
+
+episode당 실제 JUMP actuator budget:
+
+~~~text
+1
+~~~
+
+첫 실제 jump 이후 episode가 끝날 때까지
+JUMP actuator는 unavailable 상태가 된다.
+
+이후 decision boundary에서 policy가 JUMP를 선택해도
+환경은 WAIT와 동일하게 처리한다.
+
+trainer는 언제 budget을 써야 하는지 알려주지 않는다.
+
+이 constraint는 Phase A의 반복-jump 퇴행 전략을 제거하기 위한 tutorial constraint이며,
+Phase C PASS 후에도 그대로 browser에 배치하지 않는다.
+
+## physics / sensory / windows
+
+Phase A와 동일:
+
+~~~text
+gravity          1400 px/s^2
+move speed        280 px/s
+jump velocity     600 px/s
+episode max       4.5 s
+settle             26 steps
+baseline           26 steps
+movement window    26 steps
+jump window         5 steps
+~~~
+
+obstacle visual LC4 encoder도 Phase B에서 PASS한 식을 그대로 사용한다.
+
+## learner
+
+linear SARSA(0), full 1,316 DN:
+
+~~~text
+learning rate 0.005
+gamma         0.95
+TD clamp      [-2, 2]
+L2 decay      0.0001
+~~~
+
+epsilon:
+
+~~~text
+cohort 1  0.35
+cohort 2  0.15
+cohort 3  0.05
+~~~
+
+## reward
+
+obstacle episode:
+
+~~~text
+clear terminal              +2.00
+blocked 5-step window       -0.04
+actual JUMP actuator        -0.20
+timeout                     -1.00
+~~~
+
+NO_OBSTACLE:
+
+~~~text
+target reach terminal       +1.00
+actual JUMP actuator        -0.20
+timeout                     -0.50
+~~~
+
+reward는 실제 outcome과 실제 actuator cost만 사용한다.
+"지금 JUMP가 정답" label은 없다.
+
+## practice curriculum
+
+새 base seeds:
+
+~~~text
+701000
+711000
+721000
+~~~
+
+각 cohort 96 episodes:
+
+~~~text
+48 obstacle
+48 NO_OBSTACLE
+~~~
+
+obstacle / virtual-distance:
+
+~~~text
+145 / 185 / 225 / 265 px
+~~~
+
+schedule:
+
+~~~text
+obstacle:
+6 blocks × 4 distances × 2 sides = 48
+
+NO_OBSTACLE:
+6 blocks × 4 virtual distances × 2 sides = 48
+brain seed offset = +100
+
+cohort deterministic shuffle seed = baseSeed + 5000
+~~~
+
+side 순서는 block + distanceIndex parity로 L/R를 교대한다.
+
+## final unseen
+
+새 final seeds:
+
+~~~text
+751000
+761000
+771000
+~~~
+
+final distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+각 run:
+
+~~~text
+32 obstacle episodes
+16 NO_OBSTACLE episodes
+~~~
+
+paired obstacle conditions:
+
+~~~text
+FULL
+VISUAL_OFF
+DN_SHUFFLED
+~~~
+
+DN_SHUFFLED permutation seed:
+
+~~~text
+finalBaseSeed + 900000
+~~~
+
+NO_OBSTACLE seed offset:
+
+~~~text
++7000
+~~~
+
+## metrics
+
+~~~text
+clear rate
+timeout rate
+actual jump rate
+first jump step
+first jump obstacle-front distance
+blocked windows
+
+NO_OBSTACLE target reach
+NO_OBSTACLE any-jump rate
+~~~
+
+## Phase C gate
+
+~~~text
+mean FULL clear               >= 70%
+every FULL run                >= 60%
+FULL - VISUAL_OFF             >= 25 percentage points
+FULL - DN_SHUFFLED            >= 20 percentage points
+FULL timeout                  <= 25%
+NO_OBSTACLE target reach      >= 85%
+NO_OBSTACLE any-jump episodes <= 30%
+~~~
+
+gate는 결과 후 낮추지 않는다.
+
+## PASS 이후
+
+Phase C PASS는 single-jump tutorial의 성공일 뿐이다.
+
+다음 Phase D에서:
+
+~~~text
+single-jump budget 제거
+real 750 ms cooldown 복원
+same learned policy 또는 frozen candidate
+multi-jump / self-retry unseen generalization
+~~~
+
+을 별도 preregister하고 통과해야 browser deployment로 간다.
+
+## FAIL 이후
+
+gate를 낮추지 않는다.
+
+우선 분석:
+
+1. early-jump / late-jump 분포
+2. FULL vs VISUAL_OFF first-jump timing 차이
+3. NO_OBSTACLE false jump state 분포
+4. SARSA value collapse / action prior
