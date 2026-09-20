@@ -374,3 +374,39 @@ permutation seed = final base seed + 900000
 한 run의 모든 DN_SHUFFLED episode는 동일 permutation을 사용한다.
 
 이 값들도 결과를 본 뒤 변경하지 않는다.
+
+
+## deterministic schedule 세부 규칙
+
+practice obstacle 72 episodes / cohort:
+
+~~~text
+9 blocks × 4 distances × 2 sides
+brain seed = cohort base seed + block
+~~~
+
+practice NO_OBSTACLE 24 episodes / cohort:
+
+~~~text
+3 blocks × 4 virtual distances × 2 sides
+brain seed = cohort base seed + 100 + block
+target 위치는 obstacle이 있다고 가정했을 때의 far edge + 160 px
+실제 obstacle / obstacle LC4 cue는 없음
+~~~
+
+final obstacle 32 episodes / run:
+
+~~~text
+4 blocks × 4 distances × 2 sides
+brain seed = final base seed + block
+FULL / VISUAL_OFF / DN_SHUFFLED는 같은 episode schedule을 paired 사용
+~~~
+
+final NO_OBSTACLE 16 episodes / run:
+
+~~~text
+2 blocks × 4 virtual distances × 2 sides
+brain seed = final base seed + 7000 + block
+~~~
+
+side 순서는 block + distanceIndex parity로 L/R 순서를 교대한다.
