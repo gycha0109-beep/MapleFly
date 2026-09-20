@@ -1,0 +1,150 @@
+# v11 Skill03 reward-only JUMP tutorial
+name: Run MapleFly Experiment v11 JUMP SARSA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v11-jump-sarsa.yml"
+      - "scripts/experiment-v11-jump-sarsa.mjs"
+      - "src/brain/fly-skill-v7.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: write
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        id: syntax
+        continue-on-error: true
+        run: node --check scripts/experiment-v11-jump-sarsa.mjs
+
+      - name: Cache pinned MaleCNS assets
+        if: steps.syntax.outcome == 'success'
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run v11 JUMP tutorial
+        id: experiment
+        if: steps.syntax.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/experiment-v11-jump-sarsa.mjs
+
+      - name: Upload experiment result
+        id: upload
+        if: steps.syntax.outcome == 'success' && steps.experiment.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11-jump-${{ github.run_id }}
+          path: results/experiment-v11
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Build auditable run receipt
+        if: always()
+        env:
+          SYNTAX_OUTCOME: ${{ steps.syntax.outcome }}
+          EXPERIMENT_OUTCOME: ${{ steps.experiment.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const source = "results/experiment-v11/experiment_v11.json";
+          const result = fs.existsSync(source)
+            ? JSON.parse(fs.readFileSync(source, "utf8"))
+            : null;
+
+          const compactRun = (row) => row ? {
+            run: row.run,
+            baseSeed: row.baseSeed,
+            FULL: row.FULL ? {
+              clearRate: row.FULL.clearRate,
+              timeoutRate: row.FULL.timeoutRate,
+              meanActualJumps: row.FULL.meanActualJumps,
+              meanBlockedWindows: row.FULL.meanBlockedWindows
+            } : null,
+            VISUAL_OFF: row.VISUAL_OFF ? {
+              clearRate: row.VISUAL_OFF.clearRate,
+              timeoutRate: row.VISUAL_OFF.timeoutRate,
+              meanActualJumps: row.VISUAL_OFF.meanActualJumps
+            } : null,
+            DN_SHUFFLED: row.DN_SHUFFLED ? {
+              clearRate: row.DN_SHUFFLED.clearRate,
+              timeoutRate: row.DN_SHUFFLED.timeoutRate,
+              meanActualJumps: row.DN_SHUFFLED.meanActualJumps
+            } : null,
+            NO_OBSTACLE: row.NO_OBSTACLE ? {
+              targetReachRate: row.NO_OBSTACLE.targetReachRate,
+              anyJumpRate: row.NO_OBSTACLE.anyJumpRate,
+              meanActualJumps: row.NO_OBSTACLE.meanActualJumps
+            } : null
+          } : null;
+
+          const receipt = {
+            schema: "maplefly.v11-run-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            runAttempt: Number(process.env.GITHUB_RUN_ATTEMPT),
+            headSha: process.env.GITHUB_SHA,
+            ref: process.env.GITHUB_REF,
+            syntaxOutcome: process.env.SYNTAX_OUTCOME || "skipped",
+            experimentOutcome: process.env.EXPERIMENT_OUTCOME || "skipped",
+            uploadOutcome: process.env.UPLOAD_OUTCOME || "skipped",
+            artifact: {
+              id: process.env.ARTIFACT_ID
+                ? Number(process.env.ARTIFACT_ID)
+                : null,
+              name: "maplefly-v11-jump-" + process.env.GITHUB_RUN_ID,
+              digest: process.env.ARTIFACT_DIGEST || null
+            },
+            meta: result?.meta ?? null,
+            practice: result?.practice ?? null,
+            summary: result?.summary ?? null,
+            policy: result?.policy ?? null,
+            perRun: result?.perRun?.map(compactRun) ?? null
+          };
+
+          fs.mkdirSync("history/run_receipts", { recursive: true });
+          fs.writeFileSync(
+            "history/run_receipts/v11_latest.json",
+            JSON.stringify(receipt, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit run receipt
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/run_receipts/v11_latest.json
+          git commit -m "ci(results): record v11 run ${GITHUB_RUN_ID}" || exit 0
+          git push
+
+      - name: Enforce workflow success
+        if: always()
+        env:
+          SYNTAX_OUTCOME: ${{ steps.syntax.outcome }}
+          EXPERIMENT_OUTCOME: ${{ steps.experiment.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          test "$SYNTAX_OUTCOME" = "success"
+          test "$EXPERIMENT_OUTCOME" = "success"
+          test "$UPLOAD_OUTCOME" = "success"
