@@ -440,3 +440,226 @@ GATE          FAIL
 따라서 reward를 바로 재튜닝하지 않는다.
 preregister한 FAIL 분석 우선순위 1번에 따라,
 먼저 obstacle LC4 cue의 DN sensory separability를 별도 paired assay로 측정한다.
+
+
+# Phase B — obstacle sensory separability assay preregistration
+
+Phase A FAIL 뒤 reward/learner를 조정하기 전에,
+obstacle LC4 cue가 frozen MaleCNS의 DN state에 실제로 구분 가능한 흔적을 만드는지 측정한다.
+
+이 Phase는 **action-learning 실험이 아니다.**
+
+## 핵심 통제
+
+player trajectory는 brain output과 무관한 scripted horizontal motion으로 고정한다.
+
+~~~text
+speed       280 px/s
+grounded    true
+jump        disabled
+attack      disabled
+potion      disabled
+climb       disabled
+~~~
+
+ON/OFF pair는 다음을 완전히 공유한다.
+
+~~~text
+brain seed
+side
+obstacle geometry
+target beacon geometry
+player trajectory
+ground input
+target visual input
+sampling distance
+~~~
+
+유일한 차이는 obstacle LC4 cue ON/OFF다.
+
+따라서 game-state는 sensory stimulus 생성과 진단 sample 위치 정렬에만 사용하며
+어떤 게임 action도 선택하지 않는다.
+
+## geometry
+
+assay obstacle start distances:
+
+~~~text
+300 / 340 / 380 / 420 px
+~~~
+
+obstacle:
+
+~~~text
+width  38 px
+height 54 px
+~~~
+
+target beacon은 obstacle far edge보다 160 px 멀리 둔다.
+
+## sensory
+
+ground + target beacon은 양 조건 동일하다.
+
+Obstacle cue ON:
+
+~~~text
+LC4_side =
+clamp((280 - front_distance) / 280 * 0.80, 0, 0.80)
+~~~
+
+Obstacle cue OFF:
+
+~~~text
+LC4 obstacle contribution = 0
+~~~
+
+기존 target encoder의 LC10a/LPLC1/LPLC2는 그대로 유지한다.
+
+## baseline / feature
+
+각 episode:
+
+~~~text
+SETTLE   26 steps visual OFF
+BASELINE 26 steps visual OFF
+~~~
+
+그 뒤 scripted trajectory를 시작한다.
+
+5-step DN window feature:
+
+~~~text
+feature_i =
+clamp((current_dn_hz_i - baseline_dn_hz_i) / 50, -1, 1)
+~~~
+
+전체 1,316 DN을 사용한다.
+
+## matched sample bins
+
+각 episode에서 obstacle front distance가 처음 다음 threshold 이하가 된
+5-step window를 각각 1개 채집한다.
+
+~~~text
+240 px
+180 px
+120 px
+ 60 px
+~~~
+
+ON/OFF pair는 동일 threshold sample을 가진다.
+
+한 episode당 4 samples,
+각 sample은 label `LC4_ON` 또는 `LC4_OFF`만 가진다.
+
+## train schedule
+
+train base seeds:
+
+~~~text
+601000 / 601100 / 601200 / 601300
+~~~
+
+각 base seed마다:
+
+~~~text
+4 distances × 2 sides × ON/OFF
+= 16 episodes
+= 64 feature samples
+~~~
+
+총:
+
+~~~text
+64 episodes
+256 samples
+128 ON / 128 OFF
+~~~
+
+## diagnostic readout
+
+이 readout은 게임 action이 아니라 cue-presence 진단용 classifier다.
+
+train-only mean/std로 standardize한 뒤
+class-balanced logistic regression을 사용한다.
+
+~~~text
+epochs         120
+learning rate  0.02
+L2             0.0005
+threshold      0.5
+~~~
+
+sample 순서는 seed 606000의 deterministic Fisher-Yates shuffle로 고정한다.
+
+classifier에는 distance / side / geometry / seed를 넣지 않는다.
+입력은 1,316 DN feature뿐이다.
+
+## unseen evaluation
+
+eval base seeds:
+
+~~~text
+611000 / 611100 / 611200
+~~~
+
+각 run:
+
+~~~text
+4 distances × 2 sides × ON/OFF
+= 16 episodes
+= 64 samples
+~~~
+
+3 runs 총 192 unseen samples.
+
+## controls
+
+### LABEL_SHUFFLED
+
+train label만 seed 616000으로 고정 shuffle한 동일 classifier를 별도로 학습한다.
+eval data와 feature는 동일하다.
+
+### DN_PERMUTED
+
+정상 classifier를 유지하고 eval feature의 DN identity를
+run별 seed `evalBaseSeed + 900000` 고정 permutation으로 바꿔 평가한다.
+
+## metrics
+
+~~~text
+FULL balanced accuracy
+per-run FULL accuracy
+LABEL_SHUFFLED accuracy
+DN_PERMUTED accuracy
+FULL - LABEL_SHUFFLED
+FULL - DN_PERMUTED
+mean paired ON/OFF L2 distance
+~~~
+
+paired L2는 같은 seed/side/distance/bin의 ON/OFF feature 차이다.
+
+## 사전 PASS gate
+
+~~~text
+mean FULL balanced accuracy >= 80%
+every FULL run             >= 70%
+FULL - LABEL_SHUFFLED      >= 20 percentage points
+~~~
+
+DN_PERMUTED는 진단값으로 기록하지만 PASS 필수조건으로 두지 않는다.
+LC4 cue가 identity-specific인지 global-rate 성분도 갖는지 해석에 사용한다.
+
+paired L2에는 결과 전 임의 threshold를 두지 않는다.
+
+## 결과 해석
+
+PASS:
+- obstacle LC4 cue는 DN state에서 unseen seed까지 선형 분리 가능한 흔적을 만든다.
+- Phase A 실패의 우선 원인은 "cue가 DN에 전달되지 않음"이 아니다.
+- 그 다음 Phase C에서 jump-spam을 깨는 reward/curriculum redesign을 새 seed로 preregister한다.
+
+FAIL:
+- reward를 바꾸기 전에 sensory encoding 자체를 재설계한다.
+- action learner를 추가 실행하지 않는다.
