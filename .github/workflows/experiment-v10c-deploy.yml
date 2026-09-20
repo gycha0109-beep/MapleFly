@@ -1,3 +1,4 @@
+# v10C frozen candidate deployment gate
 name: Verify MapleFly v10C Attack Deploy
 
 on:
