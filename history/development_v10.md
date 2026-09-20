@@ -1765,3 +1765,212 @@ Phase D/E에서 threshold나 learning rate를 결과에 맞춰 튜닝하는 방�
 
 조건 아래에서
 **sequential wait-vs-strike credit assignment**를 학습하도록 설계한다.
+
+
+---
+
+## Phase F 사전 등록 — self-retry after WHIFF / 반복 공격 경험
+
+Phase E는 현재 policy가 처음 선택한 ATTACK 결과를 직접 학습했지만:
+
+~~~text
+BEFORE FULL 66.7%
+AFTER  FULL 64.6%
+~~~
+
+로 개선되지 않았다.
+
+Phase E practice의 중요한 한계는
+첫 ATTACK이 WHIFF이면 즉시 episode를 종료했다는 점이다.
+
+실제 게임에서는 공격이 빗나가도 캐릭터가 사라지지 않는다.
+
+~~~text
+ATTACK
+-> WHIFF
+-> cooldown
+-> 계속 이동
+-> 다음 ATTACK
+~~~
+
+이 가능하다.
+
+현재 학습기는 첫 WHIFF 뒤에
+같은 episode에서 더 기다렸을 때 실제로 어떤 outcome이 나오는지
+직접 경험하지 못했다.
+
+Phase F에서는 이 부분만 바꾼다.
+
+### 초기 상태
+
+Phase E AFTER candidate를 그대로 이어서 사용한다.
+
+source:
+
+~~~text
+run      35510155721
+artifact 10605735615
+digest   sha256:dee955e677f7919ce2fa30265f720ad5009031baaf59185a99d2da21020c46ed
+~~~
+
+유지:
+
+~~~text
+DN contract       1,316
+selected DN       128
+means/scales      그대로
+attack threshold  0.5
+movement          Skill 01
+attack window     5 steps
+max seconds       4.5
+~~~
+
+### practice 행동
+
+각 5-step ATTACK window에서
+현재 classifier가:
+
+~~~text
+P(hit) >= 0.5
+~~~
+
+를 선택하면 실제 ATTACK한다.
+
+HIT이면 episode 성공 종료.
+
+WHIFF이면 episode를 종료하지 않는다.
+
+브라우저 기존 actuator와 동일한:
+
+~~~text
+attack cooldown = 420ms
+~~~
+
+동안 새 ATTACK을 막고,
+Skill 01 이동과 sensory stream은 계속 진행한다.
+
+cooldown이 끝난 뒤
+Fly #001 classifier가 다시 ATTACK을 선택하면
+다시 실제 hitbox outcome을 받는다.
+
+즉 Trainer는:
+
+~~~text
+ATTACK 시점 선택 X
+WAIT 시점 선택 X
+정답 timing 제공 X
+~~~
+
+이다.
+
+Trainer는 Fly가 실제로 고른 ATTACK의
+HIT / WHIFF 결과만 제공한다.
+
+### 학습 sample
+
+한 episode에서 여러 ATTACK outcome이 생길 수 있다.
+
+모든 실제 ATTACK state를 replay pool에 넣는다.
+
+~~~text
+HIT   = 1
+WHIFF = 0
+~~~
+
+WAIT state에는 label을 붙이지 않는다.
+
+target distance / coordinates / attack range / hittable /
+correct timing은 classifier input에 넣지 않는다.
+
+학습 update는 episode 내부 policy를 중간에 바꾸지 않기 위해
+각 episode가 끝난 뒤 1회만 수행한다.
+
+Phase C와 같은 class-balanced replay를 사용한다.
+
+~~~text
+batch HIT            16
+batch WHIFF          16
+learning rate        0.01
+weight anchor lambda 0.10
+bias anchor lambda   0.10
+~~~
+
+anchor는 Phase E AFTER state다.
+
+양 class가 각각 16개 이상 쌓인 뒤 update한다.
+
+Phase D와의 차이는 optimizer가 아니라
+**sample이 random probe가 아니라 실제 self-selected retry trajectory에서 나온다**는 점이다.
+
+### practice cohort
+
+이전 final cohort는 재사용하지 않는다.
+
+~~~text
+practice cohorts     3
+episodes / cohort    96
+total episodes       288
+
+practice base seeds
+321000
+331000
+341000
+
+practice distances
+155 / 255 / 355 / 455 px
+~~~
+
+기록:
+
+~~~text
+episode 수
+first ATTACK HIT / WHIFF
+전체 ATTACK 횟수
+retry WHIFF 수
+eventual HIT
+NO_HIT
+attack count / episode
+movement reach
+update 수
+~~~
+
+### final unseen cohort
+
+~~~text
+final base seeds
+401000
+411000
+421000
+
+final distances
+185 / 285 / 385 / 485 px
+
+episodes / condition / run
+32
+~~~
+
+평가는 기존과 동일하게
+**첫 ATTACK의 HIT 여부**를 본다.
+
+즉 practice에서 retry를 허용한다고
+deployment gate를 쉽게 바꾸지 않는다.
+
+BEFORE / AFTER는 같은 final MaleCNS trajectory를 사용한다.
+
+### deployment gate
+
+변경 없음.
+
+~~~text
+MOVEMENT_ONLY reach >= 85%
+FULL hit            >= 70%
+FULL - NEURAL_OFF   >= 25%p
+FULL - DN_SHUFFLED  >= 20%p
+FULL whiff          <= 30%
+FULL timeout        <= 25%
+각 run FULL hit     >= 60%
+~~~
+
+결과가 안 좋다고 낮추지 않는다.
+
+Phase F PASS 전에는 browser ATTACK decoder를 변경하지 않는다.
