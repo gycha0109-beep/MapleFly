@@ -112,3 +112,9 @@ result_v2.md
 
 
 - v10 Phase F: authoritative run 35516619170에서 gate PASS 후 PR #2로 browser exact-window ATTACK 배치 완료. post-merge equivalence run 35520326789 PASS (FULL 84.4%, whiff 15.6%).
+
+
+## v11
+
+- [development_v11.md](./development_v11.md)  
+  Fly #001 Skill03 JUMP: obstacle visual -> frozen MaleCNS DN -> reward-only WAIT/JUMP SARSA tutorial preregistration
