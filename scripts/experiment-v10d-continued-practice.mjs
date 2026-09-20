@@ -2,6 +2,8 @@
 import{mkdir,writeFile}from"node:fs/promises";import{resolve}from"node:path";import{SOURCE,ConnectomeBrain,cells,loadConnectome}from"../src/headless/connectome-runtime.mjs";import"../src/brain/fly-skill-v7.js";import"../src/brain/fly-skill-v10-attack.js";
 const DT=.02,MS=26,AS=5,SET=26,BASE=26,W=1000,PW=34,PH=46,PY=530-PH,TW=56,TH=62,SPD=280,RNG=76,DISTS=[170,270,360,470],CONDS=["MOVEMENT_ONLY","FULL","NEURAL_OFF","DN_SHUFFLED"];
 const mApi=globalThis.MapleFlySkillV7,mSkill=mApi.BUNDLED_STATE,aApi=globalThis.MapleFlyAttackSkillV10,aSkill=aApi.BUNDLED_STATE;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),mean=a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:0,pct=v=>(v*100).toFixed(1)+"%";
+function perm(n,seed){const a=Array.from({length:n},(_,i)=>i);let s=seed>>>0;const r=()=>{s+=0x6d2b79f5;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296};for(let i=n-1;i;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function args(a){const o={runs:3,eval:32,seed:41000,max:4.5,out:"results/experiment-v10c-deploy",cache:".cache/maplefly-connectome"};for(let i=0;i<a.length;i++){const k=a[i],v=a[i+1];if(k==="--runs"){o.runs=+v;i++;}else if(k==="--eval"){o.eval=+v;i++;}else if(k==="--seed"){o.seed=+v;i++;}else if(k==="--max-seconds"){o.max=+v;i++;}else if(k==="--out"){o.out=v;i++;}else if(k==="--cache"){o.cache=v;i++;}else throw Error("bad arg "+k)}if(!Number.isInteger(o.runs)||o.runs<1||!Number.isInteger(o.eval)||o.eval%8)throw Error("bad runs/eval");return o}
 function sm(n,ids){const m=new Int32Array(n).fill(-1);ids.forEach((id,i)=>m[id]=i);return m}
 function stim(b,g,d){for(const[n,v]of Object.entries(d)){const ids=g.get(n);if(v&&ids?.length)b.stimulate(ids,v)}}

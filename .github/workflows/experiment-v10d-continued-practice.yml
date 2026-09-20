@@ -117,9 +117,9 @@ jobs:
               }
             })) ?? null
           };
-          fs.mkdirSync("results/v10d-receipt", { recursive: true });
+          fs.mkdirSync("history/run_receipts", { recursive: true });
           fs.writeFileSync(
-            "results/v10d-receipt/latest.json",
+            "history/run_receipts/v10d_latest.json",
             JSON.stringify(receipt, null, 2) + "\n"
           );
           NODE
@@ -129,7 +129,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results/v10d-receipt/latest.json
+          git add history/run_receipts/v10d_latest.json
           git commit -m "ci(results): record v10D run ${GITHUB_RUN_ID}" || exit 0
           git push
 

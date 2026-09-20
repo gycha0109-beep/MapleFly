@@ -1363,3 +1363,66 @@ episodes / condition  32 유지
 threshold             0.5 유지
 deployment gate       변경 없음
 ~~~
+
+
+### Phase D 첫 실행 실패 — 구현 결함 수정, 실험 결과 없음
+
+GitHub Actions:
+
+~~~text
+run      35507345684
+head     6f1ee6ad525b758620ba5c94a99b69b11c569d42
+workflow Run MapleFly Experiment v10D Continued Practice
+conclusion failure
+~~~
+
+이 run은 Phase D의 학습 성능 실패가 아니다.
+
+syntax check와 connectome cache 복구까지는 성공했지만,
+첫 practice episode에서:
+
+~~~text
+ReferenceError: clamp is not defined
+~~~
+
+로 종료됐다.
+
+원인은 v10C deployment script의 helper를 v10D 파일로 가져오는 과정에서
+다음 runtime helper 정의가 누락된 구현 결함이었다.
+
+~~~text
+clamp
+mean
+pct
+perm
+~~~
+
+`node --check`는 미정의 식별자를 검출하지 않으므로 syntax check는 통과했다.
+
+또한 실패 receipt를 `results/` 아래 저장하려 했지만
+repository의 .gitignore가 results 디렉토리를 무시하기 때문에
+receipt commit 단계도 실패했다.
+
+수정:
+
+~~~text
+누락 helper 4개 복구
+receipt 위치를 history/run_receipts/v10d_latest.json으로 이동
+~~~
+
+중요:
+
+~~~text
+practice seed      변경 없음
+final seed         변경 없음
+practice 거리      변경 없음
+final 거리         변경 없음
+learning rate      변경 없음
+anchor coefficient 변경 없음
+threshold          변경 없음
+deployment gate    변경 없음
+~~~
+
+따라서 run 35507345684에서는 유효한 practice 결과나
+BEFORE/AFTER evaluation 결과가 생성되지 않았으며,
+성능을 보고 hyperparameter를 수정한 것이 아니다.
