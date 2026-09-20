@@ -182,3 +182,45 @@ FULL timeout        <= 25%
 
 이 gate를 통과한 뒤에만
 Fly #001 Skill 02를 실제 browser runtime에 합친다.
+
+
+---
+
+## 첫 deployment gate 결과
+
+GitHub Actions:
+
+~~~text
+run      35502791050
+commit   fc71164d4a825af15a2523ff3884c165ae931b29
+artifact 10603305959
+~~~
+
+결과:
+
+~~~text
+Run 1 FULL 90.6%
+Run 2 FULL 56.3%
+Run 3 FULL 65.6%
+
+mean FULL        70.8%
+NEURAL_OFF        0.0%
+DN_SHUFFLED      17.7%
+whiff            29.2%
+timeout            0.0%
+movement reach  100.0%
+~~~
+
+평균 성능은 높았지만
+Run 2가 사전 per-run floor 60%를 넘지 못했다.
+
+~~~text
+V10C-DEPLOY-GATE
+FAIL
+~~~
+
+따라서 Skill 02는 아직 browser에 승격하지 않는다.
+
+다음은 candidate를 교체하거나 gate를 낮추는 대신,
+같은 Fly #001 classifier가 새로운 seed cohort에서
+추가 outcome-only practice를 수행하는 Phase D다.
