@@ -13,7 +13,7 @@ on:
       - "src/headless/connectome-runtime.mjs"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   experiment:
@@ -30,23 +30,116 @@ jobs:
           node-version: "24"
 
       - name: Syntax check
+        id: syntax
+        continue-on-error: true
         run: |
           node --check src/brain/fly-skill-v10-attack.js
           node --check scripts/experiment-v10d-continued-practice.mjs
 
       - name: Cache pinned MaleCNS assets
+        if: steps.syntax.outcome == 'success'
         uses: actions/cache@v6
         with:
           path: .cache/maplefly-connectome
           key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
 
       - name: Run continued-practice experiment
+        id: experiment
+        if: steps.syntax.outcome == 'success'
+        continue-on-error: true
         run: npm run experiment:v10d
 
       - name: Upload experiment result
+        id: upload
+        if: steps.syntax.outcome == 'success' && steps.experiment.outcome == 'success'
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: maplefly-v10d-${{ github.run_id }}
           path: results/experiment-v10d
           if-no-files-found: error
           retention-days: 30
+
+      - name: Build auditable run receipt
+        if: always()
+        env:
+          SYNTAX_OUTCOME: ${{ steps.syntax.outcome }}
+          EXPERIMENT_OUTCOME: ${{ steps.experiment.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const source = "results/experiment-v10d/experiment_v10d.json";
+          const hasResult = fs.existsSync(source);
+          const result = hasResult ? JSON.parse(fs.readFileSync(source, "utf8")) : null;
+          const receipt = {
+            schema: "maplefly.v10d-run-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            runAttempt: Number(process.env.GITHUB_RUN_ATTEMPT),
+            headSha: process.env.GITHUB_SHA,
+            ref: process.env.GITHUB_REF,
+            syntaxOutcome: process.env.SYNTAX_OUTCOME || "skipped",
+            experimentOutcome: process.env.EXPERIMENT_OUTCOME || "skipped",
+            uploadOutcome: process.env.UPLOAD_OUTCOME || "skipped",
+            artifact: {
+              id: process.env.ARTIFACT_ID ? Number(process.env.ARTIFACT_ID) : null,
+              name: "maplefly-v10d-" + process.env.GITHUB_RUN_ID,
+              digest: process.env.ARTIFACT_DIGEST || null
+            },
+            meta: result?.meta ?? null,
+            practice: result?.practice ?? null,
+            totalUpdates: result?.totalUpdates ?? null,
+            replayPool: result?.replayPool ?? null,
+            beforeSummary: result?.beforeSummary ?? null,
+            afterSummary: result?.afterSummary ?? null,
+            comparison: result?.comparison ?? null,
+            weightChange: result?.weightChange ?? null,
+            afterCandidate: result?.afterCandidate ?? null,
+            perRun: result?.runs?.map((row) => ({
+              run: row.run,
+              seed: row.seed,
+              movementReachRate: row.MOVEMENT_ONLY.movementReachRate,
+              before: {
+                full: row.BEFORE.FULL.hitRate,
+                off: row.BEFORE.NEURAL_OFF.hitRate,
+                shuffled: row.BEFORE.DN_SHUFFLED.hitRate,
+                whiff: row.BEFORE.FULL.whiffRate,
+                timeout: row.BEFORE.FULL.timeoutRate
+              },
+              after: {
+                full: row.AFTER.FULL.hitRate,
+                off: row.AFTER.NEURAL_OFF.hitRate,
+                shuffled: row.AFTER.DN_SHUFFLED.hitRate,
+                whiff: row.AFTER.FULL.whiffRate,
+                timeout: row.AFTER.FULL.timeoutRate
+              }
+            })) ?? null
+          };
+          fs.mkdirSync("results/v10d-receipt", { recursive: true });
+          fs.writeFileSync(
+            "results/v10d-receipt/latest.json",
+            JSON.stringify(receipt, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit run receipt
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/v10d-receipt/latest.json
+          git commit -m "ci(results): record v10D run ${GITHUB_RUN_ID}" || exit 0
+          git push
+
+      - name: Enforce workflow success
+        if: always()
+        env:
+          SYNTAX_OUTCOME: ${{ steps.syntax.outcome }}
+          EXPERIMENT_OUTCOME: ${{ steps.experiment.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          test "$SYNTAX_OUTCOME" = "success"
+          test "$EXPERIMENT_OUTCOME" = "success"
+          test "$UPLOAD_OUTCOME" = "success"
