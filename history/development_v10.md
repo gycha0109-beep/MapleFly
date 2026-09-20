@@ -1426,3 +1426,60 @@ deployment gate    변경 없음
 따라서 run 35507345684에서는 유효한 practice 결과나
 BEFORE/AFTER evaluation 결과가 생성되지 않았으며,
 성능을 보고 hyperparameter를 수정한 것이 아니다.
+
+
+### Phase D 종료 판단과 다음 수정 근거
+
+Phase D의 유효 run은:
+
+~~~text
+35509172541
+~~~
+
+이며 최종 판정은:
+
+~~~text
+V10D-AFTER-GATE
+FAIL
+~~~
+
+이다.
+
+random motor-babbling replay를 추가한 뒤에도
+mean FULL hit가 65.6%에서 65.6%로 변하지 않았다.
+
+동시에 weight는 충분히 변했고
+DN_SHUFFLED 성능은 25.0%에서 18.8%로 낮아졌다.
+
+따라서 다음 수정에서 단순히:
+
+~~~text
+practice episode 수 증가
+같은 random probe 추가
+learning rate 임의 변경
+threshold 결과맞춤 조정
+~~~
+
+만 반복하는 것은 근거가 약하다.
+
+현재 deployment failure는:
+
+~~~text
+timeout 0%
+whiff 34.4%
+~~~
+
+로, policy가 공격을 전혀 못 하는 것이 아니라
+**첫 ATTACK decision의 false positive**가 핵심이다.
+
+따라서 다음 실험은 random window를 균등하게 더 모으는 대신
+현재 Fly #001 policy가 실제로 처음 ATTACK을 선택한 시점의 결과를
+직접 경험하게 하는 on-policy first-strike practice를 우선 검토한다.
+
+중요:
+
+Phase D final seed 121000 / 131000 / 141000과
+final distance 165 / 265 / 365 / 455는
+이제 결과를 확인했으므로 이후 tuning 또는 deployment gate에 재사용하지 않는다.
+
+다음 phase에서는 완전히 새로운 practice / final cohort를 사전 등록한다.
