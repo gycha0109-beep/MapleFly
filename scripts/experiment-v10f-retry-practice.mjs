@@ -1289,13 +1289,6 @@ async function main() {
       beforeSummary.neuronIdentityContribution,
   };
 
-  const replayHits = replayPool.filter(
-    (sample) => sample.label === 1,
-  ).length;
-  const replayWhiffs = replayPool.filter(
-    (sample) => sample.label === 0,
-  ).length;
-
   const meta = {
     schema:
       "maplefly.experiment-v10f.retry-practice.1",
