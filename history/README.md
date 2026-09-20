@@ -108,4 +108,4 @@ result_v2.md
   Fly #001 Skill 01로 실제 접근하면서 temporal DN trajectory만으로 첫 ATTACK 시점을 배우는 Approach-to-Strike 설계
 
 - [result_v10.md](./result_v10.md)  
-  Phase A/B 실패, Phase C 학습 PASS 후 deployment FAIL. Phase D continued practice도 seed 안정성 개선 없이 FAIL
+  Phase A/B 실패, Phase C 학습 PASS 후 deployment FAIL. Phase D random continued practice와 Phase E on-policy first-strike practice도 FAIL

@@ -1714,3 +1714,54 @@ largest changes
 
 Phase E gate PASS 전에는
 browser ATTACK decoder를 변경하지 않는다.
+
+
+### Phase E 종료 및 구조적 병목
+
+Phase E run:
+
+~~~text
+35510155721
+~~~
+
+최종:
+
+~~~text
+V10E-AFTER-GATE
+FAIL
+~~~
+
+on-policy first-strike replay에서도 성능이 개선되지 않았다.
+
+이제 다음 가설을 우선한다.
+
+현재 학습 target:
+
+~~~text
+독립 window:
+DN state -> HIT / WHIFF
+~~~
+
+실제 deployment objective:
+
+~~~text
+시간 순서의 여러 DN state 중
+'처음 ATTACK을 선택하는 순간'이 HIT인가
+~~~
+
+이 둘 사이에 objective mismatch가 있다.
+
+특히 현재 classifier는
+나중의 좋은 state와 비교해서
+현재 state에서 기다리는 것이 더 좋은지 직접 배우지 않는다.
+
+Phase D/E에서 threshold나 learning rate를 결과에 맞춰 튜닝하는 방향은 중단한다.
+
+다음 phase는:
+- threshold 0.5 유지
+- selected DN / normalization 유지
+- 정답 timing / distance / hittable 입력 금지
+- 실제 episode outcome만 사용
+
+조건 아래에서
+**sequential wait-vs-strike credit assignment**를 학습하도록 설계한다.

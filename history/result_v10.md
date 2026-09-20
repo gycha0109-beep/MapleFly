@@ -461,3 +461,196 @@ AFTER whiff   34.4%
 
 다음 단계에서는 이 final cohort를 tuning에 다시 사용하지 않는다.
 새 practice / 새 final seed를 사용해야 한다.
+
+
+---
+
+## Phase E on-policy first-strike continued practice 결과 — deployment 분포 학습도 실패
+
+GitHub Actions:
+
+~~~text
+run      35510155721
+head     6d8cf5d12db1af0ac6e2b66310f2af5c8daf1e80
+artifact 10605735615
+
+digest
+sha256:dee955e677f7919ce2fa30265f720ad5009031baaf59185a99d2da21020c46ed
+
+receipt commit
+6859ac615d31d3b57bb5835797b3c4a4e31df5e7
+~~~
+
+workflow는 모든 step이 success였다.
+
+### practice
+
+Phase E에서는 random ATTACK probe를 제거하고
+현재 classifier가 처음 threshold 0.5를 넘는 시점에만 실제 ATTACK했다.
+
+~~~text
+Cohort 1
+episodes 96
+HIT      59
+WHIFF    37
+NO_STRIKE 0
+updates  65
+replay hit share 61.5%
+
+Cohort 2
+episodes 96
+HIT      64
+WHIFF    32
+NO_STRIKE 0
+updates  96
+replay hit share 64.1%
+
+Cohort 3
+episodes 96
+HIT      71
+WHIFF    25
+NO_STRIKE 0
+updates  96
+replay hit share 67.4%
+~~~
+
+누적:
+
+~~~text
+practice episodes 288
+first-strike HIT   194
+first-strike WHIFF  94
+NO_STRIKE            0
+SGD updates         257
+~~~
+
+Trainer가 ATTACK 시점을 고르지 않았고
+target distance / coordinates / attack range / hittable / correct timing은
+classifier input에 넣지 않았다.
+
+### unseen final cohort BEFORE / AFTER
+
+final seeds:
+
+~~~text
+251000
+261000
+271000
+~~~
+
+결과:
+
+~~~text
+Run 1
+BEFORE FULL      71.9%
+AFTER FULL       75.0%
+AFTER OFF         0.0%
+AFTER SHUFFLED    0.0%
+
+Run 2
+BEFORE FULL      68.8%
+AFTER FULL       62.5%
+AFTER OFF         0.0%
+AFTER SHUFFLED    3.1%
+
+Run 3
+BEFORE FULL      59.4%
+AFTER FULL       56.3%
+AFTER OFF         0.0%
+AFTER SHUFFLED    0.0%
+~~~
+
+평균:
+
+~~~text
+                       BEFORE    AFTER
+movement reach          100.0%   100.0%
+FULL hit                 66.7%    64.6%
+NEURAL_OFF                0.0%     0.0%
+DN_SHUFFLED               4.2%     1.0%
+FULL whiff               33.3%    35.4%
+FULL timeout              0.0%     0.0%
+~~~
+
+변화:
+
+~~~text
+FULL hit delta   -2.1%p
+whiff delta      +2.1%p
+timeout delta     0.0%p
+~~~
+
+Phase E AFTER는 Phase D source candidate보다
+새 final cohort에서 오히려 약해졌다.
+
+### weight 변화
+
+~~~text
+L2 delta from Phase D AFTER    0.696694
+bias delta                    -0.048325
+sign flip count               30
+mean absolute weight delta     0.048947
+max absolute weight delta      0.173235
+~~~
+
+즉 학습 update가 미미해서 실패한 것은 아니다.
+
+### gate
+
+AFTER:
+
+~~~text
+movement reach          100.0% PASS
+FULL hit                  64.6% FAIL
+FULL - NEURAL_OFF        +64.6%p PASS
+FULL - DN_SHUFFLED       +63.5%p PASS
+FULL whiff                35.4% FAIL
+FULL timeout               0.0% PASS
+Run 1 FULL                75.0% PASS
+Run 2 FULL                62.5% PASS
+Run 3 FULL                56.3% FAIL
+~~~
+
+판정:
+
+~~~text
+V10E-AFTER-GATE
+FAIL
+~~~
+
+gate를 낮추지 않는다.
+browser ATTACK decoder도 변경하지 않는다.
+
+### 해석
+
+Phase E는 Phase D보다 deployment 분포에 가까운
+on-policy first-strike samples만 추가 학습했지만
+mean FULL hit는:
+
+~~~text
+66.7% -> 64.6%
+~~~
+
+로 오히려 떨어졌다.
+
+따라서 현재 병목은 단순한 off-policy/random sampling mismatch만으로
+설명되지 않는다.
+
+Phase C/D/E 모두 공통적으로
+각 순간의 DN state를 독립적인 binary sample로 보고:
+
+~~~text
+P(HIT | current DN)
+~~~
+
+를 학습한 뒤,
+실제 deployment에서는 시간 순서상 처음 threshold를 넘는 state를 선택한다.
+
+이 두 문제는 동일하지 않다.
+
+deployment 오류의 핵심은
+한 episode 안에서 **조금 뒤에 더 좋은 strike state가 존재하더라도
+더 이른 false-positive crossing이 먼저 나오면 즉시 WHIFF로 끝난다**는 점이다.
+
+다음 phase에서는 단순 window classification을 계속 반복하지 않고
+순차 decision 자체를 outcome으로 학습하는 방향으로 전환한다.
