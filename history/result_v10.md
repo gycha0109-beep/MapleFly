@@ -654,3 +654,183 @@ deployment 오류의 핵심은
 
 다음 phase에서는 단순 window classification을 계속 반복하지 않고
 순차 decision 자체를 outcome으로 학습하는 방향으로 전환한다.
+
+
+---
+
+## Phase F self-retry after WHIFF — authoritative PASS
+
+최종 authoritative GitHub Actions:
+
+~~~text
+run      35516619170
+head     6fca4fa57396839a67967ac4eaa361ef8ba22fcc
+artifact 10606809328
+digest   sha256:964a0692c6207c35cea23a301bc6ce1e3037c1861327088f8ea9bdd20d90ab2a
+receipt commit
+edccfb8b2fc1a4870c20e8763acbebdb6d906542
+~~~
+
+receipt의 `headSha`가 위 실험 head와 일치하고,
+workflow의 syntax / experiment / upload가 모두 success다.
+
+Phase F 첫 두 번의 실행은 구현/provenance 결함이었다.
+
+~~~text
+35513768722
+- practice + final 계산 완료 직후 stale replayPool serialization 오류
+- 공식 결과로 사용하지 않음
+
+35515717958
+- 실험과 artifact는 성공
+- 결과 파일명 불일치로 receipt detail null
+- browser 승격 근거로 사용하지 않음
+~~~
+
+두 결함 수정 시 seed / 거리 / optimizer / threshold / gate는 변경하지 않았다.
+
+### practice
+
+각 episode에서 Fly #001이 스스로 threshold를 넘겨 ATTACK했다.
+WHIFF 뒤에는 420ms actuator cooldown 후 동일 episode를 계속 진행했다.
+Trainer는 ATTACK/WAIT 시점을 선택하지 않았다.
+
+~~~text
+Cohort 1
+episodes           96
+first ATTACK HIT   68
+first ATTACK WHIFF 28
+total ATTACK      153
+total WHIFF        57
+eventual HIT       96
+NO_HIT              0
+updates             73
+
+Cohort 2
+episodes           96
+first ATTACK HIT   74
+first ATTACK WHIFF 22
+total ATTACK      134
+total WHIFF        38
+eventual HIT       96
+NO_HIT              0
+updates             96
+
+Cohort 3
+episodes           96
+first ATTACK HIT   69
+first ATTACK WHIFF 27
+total ATTACK      143
+total WHIFF        48
+eventual HIT       95
+NO_HIT              1
+updates             96
+~~~
+
+누적 replay:
+
+~~~text
+HIT samples    287
+WHIFF samples  143
+total          430
+SGD updates    265
+~~~
+
+classifier input에는 계속 다음 값이 없다.
+
+~~~text
+target distance
+target coordinates
+attack range
+hittable flag
+correct timing
+stage/cohort
+~~~
+
+WAIT에도 정답 label을 붙이지 않았다.
+
+### unseen final
+
+~~~text
+Run 1 seed 401000
+BEFORE FULL 71.9%
+AFTER  FULL 93.8%
+AFTER  OFF   0.0%
+AFTER  SHUFFLED 6.3%
+
+Run 2 seed 411000
+BEFORE FULL 87.5%
+AFTER  FULL 81.3%
+AFTER  OFF   0.0%
+AFTER  SHUFFLED 62.5%
+
+Run 3 seed 421000
+BEFORE FULL 65.6%
+AFTER  FULL 78.1%
+AFTER  OFF   0.0%
+AFTER  SHUFFLED 34.4%
+~~~
+
+평균:
+
+~~~text
+                       BEFORE    AFTER
+movement reach          100.0%   100.0%
+FULL hit                 75.0%    84.4%
+NEURAL_OFF                0.0%     0.0%
+DN_SHUFFLED               4.2%    34.4%
+FULL whiff               25.0%    15.6%
+FULL timeout              0.0%     0.0%
+~~~
+
+변화:
+
+~~~text
+FULL hit       +9.375%p
+whiff          -9.375%p
+timeout         0.000%p
+~~~
+
+### deployment gate
+
+~~~text
+movement reach          100.0% PASS
+FULL hit                  84.4% PASS
+FULL - NEURAL_OFF        +84.4%p PASS
+FULL - DN_SHUFFLED       +50.0%p PASS
+FULL whiff                15.6% PASS
+FULL timeout               0.0% PASS
+Run 1 FULL                93.8% PASS
+Run 2 FULL                81.3% PASS
+Run 3 FULL                78.1% PASS
+~~~
+
+판정:
+
+~~~text
+V10F-AFTER-GATE
+PASS
+~~~
+
+### 해석
+
+Phase F에서 처음으로
+실제 deployment와 같은 반복 행동 구조:
+
+~~~text
+ATTACK
+-> WHIFF
+-> cooldown
+-> 계속 sensory / movement
+-> 다시 Fly가 ATTACK 선택
+~~~
+
+를 경험시킨 뒤 first-strike 품질이 개선됐다.
+
+이는 full connectome synapse를 학습한 것이 아니다.
+MaleCNS connectome은 고정이며,
+학습된 것은 그 활동을 읽는 sparse ATTACK readout이다.
+
+다음 작업은 v10F AFTER candidate를 freeze한 뒤
+브라우저에서 정확한 5-step ATTACK window와 420ms cooldown으로
+동일 readout을 배치하고 headless/browser-equivalence를 검증하는 것이다.

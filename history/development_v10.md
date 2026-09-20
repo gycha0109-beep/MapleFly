@@ -2108,3 +2108,47 @@ deployment gate
 ~~~
 
 는 전부 변경하지 않는다.
+
+
+### Phase F authoritative 종료
+
+Authoritative run:
+
+~~~text
+35516619170
+~~~
+
+결과:
+
+~~~text
+AFTER FULL    84.4%
+AFTER whiff   15.6%
+AFTER timeout  0.0%
+per-run       93.8 / 81.3 / 78.1%
+OFF            0.0%
+SHUFFLED      34.4%
+GATE          PASS
+~~~
+
+Phase F로 ATTACK readout 연구 gate를 통과했다.
+
+다음 구현 단계에서는
+과학적 gate를 다시 튜닝하지 않고
+Phase F AFTER candidate를 그대로 freeze한다.
+
+브라우저 runtime 요구사항:
+
+~~~text
+movement readout window 26 steps
+attack readout window    5 steps
+baseline                 26 steps after settle
+attack cooldown          420ms
+attack threshold         0.5
+~~~
+
+특히 기존 worker가 2 brain step 단위로 합친 `skillSpikes`만 보내므로
+controller에서 5-step을 6-step으로 근사하지 않는다.
+
+worker가 exact 5-step / 26-step boundary를 직접 보존하도록 수정하고
+headless/browser equivalence를 통과한 뒤에만
+legacy arm-pull ATTACK decoder를 교체한다.

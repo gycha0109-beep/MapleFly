@@ -29,7 +29,10 @@
 
   const SKILL_RUNTIME = Object.freeze({
     stepSeconds: 0.02,
-    windowSteps: 26,
+    settleSteps: 26,
+    baselineSteps: 26,
+    movementWindowSteps: 26,
+    attackWindowSteps: 5,
   });
 
   function clamp(value, min, max) {
@@ -69,17 +72,29 @@
       this.skillApi = global.MapleFlySkillV7 ?? null;
       this.skillState =
         this.skillApi?.loadState?.() ?? null;
-      this.skillConfigured = !this.skillState;
-      this.skillPhase = this.skillState
-        ? "WAITING"
-        : "DISABLED";
-      this.skillPhaseSteps = 0;
-      this.skillLastSteps = 0;
-      this.skillBaselineSpikes = null;
-      this.skillCueSpikes = null;
+      this.attackSkillApi =
+        global.MapleFlyAttackSkillV10 ?? null;
+      this.attackSkillState =
+        this.attackSkillApi?.loadState?.() ?? null;
+      this.skillConfigured =
+        !(this.skillState || this.attackSkillState);
+      this.skillPhase =
+        this.skillState || this.attackSkillState
+          ? "WAITING"
+          : "DISABLED";
+      this.skillCalibrationStartStep = null;
+      this.skillBaselineReady = {
+        movement: false,
+        attack: false,
+      };
       this.skillBaselineHz = null;
+      this.attackBaselineHz = null;
       this.skillAction = "IDLE";
       this.skillScore = 0;
+      this.attackSkillAction = "WAIT";
+      this.attackSkillProbability = 0;
+      this.attackSkillDecisionStep = null;
+      this.attackSkillDecisionStep = null;
       this.skillTargetAvailable = false;
 
       this.elements = {
@@ -184,17 +199,43 @@
             Number(message.nnz ?? SOURCE.synapses).toLocaleString();
         }
 
-        if (this.skillState) {
+        if (this.skillState && this.attackSkillState) {
           this.setProgress(
-            "MaleCNS 준비 완료 · Fly #001 skill 연결 중",
+            "MaleCNS 준비 완료 · Fly #001 movement + ATTACK skill 연결 중",
           );
           this.worker.postMessage({
-            type: "configure-skill",
-            featureIndices:
-              this.skillState.featureIndices,
+            type: "configure-skills",
             expectedDnCount:
               this.skillState.originalFeatureCount,
+            skills: [
+              {
+                id: "move",
+                featureIndices:
+                  this.skillState.featureIndices,
+                windowSteps:
+                  SKILL_RUNTIME.movementWindowSteps,
+              },
+              {
+                id: "attack-baseline",
+                featureIndices:
+                  this.attackSkillState.selectedIndices,
+                windowSteps:
+                  SKILL_RUNTIME.baselineSteps,
+              },
+              {
+                id: "attack",
+                featureIndices:
+                  this.attackSkillState.selectedIndices,
+                windowSteps:
+                  SKILL_RUNTIME.attackWindowSteps,
+              },
+            ],
           });
+        } else if (this.skillState || this.attackSkillState) {
+          this.fail(
+            "Fly #001 movement/ATTACK skill bundle mismatch",
+          );
+          return;
         } else {
           this.setProgress(
             "실제 MaleCNS connectome 준비 완료",
@@ -207,34 +248,97 @@
         return;
       }
 
-      if (message.type === "skill-ready") {
-        if (!this.skillState) {
+      if (message.type === "skills-ready") {
+        if (!this.skillState || !this.attackSkillState) {
           return;
         }
 
+        const specs = new Map(
+          (message.skills ?? []).map((skill) => [
+            skill.id,
+            skill,
+          ]),
+        );
+        const move = specs.get("move");
+        const attackBaseline =
+          specs.get("attack-baseline");
+        const attack = specs.get("attack");
+
         if (
-          message.selectedCount !==
-          this.skillState.sparseFeatureCount
+          message.dnCount !==
+            this.skillState.originalFeatureCount ||
+          move?.selectedCount !==
+            this.skillState.sparseFeatureCount ||
+          move?.windowSteps !==
+            SKILL_RUNTIME.movementWindowSteps ||
+          attackBaseline?.selectedCount !==
+            this.attackSkillState.sparseFeatureCount ||
+          attackBaseline?.windowSteps !==
+            SKILL_RUNTIME.baselineSteps ||
+          attack?.selectedCount !==
+            this.attackSkillState.sparseFeatureCount ||
+          attack?.windowSteps !==
+            SKILL_RUNTIME.attackWindowSteps
         ) {
           this.fail(
-            "Fly #001 skill feature count mismatch",
+            "Fly #001 exact-window skill contract mismatch",
           );
           return;
         }
 
         this.skillConfigured = true;
-        this.skillBaselineSpikes =
-          new Float64Array(message.selectedCount);
-        this.skillCueSpikes =
-          new Float64Array(message.selectedCount);
         this.skillBaselineHz =
-          new Float64Array(message.selectedCount);
+          new Float64Array(move.selectedCount);
+        this.attackBaselineHz =
+          new Float64Array(attack.selectedCount);
         this.skillPhase = "WAITING";
 
         this.setProgress(
-          "Fly #001 v7 skill 준비 완료 · 브라우저에 저장됨",
+          "Fly #001 v7 movement + v10F ATTACK 준비 완료",
         );
         this.render();
+        return;
+      }
+
+      if (message.type === "skills-reset") {
+        if (message.reason === "calibration") {
+          this.skillCalibrationStartStep =
+            Number(message.startStep ?? 0);
+          this.skillBaselineReady = {
+            movement: false,
+            attack: false,
+          };
+          this.skillPhase = "SETTLE";
+          this.setProgress(
+            "Fly #001 calibration · visual OFF settle 0.52초",
+          );
+        } else if (message.reason === "live") {
+          this.skillPhase = "LIVE";
+          this.skillAction = "IDLE";
+          this.skillScore = 0;
+          this.attackSkillAction = "WAIT";
+          this.attackSkillProbability = 0;
+          this.attackSkillDecisionStep = null;
+          this.setStatus("FLY SKILL");
+          this.setProgress(
+            "Fly #001 LIVE · learned movement + v10F ATTACK readout",
+          );
+        }
+        this.renderTelemetry();
+        return;
+      }
+
+      if (message.type === "skill-window") {
+        this.ingestSkillWindow(message);
+
+        if (
+          this.enabled &&
+          this.skillPhase === "LIVE"
+        ) {
+          this.decode(message.endStep);
+        }
+
+        this.renderTelemetry();
         return;
       }
 
@@ -248,11 +352,6 @@
         this.telemetry.fired = message.fired ?? 0;
         this.telemetry.ms = message.ms ?? 0;
         this.telemetry.steps = message.steps ?? 0;
-
-        this.ingestSkillSample(
-          message.skillSpikes ?? null,
-          this.telemetry.steps,
-        );
 
         if (this.enabled) {
           this.decode();
@@ -273,6 +372,9 @@
         this.lastTargetId = null;
         this.lastTargetDistance = null;
         this.resetSkillRuntime(this.enabled);
+        if (this.enabled && this.skillConfigured) {
+          this.startSkillCalibration();
+        }
         this.renderTelemetry();
 
         const pending = this.pendingResets.get(message.requestId);
@@ -566,177 +668,269 @@
       }
 
       this.skillPhase = active
-        ? "SETTLE"
+        ? "CALIBRATION_PENDING"
         : "WAITING";
-      this.skillPhaseSteps = 0;
-      this.skillLastSteps =
-        this.telemetry.steps ?? 0;
-      this.skillBaselineSpikes?.fill(0);
-      this.skillCueSpikes?.fill(0);
+      this.skillCalibrationStartStep = null;
+      this.skillBaselineReady = {
+        movement: false,
+        attack: false,
+      };
       this.skillBaselineHz?.fill(0);
+      this.attackBaselineHz?.fill(0);
       this.skillAction = "IDLE";
       this.skillScore = 0;
+      this.attackSkillAction = "WAIT";
+      this.attackSkillProbability = 0;
     }
 
     startSkillCalibration() {
       this.resetSkillRuntime(true);
+      this.worker?.postMessage({
+        type: "reset-skill-windows",
+        reason: "calibration",
+      });
       this.setProgress(
-        "Fly #001 calibration · visual OFF baseline 1.04초",
+        "Fly #001 calibration exact-window 정렬 중",
       );
     }
 
-    ingestSkillSample(spikes, steps) {
+    ingestSkillWindow(message) {
       if (
         !this.enabled ||
         !this.skillState ||
+        !this.attackSkillState ||
         !this.skillConfigured ||
-        !Array.isArray(spikes) ||
-        spikes.length !==
-          this.skillState.sparseFeatureCount
+        !Array.isArray(message.spikes)
       ) {
-        this.skillLastSteps = steps;
         return;
       }
 
-      let deltaSteps = steps - this.skillLastSteps;
-      this.skillLastSteps = steps;
+      const skillId = String(message.skillId ?? "");
+      const startStep = Number(message.startStep);
+      const endStep = Number(message.endStep);
+      const windowSteps = Number(message.windowSteps);
 
       if (
-        !Number.isFinite(deltaSteps) ||
-        deltaSteps <= 0
+        !Number.isFinite(startStep) ||
+        !Number.isFinite(endStep) ||
+        !Number.isInteger(windowSteps) ||
+        windowSteps <= 0
       ) {
         return;
       }
 
-      if (this.skillPhase === "SETTLE") {
-        this.skillPhaseSteps += deltaSteps;
+      if (
+        this.skillPhase === "SETTLE" ||
+        this.skillPhase === "BASELINE"
+      ) {
+        if (
+          !Number.isFinite(
+            this.skillCalibrationStartStep,
+          )
+        ) {
+          return;
+        }
+
+        const settleEnd =
+          this.skillCalibrationStartStep +
+          SKILL_RUNTIME.settleSteps;
+        const baselineStart = settleEnd + 1;
+        const baselineEnd =
+          settleEnd +
+          SKILL_RUNTIME.baselineSteps;
 
         if (
-          this.skillPhaseSteps >=
-          SKILL_RUNTIME.windowSteps
+          this.skillPhase === "SETTLE" &&
+          endStep >= settleEnd
         ) {
           this.skillPhase = "BASELINE";
-          this.skillPhaseSteps = 0;
-          this.skillBaselineSpikes.fill(0);
           this.setProgress(
-            "Fly #001 calibration · baseline 수집 중",
+            "Fly #001 calibration · visual OFF baseline 0.52초",
+          );
+        }
+
+        if (
+          startStep !== baselineStart ||
+          endStep !== baselineEnd
+        ) {
+          return;
+        }
+
+        const seconds =
+          SKILL_RUNTIME.baselineSteps *
+          SKILL_RUNTIME.stepSeconds;
+
+        if (
+          skillId === "move" &&
+          windowSteps ===
+            SKILL_RUNTIME.movementWindowSteps &&
+          message.spikes.length ===
+            this.skillState.sparseFeatureCount
+        ) {
+          for (
+            let index = 0;
+            index < this.skillBaselineHz.length;
+            index += 1
+          ) {
+            this.skillBaselineHz[index] =
+              (message.spikes[index] ?? 0) /
+              seconds;
+          }
+          this.skillBaselineReady.movement = true;
+        }
+
+        if (
+          skillId === "attack-baseline" &&
+          windowSteps ===
+            SKILL_RUNTIME.baselineSteps &&
+          message.spikes.length ===
+            this.attackSkillState.sparseFeatureCount
+        ) {
+          for (
+            let index = 0;
+            index < this.attackBaselineHz.length;
+            index += 1
+          ) {
+            this.attackBaselineHz[index] =
+              (message.spikes[index] ?? 0) /
+              seconds;
+          }
+          this.skillBaselineReady.attack = true;
+        }
+
+        if (
+          this.skillBaselineReady.movement &&
+          this.skillBaselineReady.attack
+        ) {
+          this.skillPhase = "LIVE_PENDING";
+          this.worker?.postMessage({
+            type: "reset-skill-windows",
+            reason: "live",
+          });
+          this.setProgress(
+            "Fly #001 calibration 완료 · LIVE window 정렬 중",
           );
         }
         return;
       }
 
-      const target =
-        this.skillPhase === "BASELINE"
-          ? this.skillBaselineSpikes
-          : this.skillPhase === "LIVE"
-            ? this.skillCueSpikes
-            : null;
-
-      if (!target) {
+      if (this.skillPhase !== "LIVE") {
         return;
       }
-
-      for (
-        let index = 0;
-        index < target.length;
-        index += 1
-      ) {
-        target[index] += spikes[index] ?? 0;
-      }
-
-      this.skillPhaseSteps += deltaSteps;
 
       if (
-        this.skillPhaseSteps <
-        SKILL_RUNTIME.windowSteps
+        skillId === "move" &&
+        windowSteps ===
+          SKILL_RUNTIME.movementWindowSteps &&
+        message.spikes.length ===
+          this.skillState.sparseFeatureCount
       ) {
-        return;
-      }
+        const seconds =
+          windowSteps *
+          SKILL_RUNTIME.stepSeconds;
+        const feature =
+          new Float64Array(message.spikes.length);
+        let normSquared = 0;
 
-      const seconds =
-        this.skillPhaseSteps *
-        SKILL_RUNTIME.stepSeconds;
-
-      if (this.skillPhase === "BASELINE") {
-        for (
-          let index = 0;
-          index < this.skillBaselineHz.length;
-          index += 1
-        ) {
-          this.skillBaselineHz[index] =
-            this.skillBaselineSpikes[index] /
-            seconds;
-        }
-
-        this.skillPhase = "LIVE";
-        this.skillPhaseSteps = 0;
-        this.skillCueSpikes.fill(0);
-        this.skillAction = "IDLE";
-        this.setStatus("FLY SKILL");
-        this.setProgress(
-          "Fly #001 LIVE · 학습된 LEFT/RIGHT skill 사용 중",
-        );
-        return;
-      }
-
-      const feature =
-        new Float64Array(target.length);
-      let normSquared = 0;
-
-      for (
-        let index = 0;
-        index < target.length;
-        index += 1
-      ) {
-        const cueHz =
-          target[index] / seconds;
-        const delta =
-          (cueHz -
-            this.skillBaselineHz[index]) /
-          50;
-        feature[index] = delta;
-        normSquared += delta * delta;
-      }
-
-      const norm = Math.sqrt(normSquared);
-
-      if (norm > 1e-9) {
         for (
           let index = 0;
           index < feature.length;
           index += 1
         ) {
-          feature[index] /= norm;
+          const cueHz =
+            (message.spikes[index] ?? 0) /
+            seconds;
+          const delta =
+            (cueHz -
+              this.skillBaselineHz[index]) /
+            50;
+          feature[index] = delta;
+          normSquared += delta * delta;
         }
+
+        const norm = Math.sqrt(normSquared);
+        if (norm > 1e-9) {
+          for (
+            let index = 0;
+            index < feature.length;
+            index += 1
+          ) {
+            feature[index] /= norm;
+          }
+        }
+
+        if (
+          this.skillTargetAvailable &&
+          norm > 1e-9
+        ) {
+          const decision =
+            this.skillApi.choose(
+              feature,
+              this.skillState,
+            );
+          this.skillAction = decision.action;
+          this.skillScore = decision.leftScore;
+        } else {
+          this.skillAction = "IDLE";
+          this.skillScore = 0;
+        }
+        return;
       }
 
       if (
-        this.skillTargetAvailable &&
-        norm > 1e-9
+        skillId === "attack" &&
+        windowSteps ===
+          SKILL_RUNTIME.attackWindowSteps &&
+        message.spikes.length ===
+          this.attackSkillState.sparseFeatureCount
       ) {
-        const decision =
-          this.skillApi.choose(
-            feature,
-            this.skillState,
-          );
-        this.skillAction = decision.action;
-        this.skillScore = decision.leftScore;
-      } else {
-        this.skillAction = "IDLE";
-        this.skillScore = 0;
-      }
+        const seconds =
+          windowSteps *
+          SKILL_RUNTIME.stepSeconds;
+        const currentFeature =
+          new Float64Array(message.spikes.length);
 
-      this.skillPhaseSteps = 0;
-      this.skillCueSpikes.fill(0);
+        for (
+          let index = 0;
+          index < currentFeature.length;
+          index += 1
+        ) {
+          const cueHz =
+            (message.spikes[index] ?? 0) /
+            seconds;
+          currentFeature[index] = clamp(
+            (cueHz -
+              this.attackBaselineHz[index]) /
+              50,
+            -1,
+            1,
+          );
+        }
+
+        const decision =
+          this.attackSkillApi.chooseSparseCurrent(
+            currentFeature,
+            this.attackSkillState,
+          );
+
+        this.attackSkillAction = decision.action;
+        this.attackSkillProbability =
+          decision.attackProbability;
+        this.attackSkillDecisionStep = endStep;
+      }
     }
 
     rate(name) {
       return this.rates.get(name) ?? 0;
     }
 
-    decode() {
+    decode(stepOverride = null) {
+      const decisionStep =
+        Number.isFinite(Number(stepOverride))
+          ? Number(stepOverride)
+          : (this.telemetry.steps ?? 0);
       const now =
-        (this.telemetry.steps ?? 0) * DECODER.brainStepMs;
+        decisionStep * DECODER.brainStepMs;
       const steerL = this.rate("DNa02 L");
       const steerR = this.rate("DNa02 R");
       const strongestSteer = Math.max(steerL, steerR);
@@ -820,9 +1014,28 @@
         this.nextJumpAt = now + DECODER.jumpCooldownMs;
       }
 
-      if (armPull >= DECODER.attackHz && now >= this.nextAttackAt) {
+      if (
+        this.attackSkillState &&
+        this.skillConfigured &&
+        this.skillPhase === "LIVE"
+      ) {
+        if (
+          this.attackSkillAction === "ATTACK" &&
+          decisionStep === this.attackSkillDecisionStep &&
+          now >= this.nextAttackAt
+        ) {
+          attack = true;
+          this.nextAttackAt =
+            now + DECODER.attackCooldownMs;
+        }
+      } else if (
+        !this.attackSkillState &&
+        armPull >= DECODER.attackHz &&
+        now >= this.nextAttackAt
+      ) {
         attack = true;
-        this.nextAttackAt = now + DECODER.attackCooldownMs;
+        this.nextAttackAt =
+          now + DECODER.attackCooldownMs;
       }
 
       if (
@@ -890,6 +1103,10 @@
           headMotor,
           skillPhase: this.skillPhase,
           skillScore: this.skillScore,
+          attackSkillAction:
+            this.attackSkillAction,
+          attackSkillProbability:
+            this.attackSkillProbability,
         },
       });
     }
@@ -973,10 +1190,12 @@
 
       if (this.elements.skill) {
         this.elements.skill.textContent =
-          this.skillState
+          this.skillState && this.attackSkillState
             ? this.skillState.flyId +
               " · " +
-              this.skillState.version
+              this.skillState.version +
+              " + " +
+              this.attackSkillState.version
             : "LEGACY";
       }
 
@@ -985,14 +1204,20 @@
           Number.isFinite(this.skillScore)
             ? this.skillScore.toFixed(3)
             : "—";
+        const attackProbability =
+          Number.isFinite(this.attackSkillProbability)
+            ? this.attackSkillProbability.toFixed(3)
+            : "—";
         this.elements.skillState.textContent =
-          this.skillState
+          this.skillState && this.attackSkillState
             ? this.skillPhase +
               (this.skillPhase === "LIVE"
-                ? " · " +
+                ? " · MOVE " +
                   this.skillAction +
-                  " · " +
-                  score
+                  " " +
+                  score +
+                  " · ATK " +
+                  attackProbability
                 : "")
             : "—";
       }

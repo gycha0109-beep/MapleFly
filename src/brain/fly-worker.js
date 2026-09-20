@@ -370,6 +370,7 @@ let hits = null;
 let skillSlot = null;
 let skillHits = null;
 let skillSelectedCount = 0;
+let skillSamplers = [];
 let rollingStepMs = 0;
 let loopStarted = false;
 
@@ -388,6 +389,11 @@ function resetRuntime(seed = 64, requestId = null) {
   count = new Float64Array(outputGroups.length);
   hits = new Float64Array(outputGroups.length);
   skillHits?.fill(0);
+  for (const sampler of skillSamplers) {
+    sampler.hits.fill(0);
+    sampler.steps = 0;
+    sampler.startStep = 0;
+  }
   rollingStepMs = 0;
 
   self.postMessage({
@@ -397,7 +403,7 @@ function resetRuntime(seed = 64, requestId = null) {
   });
 }
 
-function configureSkill(featureIndices, expectedDnCount) {
+function allDescendingNeurons(expectedDnCount) {
   if (!meta) {
     throw new Error("connectome metadata not ready");
   }
@@ -419,6 +425,10 @@ function configureSkill(featureIndices, expectedDnCount) {
     );
   }
 
+  return allDn;
+}
+
+function validateFeatureIndices(featureIndices, allDn) {
   if (
     !Array.isArray(featureIndices) ||
     featureIndices.length === 0
@@ -426,9 +436,7 @@ function configureSkill(featureIndices, expectedDnCount) {
     throw new Error("Fly skill featureIndices missing");
   }
 
-  skillSlot = new Int16Array(meta.n).fill(-1);
-
-  featureIndices.forEach((relativeIndex, slot) => {
+  featureIndices.forEach((relativeIndex) => {
     if (
       !Number.isInteger(relativeIndex) ||
       relativeIndex < 0 ||
@@ -439,7 +447,16 @@ function configureSkill(featureIndices, expectedDnCount) {
         relativeIndex,
       );
     }
+  });
+}
 
+function configureSkill(featureIndices, expectedDnCount) {
+  const allDn = allDescendingNeurons(expectedDnCount);
+  validateFeatureIndices(featureIndices, allDn);
+
+  skillSlot = new Int16Array(meta.n).fill(-1);
+
+  featureIndices.forEach((relativeIndex, slot) => {
     skillSlot[allDn[relativeIndex]] = slot;
   });
 
@@ -450,6 +467,76 @@ function configureSkill(featureIndices, expectedDnCount) {
     type: "skill-ready",
     dnCount: allDn.length,
     selectedCount: skillSelectedCount,
+  });
+}
+
+function configureSkills(specs, expectedDnCount) {
+  const allDn = allDescendingNeurons(expectedDnCount);
+
+  if (!Array.isArray(specs) || specs.length === 0) {
+    throw new Error("Fly skill specs missing");
+  }
+
+  const ids = new Set();
+
+  skillSamplers = specs.map((spec) => {
+    const id = String(spec?.id ?? "");
+
+    if (!id || ids.has(id)) {
+      throw new Error("Fly skill sampler id invalid: " + id);
+    }
+    ids.add(id);
+
+    const windowSteps = Number(spec?.windowSteps);
+    if (!Number.isInteger(windowSteps) || windowSteps <= 0) {
+      throw new Error(
+        "Fly skill windowSteps invalid for " + id,
+      );
+    }
+
+    const featureIndices = spec?.featureIndices;
+    validateFeatureIndices(featureIndices, allDn);
+
+    const slot = new Int16Array(meta.n).fill(-1);
+    featureIndices.forEach((relativeIndex, featureSlot) => {
+      slot[allDn[relativeIndex]] = featureSlot;
+    });
+
+    return {
+      id,
+      windowSteps,
+      slot,
+      hits: new Uint16Array(featureIndices.length),
+      steps: 0,
+      startStep: brain?.steps ?? 0,
+      selectedCount: featureIndices.length,
+    };
+  });
+
+  self.postMessage({
+    type: "skills-ready",
+    dnCount: allDn.length,
+    skills: skillSamplers.map((sampler) => ({
+      id: sampler.id,
+      selectedCount: sampler.selectedCount,
+      windowSteps: sampler.windowSteps,
+    })),
+  });
+}
+
+function resetSkillWindows(reason = null) {
+  const startStep = brain?.steps ?? 0;
+
+  for (const sampler of skillSamplers) {
+    sampler.hits.fill(0);
+    sampler.steps = 0;
+    sampler.startStep = startStep;
+  }
+
+  self.postMessage({
+    type: "skills-reset",
+    startStep,
+    reason,
   });
 }
 
@@ -492,6 +579,31 @@ function startLoop() {
         if (skillIndex >= 0) {
           skillHits[skillIndex] += 1;
         }
+      }
+
+      for (const sampler of skillSamplers) {
+        const samplerIndex = sampler.slot[neuron];
+        if (samplerIndex >= 0) {
+          sampler.hits[samplerIndex] += 1;
+        }
+      }
+    }
+
+    for (const sampler of skillSamplers) {
+      sampler.steps += 1;
+
+      if (sampler.steps >= sampler.windowSteps) {
+        self.postMessage({
+          type: "skill-window",
+          skillId: sampler.id,
+          windowSteps: sampler.windowSteps,
+          startStep: sampler.startStep + 1,
+          endStep: brain.steps,
+          spikes: Array.from(sampler.hits),
+        });
+        sampler.hits.fill(0);
+        sampler.steps = 0;
+        sampler.startStep = brain.steps;
       }
     }
 
@@ -618,6 +730,29 @@ self.onmessage = (event) => {
             : String(error),
       });
     }
+    return;
+  }
+
+  if (message.type === "configure-skills") {
+    try {
+      configureSkills(
+        message.skills,
+        message.expectedDnCount,
+      );
+    } catch (error) {
+      self.postMessage({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      });
+    }
+    return;
+  }
+
+  if (message.type === "reset-skill-windows") {
+    resetSkillWindows(message.reason ?? null);
     return;
   }
 

@@ -1,7 +1,19 @@
+# synced with main bootstrap; branch gate enabled until merge
+# PR + post-merge v10F browser gate
 name: Verify v10F Browser ATTACK Deployment
 
 on:
   pull_request:
+    paths:
+      - "index.html"
+      - "src/brain/fly-worker.js"
+      - "src/brain/fly-controller.js"
+      - "src/brain/fly-skill-v10-attack.js"
+      - "src/brain/fly-skill-v10f-candidate.json"
+      - "scripts/verify-v10f-browser-equivalence.mjs"
+      - ".github/workflows/verify-v10f-browser-deployment.yml"
+  push:
+    branches: ["main", "feat/v10f-browser-deploy"]
     paths:
       - "index.html"
       - "src/brain/fly-worker.js"
