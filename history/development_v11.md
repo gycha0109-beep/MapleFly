@@ -343,3 +343,34 @@ FAIL이면 gate를 낮추지 않는다.
 4. WAIT/JUMP sequential policy가 jump spam 또는 late-jump로 붕괴하는가
 
 새 phase를 만들 경우 새로운 final seed를 preregister한다.
+
+
+## 구현 전 정밀 고정
+
+runner 구현 전에 다음 누락 경계값을 추가 고정한다.
+
+~~~text
+episode max duration   4.5 s
+no-obstacle target reach radius 42 px
+jump cooldown steps    round(0.75 / 0.02) = 38
+~~~
+
+obstacle complete pass 판정:
+
+~~~text
+RIGHT:
+player left edge > obstacle far(right) edge
+
+LEFT:
+player right edge < obstacle far(left) edge
+~~~
+
+DN_SHUFFLED는 run별 final seed에서 고정 permutation을 만든다.
+
+~~~text
+permutation seed = final base seed + 900000
+~~~
+
+한 run의 모든 DN_SHUFFLED episode는 동일 permutation을 사용한다.
+
+이 값들도 결과를 본 뒤 변경하지 않는다.
