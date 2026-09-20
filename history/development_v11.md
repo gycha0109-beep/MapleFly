@@ -680,3 +680,29 @@ ON/OFF pair는 동일 brain seed를 공유한다.
 해당 side 방향으로 정확히 `280 * 0.02 = 5.6 px` 이동한다.
 obstacle collision physics는 diagnostic trajectory에 적용하지 않는다.
 이는 action policy가 없는 sensory isolation assay이기 때문이다.
+
+
+## Phase B authoritative result
+
+Run `35543660671`:
+
+~~~text
+FULL              85.4%
+LABEL_SHUFFLED    45.8%
+DN_PERMUTED       50.5%
+paired L2          2.0167
+GATE              PASS
+~~~
+
+따라서 Phase A FAIL의 1차 원인은 sensory separability 부족이 아니다.
+
+다음 Phase C는 결과를 보기 전에 새 seed / reward / gate를 고정하고,
+초기 tutorial에서 **episode당 실제 jump actuator budget을 1회**로 제한한다.
+
+이 제약은 "언제 점프해야 하는지"를 trainer가 알려주는 것이 아니다.
+정답 action/timing은 계속 제공하지 않으며,
+단지 Phase A에서 확인된 반복 jump 전략을 action-space에서 제거하는
+tutorial actuator constraint다.
+
+Phase C가 PASS해도 이 single-jump budget 상태를 바로 browser에 배치하지 않는다.
+후속 multi-jump/self-retry generalization을 별도로 통과해야 한다.
