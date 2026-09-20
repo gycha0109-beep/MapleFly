@@ -10,7 +10,8 @@
     "experiment:v7": "node scripts/experiment-v7-tutorial.mjs",
     "experiment:v9": "node scripts/experiment-v9-attack-timing.mjs",
     "experiment:v10": "node scripts/experiment-v10-approach-strike.mjs",
-    "experiment:v10c": "node scripts/experiment-v10c-current-outcome.mjs"
+    "experiment:v10c": "node scripts/experiment-v10c-current-outcome.mjs",
+    "experiment:v10c:deploy": "node scripts/experiment-v10c-deploy-check.mjs"
   },
   "engines": {
     "node": ">=24"
