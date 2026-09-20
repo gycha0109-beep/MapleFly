@@ -303,6 +303,9 @@ async function runEpisode({
   let closestDistance = Math.abs(
     targetX - (playerX + PLAYER_WIDTH / 2),
   );
+  let firstOutcome = null;
+  let firstAttackProbability = null;
+  let firstStrikeStep = null;
 
   const maxSteps = Math.round(MAX_SECONDS / STEP_SECONDS);
 
@@ -361,29 +364,29 @@ async function runEpisode({
         new Float64Array(attackSkill.sparseFeatureCount);
       attackSteps = 0;
 
-      if (decision.action === "ATTACK") {
-        return {
-          outcome: attackWouldHit({
-            playerX,
-            targetX,
-            facing,
-          })
-            ? "HIT"
-            : "WHIFF",
-          movementReached: closestDistance <= 115,
-          attackProbability:
-            decision.attackProbability,
-          strikeStep: step + 1,
-        };
+      if (
+        decision.action === "ATTACK" &&
+        firstOutcome === null
+      ) {
+        firstOutcome = attackWouldHit({
+          playerX,
+          targetX,
+          facing,
+        })
+          ? "HIT"
+          : "WHIFF";
+        firstAttackProbability =
+          decision.attackProbability;
+        firstStrikeStep = step + 1;
       }
     }
   }
 
   return {
-    outcome: "TIMEOUT",
+    outcome: firstOutcome ?? "TIMEOUT",
     movementReached: closestDistance <= 115,
-    attackProbability: null,
-    strikeStep: null,
+    attackProbability: firstAttackProbability,
+    strikeStep: firstStrikeStep,
   };
 }
 
