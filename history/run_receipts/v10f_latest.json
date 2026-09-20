@@ -1,0 +1,25 @@
+{
+  "schema": "maplefly.v10f-run-receipt.1",
+  "runId": 35513768722,
+  "runAttempt": 1,
+  "headSha": "e3c649d18fbfed3a732f3202cdbca8c015faa900",
+  "ref": "refs/heads/main",
+  "syntaxOutcome": "success",
+  "experimentOutcome": "failure",
+  "uploadOutcome": "skipped",
+  "artifact": {
+    "id": null,
+    "name": "maplefly-v10f-35513768722",
+    "digest": null
+  },
+  "meta": null,
+  "practice": null,
+  "totalUpdates": null,
+  "replayPool": null,
+  "beforeSummary": null,
+  "afterSummary": null,
+  "comparison": null,
+  "weightChange": null,
+  "afterCandidate": null,
+  "perRun": null
+}
