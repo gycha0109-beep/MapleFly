@@ -1310,3 +1310,56 @@ weight 변화
 
 Phase D deployment gate가 PASS하기 전에는
 browser `fly-controller.js`의 ATTACK decoder를 교체하지 않는다.
+
+
+### Phase D 실행 최적화 — paired final trajectory
+
+사전 등록한 seed / episode 수 / 거리 / 학습률 / anchor / threshold / gate는 변경하지 않는다.
+
+초기 구현은 같은 final episode를 다음 조건마다 다시 MaleCNS simulation했다.
+
+~~~text
+MOVEMENT_ONLY
+BEFORE FULL / OFF / SHUFFLED
+AFTER  FULL / OFF / SHUFFLED
+~~~
+
+하지만 현재 headless ATTACK 검증에서 ATTACK action은
+신경 입력이나 이동 상태를 바꾸는 feedback이 없고
+첫 ATTACK에서 episode를 terminal 처리하는 역할만 한다.
+
+따라서 같은 brain seed / 같은 sensory input / 같은 Skill 01 movement에서는
+ATTACK을 실제로 terminal 처리하지 않고 끝까지 한 번 simulation하여
+각 5-step ATTACK window의:
+
+~~~text
+DN feature
+player position
+target position
+facing
+time
+그 시점까지의 closest distance
+~~~
+
+를 trajectory로 만든 뒤,
+
+각 BEFORE / AFTER / OFF / SHUFFLED policy가
+그 trajectory에서 처음 threshold 0.5를 넘는 시점을 찾아
+그 시점의 실제 hitbox로 HIT / WHIFF를 판정할 수 있다.
+
+이는 기존 조건별 재시뮬레이션과 policy 의미가 같다.
+ATTACK 이전 trajectory가 policy에 의존하지 않기 때문이다.
+
+오히려 BEFORE / AFTER가 완전히 같은 neural trajectory를 공유하므로
+paired 비교가 더 명확하다.
+
+이 변경은 계산 중복 제거만을 위한 것이다.
+
+~~~text
+practice cohort       변경 없음
+final seeds           변경 없음
+final distances       변경 없음
+episodes / condition  32 유지
+threshold             0.5 유지
+deployment gate       변경 없음
+~~~
