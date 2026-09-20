@@ -117,4 +117,7 @@ result_v2.md
 ## v11
 
 - [development_v11.md](./development_v11.md)  
-  Fly #001 Skill03 JUMP: obstacle visual -> frozen MaleCNS DN -> reward-only WAIT/JUMP SARSA tutorial preregistration
+  Fly #001 Skill03 JUMP preregistration / Phase A 설계 및 후속 진단
+
+- [result_v11.md](./result_v11.md)  
+  Phase A는 100% clear였지만 VISUAL_OFF/SHUFFLED/no-obstacle도 100%여서 jump-spam degenerate policy로 FAIL
