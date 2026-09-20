@@ -5,17 +5,16 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 
 ## Current scope
 
-**Experiment v8 — Fly #001 learned movement skill**
+**Fly #001 — learned movement + learned ATTACK**
 
 - pinned real MaleCNS connectome remains frozen
-- v7 reward-only LEFT / RIGHT motor skill is stored as Fly #001
-- 64 selected descending-neuron features drive the learned movement readout
-- skill state persists in browser localStorage
-- browser control performs a short visual-off baseline calibration before LIVE
-- learned LEFT / RIGHT overrides the legacy steering decoder
-- JUMP / ATTACK / UP / DOWN still use the legacy connectome decoder
+- Skill01 LEFT / RIGHT is the v7 reward-only learned motor readout
+- Skill02 ATTACK is the v10F learned sparse DN readout
+- browser runtime uses exact 26-step movement and 5-step ATTACK windows
+- v10F post-merge browser/headless equivalence passed at FULL 84.4%, whiff 15.6%
+- JUMP / UP / DOWN still use legacy connectome decoders
 - POTION still uses the engineered taste / head-motor proxy
-- continuous VISUAL_ON / VISUAL_OFF headless runtime gate passed
+- Skill03 JUMP v11 is preregistered and not yet learned/deployed
 - no claim is made that the fly understands MapleStory
 
 ## Brain source
