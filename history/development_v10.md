@@ -966,3 +966,137 @@ FULL timeout        <= 25%
 ~~~
 
 로 고정한다.
+
+
+---
+
+## Phase C deployment gate — 평균은 통과, seed 안정성 FAIL
+
+GitHub Actions:
+
+~~~text
+run      35502791050
+commit   fc71164d4a825af15a2523ff3884c165ae931b29
+artifact 10603305959
+
+digest
+sha256:c786b0d0af44f25d658af8510036c5ef67fd2c9f2dc4861e0617881ee5429624
+~~~
+
+frozen candidate:
+
+~~~text
+source run       35465429673
+source run index 1
+selected DN      128
+threshold        0.5
+~~~
+
+training과 confirmation에 쓰지 않은:
+
+~~~text
+seed 41000
+seed 51000
+seed 61000
+
+start distance
+170 / 270 / 360 / 470 px
+~~~
+
+에서 검증했다.
+
+추가 control:
+
+~~~text
+NEURAL_OFF
+DN_SHUFFLED
+~~~
+
+결과:
+
+~~~text
+Run 1
+FULL       90.6%
+OFF         0.0%
+SHUFFLED   31.3%
+
+Run 2
+FULL       56.3%
+OFF         0.0%
+SHUFFLED   21.9%
+
+Run 3
+FULL       65.6%
+OFF         0.0%
+SHUFFLED    0.0%
+
+mean movement reach 100.0%
+mean FULL            70.8%
+mean OFF              0.0%
+mean SHUFFLED        17.7%
+mean whiff           29.2%
+mean timeout          0.0%
+~~~
+
+평균 gate 항목은 대부분 통과했다.
+
+하지만 사전에 정한:
+
+~~~text
+각 run FULL hit >= 60%
+~~~
+
+에서 Run 2가 56.3%로 실패했다.
+
+따라서:
+
+~~~text
+V10C-DEPLOY-GATE
+FAIL
+~~~
+
+로 유지한다.
+
+### 해석
+
+이 결과는 ATTACK readout 방향 자체가 틀렸다는 뜻은 아니다.
+
+~~~text
+FULL 평균        70.8%
+NEURAL_OFF        0.0%
+DN_SHUFFLED      17.7%
+~~~
+
+이므로 실제 DN identity를 쓰는 signal은 분명 존재한다.
+
+문제는 **한 independent practice run에서 고른 single best classifier를
+Fly #001 최종 skill로 고정한 선택이 seed 변화에 충분히 안정적이지 않았다는 것**이다.
+
+특히 Run 1 candidate를 "가장 잘 나온 run"이라는 이유로 고른 것은
+deployment 관점에서 selection bias를 만들 수 있다.
+
+### 다음 원칙 — Phase D continued practice
+
+gate를 낮추거나 56.3%를 반올림해서 통과시키지 않는다.
+
+ensemble로 여러 fly를 묶지도 않는다.
+
+대신 같은 Fly #001 candidate가
+**추가로 더 다양한 환경에서 직접 칼질을 연습**하게 한다.
+
+~~~text
+기존 selected DN / normalization 유지
+기존 classifier weight에서 시작
+
+새 training seed cohort 3개
+각 cohort에서 random ATTACK motor babbling
+HIT / WHIFF outcome만 추가 학습
+
+그 뒤 완전히 새 evaluation seed에서 다시 deployment gate
+~~~
+
+즉 새 모델을 골라 끼우는 것이 아니라
+Fly #001이 추가 경험을 쌓아
+seed-specific 편향을 줄이는 방향으로 간다.
+
+거리 / hittable / 정답 timing은 여전히 policy input에 넣지 않는다.
