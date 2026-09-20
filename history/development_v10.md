@@ -1100,3 +1100,213 @@ Fly #001이 추가 경험을 쌓아
 seed-specific 편향을 줄이는 방향으로 간다.
 
 거리 / hittable / 정답 timing은 여전히 policy input에 넣지 않는다.
+
+
+---
+
+## Phase D 사전 등록 — continued practice / 추가 경험 학습
+
+Phase C deployment gate는 평균 성능은 기준을 넘었지만
+새 seed 중 한 run이 FULL 56.3%로 per-run floor 60%에 실패했다.
+
+이번 Phase D에서는 결과를 보고 candidate를 다시 고르거나
+gate / threshold / feature를 조정하지 않는다.
+
+현재 Fly #001의 frozen v10C candidate 자체를 초기 학습 상태로 두고,
+새로운 outcome-only 경험만 추가한다.
+
+### 고정 상태
+
+아래 항목은 v10C frozen candidate에서 그대로 유지한다.
+
+~~~text
+source candidate  v10c-run1-top128
+DN contract       1,316
+selected DN       128개 그대로 유지
+means             그대로 유지
+scales            그대로 유지
+initial weights   그대로 유지
+initial bias      그대로 유지
+attack threshold  0.5
+attack feature    (current DN Hz - baseline DN Hz) / 50
+attack window     5 steps
+movement skill    기존 Fly #001 Skill 01
+connectome        alextitonis/fly.ai
+brain commit      95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+~~~
+
+selected DN을 다시 뽑지 않는다.
+means/scales도 새 cohort에 맞춰 다시 계산하지 않는다.
+
+즉 새 모델을 처음부터 학습하는 실험이 아니다.
+
+### 새 practice cohort
+
+결과 실행 전에 아래 값으로 고정한다.
+
+~~~text
+practice cohorts     3
+episodes / cohort    64
+total episodes       192
+
+practice base seeds
+71000
+81000
+91000
+
+practice distances
+145 / 245 / 345 / 445 px
+
+random ATTACK probe rate     0.18
+max probes / episode         8
+max seconds / episode        4.5
+~~~
+
+각 episode에서는 기존 Phase C와 동일하게
+임의 시점의 ATTACK motor babbling만 수행한다.
+
+classifier 학습 입력에는 계속 다음을 넣지 않는다.
+
+~~~text
+target distance
+player / target coordinates
+attack range
+hittable flag
+stage / cohort name
+correct attack timing
+~~~
+
+학습 label은 실제 게임 hitbox 결과의:
+
+~~~text
+HIT   = 1
+WHIFF = 0
+~~~
+
+만 사용한다.
+
+WAIT state에는 정답 label을 만들지 않는다.
+
+### continued update 규칙
+
+초기값:
+
+~~~text
+w0 = 현재 frozen v10C weights
+b0 = 현재 frozen v10C bias
+~~~
+
+새 practice episode의 결과는 replay pool에 누적한다.
+
+양쪽 class가 충분히 쌓인 뒤 episode마다
+고정된 balanced minibatch로 SGD 1 step을 수행한다.
+
+사전 고정 hyperparameter:
+
+~~~text
+batch HIT            16
+batch WHIFF          16
+learning rate        0.01
+weight anchor lambda 0.10
+bias anchor lambda   0.10
+~~~
+
+objective의 regularization은 0을 향한 일반 L2가 아니라:
+
+~~~text
+||w - w0||^2
+(b - b0)^2
+~~~
+
+형태의 anchor다.
+
+목적은 새 경험으로 update하면서도
+기존 Skill 02 readout 전체가 급격히 무너지는 것을 막는 것이다.
+
+이 값들은 Phase D 결과를 본 뒤 수정하지 않는다.
+구현 버그가 아닌 성능 이유로 재튜닝하지 않는다.
+
+### final unseen deployment cohort
+
+practice에 사용한 seed와 완전히 분리한다.
+
+~~~text
+final base seeds
+121000
+131000
+141000
+
+final start distances
+165 / 265 / 365 / 455 px
+
+episodes / condition / run
+32
+~~~
+
+같은 final cohort에서:
+
+~~~text
+BEFORE = continued practice 전 frozen v10C
+AFTER  = continued practice 후 candidate
+~~~
+
+를 모두 평가한다.
+
+각 candidate에 대해:
+
+~~~text
+FULL
+NEURAL_OFF
+DN_SHUFFLED
+~~~
+
+를 측정하고 MOVEMENT_ONLY reach도 별도로 기록한다.
+
+BEFORE / AFTER의 DN_SHUFFLED는 run별 같은 permutation을 사용한다.
+
+### deployment gate
+
+기존 gate를 그대로 유지한다.
+
+~~~text
+MOVEMENT_ONLY reach >= 85%
+FULL hit            >= 70%
+FULL - NEURAL_OFF   >= 25%p
+FULL - DN_SHUFFLED  >= 20%p
+FULL whiff          <= 30%
+FULL timeout        <= 25%
+각 run FULL hit     >= 60%
+~~~
+
+최종 승격 판정은 AFTER에 적용한다.
+
+결과가 나쁘더라도 이 기준을 낮추지 않는다.
+
+### 추가 기록
+
+Phase D artifact에는 최소 다음을 남긴다.
+
+~~~text
+practice cohort별 episode / probe / HIT / WHIFF
+실제 SGD update 수
+
+BEFORE / AFTER
+- per-run FULL
+- mean FULL
+- NEURAL_OFF
+- DN_SHUFFLED
+- whiff
+- timeout
+- movement reach
+- gate
+
+weight 변화
+- L2 delta from original
+- bias delta
+- sign flip count
+- mean / max absolute weight delta
+- largest weight changes
+~~~
+
+Phase D deployment gate가 PASS하기 전에는
+browser `fly-controller.js`의 ATTACK decoder를 교체하지 않는다.
