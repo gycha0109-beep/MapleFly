@@ -93,6 +93,8 @@
       this.skillScore = 0;
       this.attackSkillAction = "WAIT";
       this.attackSkillProbability = 0;
+      this.attackSkillDecisionStep = null;
+      this.attackSkillDecisionStep = null;
       this.skillTargetAvailable = false;
 
       this.elements = {
@@ -316,6 +318,7 @@
           this.skillScore = 0;
           this.attackSkillAction = "WAIT";
           this.attackSkillProbability = 0;
+          this.attackSkillDecisionStep = null;
           this.setStatus("FLY SKILL");
           this.setProgress(
             "Fly #001 LIVE · learned movement + v10F ATTACK readout",
@@ -910,6 +913,7 @@
         this.attackSkillAction = decision.action;
         this.attackSkillProbability =
           decision.attackProbability;
+        this.attackSkillDecisionStep = endStep;
       }
     }
 
@@ -1014,6 +1018,7 @@
       ) {
         if (
           this.attackSkillAction === "ATTACK" &&
+          decisionStep === this.attackSkillDecisionStep &&
           now >= this.nextAttackAt
         ) {
           attack = true;
