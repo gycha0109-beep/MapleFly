@@ -898,10 +898,13 @@
           const cueHz =
             (message.spikes[index] ?? 0) /
             seconds;
-          currentFeature[index] =
+          currentFeature[index] = clamp(
             (cueHz -
               this.attackBaselineHz[index]) /
-            50;
+              50,
+            -1,
+            1,
+          );
         }
 
         const decision =
