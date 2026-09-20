@@ -1,5 +1,3 @@
-# synced with main bootstrap; branch gate enabled until merge
-# PR + post-merge v10F browser gate
 name: Verify v10F Browser ATTACK Deployment
 
 on:
@@ -13,7 +11,7 @@ on:
       - "scripts/verify-v10f-browser-equivalence.mjs"
       - ".github/workflows/verify-v10f-browser-deployment.yml"
   push:
-    branches: ["main", "feat/v10f-browser-deploy"]
+    branches: ["main"]
     paths:
       - "index.html"
       - "src/brain/fly-worker.js"

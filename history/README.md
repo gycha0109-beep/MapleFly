@@ -111,4 +111,4 @@ result_v2.md
   Phase A/B 실패, Phase C 학습 PASS 후 deployment FAIL. Phase D random continued practice와 Phase E on-policy first-strike practice도 FAIL
 
 
-- v10 Phase F: self-retry after WHIFF practice가 authoritative run 35516619170에서 deployment gate PASS. ATTACK browser exact-window 배치 단계로 이동.
+- v10 Phase F: authoritative run 35516619170에서 gate PASS 후 PR #2로 browser exact-window ATTACK 배치 완료. post-merge equivalence run 35520326789 PASS (FULL 84.4%, whiff 15.6%).

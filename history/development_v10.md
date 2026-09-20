@@ -2152,3 +2152,35 @@ controller에서 5-step을 6-step으로 근사하지 않는다.
 worker가 exact 5-step / 26-step boundary를 직접 보존하도록 수정하고
 headless/browser equivalence를 통과한 뒤에만
 legacy arm-pull ATTACK decoder를 교체한다.
+
+
+### Browser deployment closure
+
+v10F AFTER candidate를 browser에 배치했다.
+
+최종 post-merge verification:
+
+~~~text
+run      35520326789
+artifact 10608405147
+digest   sha256:5d78aaaf2bf60ac22369e13a2f6c3ad11194626eed41c0d482468565e1d4a0df
+PASS     FULL 84.4%, whiff 15.6%
+~~~
+
+Pages:
+
+~~~text
+run 35520326869
+PASS
+https://gycha0109-beep.github.io/MapleFly/
+~~~
+
+배치 과정에서 equivalence CI가 두 가지 semantic drift를 실제로 잡았다.
+
+1. Phase F ATTACK feature의 `[-1, 1]` clamp 누락
+2. verifier가 first ATTACK에서 trajectory를 조기 종료해 movement reach를
+   Phase F 평가 방식과 다르게 계산하던 문제
+
+둘 다 수정 후 exact replay가 authoritative Phase F 결과와 일치했다.
+
+이후 ATTACK은 legacy arm-pull decoder가 아니라 v10F learned readout을 사용한다.

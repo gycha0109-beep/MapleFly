@@ -834,3 +834,101 @@ MaleCNS connectome은 고정이며,
 다음 작업은 v10F AFTER candidate를 freeze한 뒤
 브라우저에서 정확한 5-step ATTACK window와 420ms cooldown으로
 동일 readout을 배치하고 headless/browser-equivalence를 검증하는 것이다.
+
+
+---
+
+## v10F browser deployment — CLOSED
+
+Phase F learned ATTACK readout의 browser 배치를 완료했다.
+
+Merge:
+
+~~~text
+PR        #2
+merge SHA 07ea604b62ca7bf13a133d5f6cad105114af3833
+~~~
+
+authoritative post-merge browser/headless equivalence:
+
+~~~text
+run      35520326789
+head     07ea604b62ca7bf13a133d5f6cad105114af3833
+artifact 10608405147
+digest   sha256:5d78aaaf2bf60ac22369e13a2f6c3ad11194626eed41c0d482468565e1d4a0df
+result   PASS
+FULL     84.4%
+whiff    15.6%
+~~~
+
+검증은 browser에 실제로 bundle된 v7 movement / v10F ATTACK readout과
+pinned MaleCNS를 사용해 final seed replay를 수행했다.
+
+요구한 first-strike HIT 수:
+
+~~~text
+Run 1 30 / 32
+Run 2 26 / 32
+Run 3 25 / 32
+~~~
+
+를 그대로 재현했다.
+
+Browser runtime contract:
+
+~~~text
+SETTLE              26 brain steps
+BASELINE            26 brain steps
+movement window     26 brain steps
+ATTACK window        5 brain steps
+ATTACK threshold      0.5
+ATTACK cooldown      420 ms
+~~~
+
+ATTACK window는 worker 내부에서 exact brain-step boundary로 직접 집계한다.
+2-step telemetry를 조합해 5-step을 6-step으로 근사하지 않는다.
+
+ATTACK classifier는 계속 다음 game-state 정답 정보를 받지 않는다.
+
+~~~text
+target distance
+target coordinates
+attack range
+hittable flag
+correct attack timing
+~~~
+
+5-step decision은 one-shot이며,
+cooldown이 끝난 뒤 이전 ATTACK decision을 재사용하지 않는다.
+
+GitHub Pages deployment:
+
+~~~text
+run  35520326869
+head 07ea604b62ca7bf13a133d5f6cad105114af3833
+url  https://gycha0109-beep.github.io/MapleFly/
+result PASS
+~~~
+
+동일 merge head에서 v7 deploy / v10C deploy-check / v5 / v10D 관련
+후속 workflow도 모두 success였다.
+
+주의:
+
+GitHub Pages deployment 자체와 배포 artifact/equivalence는 검증됐지만,
+이 실행 환경에서는 외부 Pages URL을 별도 브라우저 렌더러로 직접 열어
+interactive click smoke를 독립 수행하지 못했다.
+
+따라서 현재 확정 범위는:
+
+~~~text
+source -> main merge           VERIFIED
+main -> Pages deployment       VERIFIED
+browser bundle exact contract  VERIFIED
+browser/headless equivalence   VERIFIED
+external interactive UI click  NOT INDEPENDENTLY VERIFIED
+~~~
+
+이다.
+
+Skill02 ATTACK은 이제 연구 후보가 아니라 browser-deployed learned readout이다.
