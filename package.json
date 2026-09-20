@@ -12,7 +12,8 @@
     "experiment:v10": "node scripts/experiment-v10-approach-strike.mjs",
     "experiment:v10c": "node scripts/experiment-v10c-current-outcome.mjs",
     "experiment:v10c:deploy": "node scripts/experiment-v10c-deploy-check.mjs",
-    "experiment:v10d": "node scripts/experiment-v10d-continued-practice.mjs"
+    "experiment:v10d": "node scripts/experiment-v10d-continued-practice.mjs",
+    "experiment:v10e": "node scripts/experiment-v10e-first-strike.mjs"
   },
   "engines": {
     "node": ">=24"
