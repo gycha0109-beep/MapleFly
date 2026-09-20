@@ -1,0 +1,52 @@
+# v10D continued-practice deployment gate
+name: Run MapleFly Experiment v10D Continued Practice
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v10d-continued-practice.yml"
+      - "scripts/experiment-v10d-continued-practice.mjs"
+      - "src/brain/fly-skill-v10-attack.js"
+      - "src/brain/fly-skill-v7.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: |
+          node --check src/brain/fly-skill-v10-attack.js
+          node --check scripts/experiment-v10d-continued-practice.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run continued-practice experiment
+        run: npm run experiment:v10d
+
+      - name: Upload experiment result
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v10d-${{ github.run_id }}
+          path: results/experiment-v10d
+          if-no-files-found: error
+          retention-days: 30
