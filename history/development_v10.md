@@ -1483,3 +1483,234 @@ final distance 165 / 265 / 365 / 455는
 이제 결과를 확인했으므로 이후 tuning 또는 deployment gate에 재사용하지 않는다.
 
 다음 phase에서는 완전히 새로운 practice / final cohort를 사전 등록한다.
+
+
+---
+
+## Phase E 사전 등록 — on-policy first-strike continued practice
+
+Phase D에서는 random motor-babbling outcome을 1,375회 추가로 관찰하고
+187번 SGD update를 수행했지만
+unseen final cohort의 mean FULL hit가 65.6%에서 65.6%로 변하지 않았다.
+
+동시에:
+
+~~~text
+timeout 0.0%
+whiff  34.4%
+~~~
+
+였으므로 현재 deployment failure는
+공격 기회를 찾지 못하는 문제가 아니라
+**실제로 deployment가 선택하는 첫 ATTACK의 false positive** 문제로 본다.
+
+Phase E에서는 random window를 더 많이 수집하는 대신
+현재 Fly #001 policy가 스스로 고른 첫 strike의 결과를 학습한다.
+
+### 초기 학습 상태
+
+Phase D AFTER candidate를 그대로 이어서 사용한다.
+
+provenance:
+
+~~~text
+Phase D run       35509172541
+artifact          10604434886
+receipt commit    4ff48ba66a0d8b80193c2ab9b6a804f7e3b13c6a
+source candidate  Phase D AFTER
+~~~
+
+아래는 그대로 고정한다.
+
+~~~text
+DN contract       1,316
+selected DN       128개 유지
+means             Phase D와 동일
+scales            Phase D와 동일
+attack threshold  0.5
+movement skill    Fly #001 Skill 01
+connectome        alextitonis/fly.ai
+brain commit      95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+attack window     5 steps
+max seconds       4.5
+~~~
+
+selected DN / means / scales를 다시 선택하거나 다시 fit하지 않는다.
+
+### practice action 규칙
+
+각 practice episode에서 Fly #001은 Skill 01로 target에 접근한다.
+
+각 5-step ATTACK window에서:
+
+~~~text
+현재 DN state
+-> 현재 Phase E classifier
+-> P(hit)
+~~~
+
+를 계산한다.
+
+Fly #001 policy가 처음:
+
+~~~text
+P(hit) >= 0.5
+~~~
+
+를 선택한 순간 실제 ATTACK을 수행한다.
+
+그 실제 hitbox 결과만:
+
+~~~text
+HIT   = 1
+WHIFF = 0
+~~~
+
+로 학습한다.
+
+중요:
+
+- Trainer가 ATTACK 시점을 선택하지 않는다.
+- target distance / coordinates / attack range / hittable / correct timing은 classifier input에 없다.
+- threshold를 넘지 못한 episode는 강제로 공격시키지 않는다.
+- 첫 ATTACK 이후 episode를 종료한다.
+- 따라서 practice sample은 실제 deployment의 first-strike 분포에서 나온다.
+
+이 phase에서는 random ATTACK probe를 섞지 않는다.
+목적은 random exploration을 더 하는 것이 아니라
+deployment false positive를 직접 경험하는지 검증하는 것이다.
+
+### practice cohort
+
+Phase D final cohort는 이후 tuning에 재사용하지 않는다.
+
+새 practice:
+
+~~~text
+cohorts              3
+episodes / cohort    96
+total episodes       288
+
+practice base seeds
+181000
+191000
+201000
+
+practice distances
+135 / 235 / 335 / 435 px
+~~~
+
+이 seed / distance는 이전 Phase D final cohort와 겹치지 않는다.
+
+### update 규칙
+
+Phase D에서 사용한 optimizer scale을 유지하고
+데이터 수집 방식만 바꿔 원인을 분리한다.
+
+~~~text
+learning rate        0.01
+weight anchor lambda 0.10
+bias anchor lambda   0.10
+replay minibatch     32
+~~~
+
+anchor 기준:
+
+~~~text
+w_anchor = Phase D AFTER weights
+b_anchor = Phase D AFTER bias
+~~~
+
+replay minibatch는 HIT/WHIFF를 강제로 50:50으로 맞추지 않는다.
+
+현재 policy가 실제로 경험한 first-strike sample pool에서
+균등 random sampling한다.
+
+이유는 deployment에서 실제 first-strike outcome 분포 자체를
+classifier calibration에 반영하기 위함이다.
+
+sample이 32개 이상 쌓인 뒤부터
+각 새 episode 후 minibatch SGD 1회를 수행한다.
+
+성능을 본 뒤 learning rate / anchor / batch를 변경하지 않는다.
+
+### 완전히 새로운 final deployment cohort
+
+practice와 분리한다.
+
+~~~text
+final base seeds
+251000
+261000
+271000
+
+final distances
+175 / 275 / 375 / 465 px
+
+episodes / condition / run
+32
+~~~
+
+같은 final neural trajectory에서:
+
+~~~text
+BEFORE = Phase D AFTER candidate
+AFTER  = Phase E continued-practice candidate
+~~~
+
+를 paired comparison한다.
+
+control:
+
+~~~text
+MOVEMENT_ONLY
+FULL
+NEURAL_OFF
+DN_SHUFFLED
+~~~
+
+### deployment gate
+
+기존 gate를 그대로 유지한다.
+
+~~~text
+MOVEMENT_ONLY reach >= 85%
+FULL hit            >= 70%
+FULL - NEURAL_OFF   >= 25%p
+FULL - DN_SHUFFLED  >= 20%p
+FULL whiff          <= 30%
+FULL timeout        <= 25%
+각 run FULL hit     >= 60%
+~~~
+
+AFTER가 모두 만족해야 PASS다.
+
+결과에 맞춰 gate를 낮추지 않는다.
+
+### 추가 기록
+
+artifact / history에는:
+
+~~~text
+cohort별 first-strike HIT / WHIFF / NO_STRIKE
+실제 update 수
+replay pool hit share
+
+BEFORE / AFTER per-run
+mean FULL
+OFF
+SHUFFLED
+whiff
+timeout
+movement reach
+
+weight L2 delta
+bias delta
+sign flip count
+largest changes
+~~~
+
+를 기록한다.
+
+Phase E gate PASS 전에는
+browser ATTACK decoder를 변경하지 않는다.
