@@ -1,16 +1,16 @@
 {
   "schema": "maplefly.v10f-run-receipt.1",
-  "runId": 35513768722,
+  "runId": 35515717958,
   "runAttempt": 1,
-  "headSha": "e3c649d18fbfed3a732f3202cdbca8c015faa900",
+  "headSha": "be96c23424f062c96490ff42cc1c29d3c8f57d09",
   "ref": "refs/heads/main",
   "syntaxOutcome": "success",
-  "experimentOutcome": "failure",
-  "uploadOutcome": "skipped",
+  "experimentOutcome": "success",
+  "uploadOutcome": "success",
   "artifact": {
-    "id": null,
-    "name": "maplefly-v10f-35513768722",
-    "digest": null
+    "id": 10606304168,
+    "name": "maplefly-v10f-35515717958",
+    "digest": "c3d2e2feb36a405560c78ac3b2ce7bb83b664f910e435a82b01346177c57c62f"
   },
   "meta": null,
   "practice": null,
