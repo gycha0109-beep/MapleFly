@@ -116,3 +116,55 @@ LC4 obstacle cue ON/OFF가 matched sensory trajectory에서
 DN feature를 실제로 분리시키는지 먼저 측정한다.
 
 gate를 낮추지 않는다.
+
+
+---
+
+## Phase B — obstacle sensory separability assay
+
+판정:
+
+~~~text
+V11B-SENSORY-GATE=PASS
+~~~
+
+Workflow:
+
+~~~text
+run      35543660671
+head     a0ec7e8c56600f4ccb57fdf693447e2b63304cd9
+artifact 10615429165
+digest   sha256:5178991d436b0c423557a7e0462245598f773568a019ce8b242428c7779d70d6
+~~~
+
+unseen evaluation:
+
+~~~text
+Run 1 FULL            82.8%
+Run 2 FULL            87.5%
+Run 3 FULL            85.9%
+
+mean FULL              85.4%
+LABEL_SHUFFLED         45.8%
+FULL - LABEL_SHUFFLED +39.6%p
+DN_PERMUTED            50.5%
+FULL - DN_PERMUTED    +34.9%p
+
+paired ON/OFF L2 mean   2.0167
+minimum run FULL        82.8%
+~~~
+
+사전 gate:
+
+~~~text
+mean FULL >= 80%                 PASS
+every FULL run >= 70%            PASS
+FULL - LABEL_SHUFFLED >= 20pp    PASS
+~~~
+
+해석:
+
+- obstacle LC4 cue는 unseen seed에서도 frozen MaleCNS DN state에 선형 분리 가능한 흔적을 만든다.
+- DN identity permutation에서 약 chance까지 붕괴하므로 단순 global-rate 증가만으로 설명되지 않는다.
+- Phase A의 jump-spam 실패를 "obstacle sensory cue가 brain에 전달되지 않았다"로 설명할 수 없다.
+- 다음 단계는 sensory encoding 변경이 아니라 action-learning 구조를 바꾸는 것이다.
