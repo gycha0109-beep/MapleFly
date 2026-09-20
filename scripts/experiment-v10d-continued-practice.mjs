@@ -84,22 +84,38 @@ async function practiceEpisode(C,slots,n,e,random,clf){
   }
   return{samples,probes,hits,whiffs,closestDistance:closest,movementReached:closest<=115};
 }
-async function evalEpisode(C,slots,n,e,clf,cond,p){
-  const s=await initEpisode(C,slots,n,e);let ac=new Float64Array(n),mc=new Float64Array(n),as=0,ms=0,closest=Math.abs(s.tx-(s.px+PW/2)),out="TIMEOUT",tt=MAX_SECONDS,maxP=0;
+async function traceEpisode(C,slots,n,e){
+  const s=await initEpisode(C,slots,n,e);let ac=new Float64Array(n),mc=new Float64Array(n),as=0,ms=0,closest=Math.abs(s.tx-(s.px+PW/2));const decisions=[];
   for(let step=0;step<Math.round(MAX_SECONDS/DT);step++){
     stim(s.b,C.inputGroups,s.en.enc(s.px,s.tx,true));s.b.step();collect(s.b,slots,ac);collect(s.b,slots,mc);
     const dir=s.move==="LEFT"?-1:s.move==="RIGHT"?1:0;if(dir)s.face=dir;s.px=clamp(s.px+dir*SPD*DT,0,W-PW);const dist=Math.abs(s.tx-(s.px+PW/2));closest=Math.min(closest,dist);as++;ms++;
     if(ms>=MS){s.move=move(rate(mc,ms),s.base);mc=new Float64Array(n);ms=0}
     if(as<AS)continue;
     const f=raw(rate(ac,as),s.base);ac=new Float64Array(n);as=0;
-    if(cond==="MOVEMENT_ONLY")continue;
-    const q=cond==="NEURAL_OFF"?clf.probabilityRaw(f,false):clf.probabilityRaw(f,true,cond==="DN_SHUFFLED"?p:null);maxP=Math.max(maxP,q);
-    if(q>=THRESHOLD){out=hit(s.px,s.tx,s.face)?"HIT":"WHIFF";tt=(step+1)*DT;break}
+    decisions.push({feature:f,playerX:s.px,targetX:s.tx,facing:s.face,time:(step+1)*DT,distance:dist,closestDistance:closest});
   }
-  return{outcome:out,movementReached:closest<=115,terminalTime:tt,maxAttackProbability:maxP,brainSeed:e.brainSeed,side:e.side,startDistance:e.startDistance};
+  return{brainSeed:e.brainSeed,side:e.side,startDistance:e.startDistance,movementReached:closest<=115,decisions};
+}
+function scoreTrace(trace,clf,cond,p){
+  if(cond==="MOVEMENT_ONLY")return{outcome:"TIMEOUT",movementReached:trace.movementReached,terminalTime:MAX_SECONDS,maxAttackProbability:0,brainSeed:trace.brainSeed,side:trace.side,startDistance:trace.startDistance};
+  let maxP=0;
+  for(const d of trace.decisions){
+    const q=cond==="NEURAL_OFF"?clf.probabilityRaw(d.feature,false):clf.probabilityRaw(d.feature,true,cond==="DN_SHUFFLED"?p:null);
+    maxP=Math.max(maxP,q);
+    if(q>=THRESHOLD)return{outcome:hit(d.playerX,d.targetX,d.facing)?"HIT":"WHIFF",movementReached:d.closestDistance<=115,terminalTime:d.time,maxAttackProbability:maxP,brainSeed:trace.brainSeed,side:trace.side,startDistance:trace.startDistance};
+  }
+  return{outcome:"TIMEOUT",movementReached:trace.movementReached,terminalTime:MAX_SECONDS,maxAttackProbability:maxP,brainSeed:trace.brainSeed,side:trace.side,startDistance:trace.startDistance};
 }
 function summarize(rows){const n=rows.length,h=rows.filter(x=>x.outcome==="HIT").length,w=rows.filter(x=>x.outcome==="WHIFF").length,t=rows.filter(x=>x.outcome==="TIMEOUT").length;return{hitRate:h/n,whiffRate:w/n,timeoutRate:t/n,movementReachRate:mean(rows.map(x=>x.movementReached?1:0)),rows}}
-async function evalSet(C,slots,n,list,clf,cond,p){const rows=[];for(let i=0;i<list.length;i++){rows.push(await evalEpisode(C,slots,n,list[i],clf,cond,p));if((i+1)%8===0)await new Promise(r=>setImmediate(r))}return summarize(rows)}
+async function evaluatePaired(C,slots,n,list,before,after,p){
+  const movement=[],b={FULL:[],NEURAL_OFF:[],DN_SHUFFLED:[]},a={FULL:[],NEURAL_OFF:[],DN_SHUFFLED:[]};
+  for(let i=0;i<list.length;i++){
+    const trace=await traceEpisode(C,slots,n,list[i]);movement.push(scoreTrace(trace,before,"MOVEMENT_ONLY",p));
+    for(const cond of ["FULL","NEURAL_OFF","DN_SHUFFLED"]){b[cond].push(scoreTrace(trace,before,cond,p));a[cond].push(scoreTrace(trace,after,cond,p))}
+    if((i+1)%8===0){console.log("[paired-final] "+(i+1)+"/"+list.length+" BEFORE="+pct(summarize(b.FULL).hitRate)+" AFTER="+pct(summarize(a.FULL).hitRate));await new Promise(r=>setImmediate(r))}
+  }
+  return{MOVEMENT_ONLY:summarize(movement),BEFORE:{FULL:summarize(b.FULL),NEURAL_OFF:summarize(b.NEURAL_OFF),DN_SHUFFLED:summarize(b.DN_SHUFFLED)},AFTER:{FULL:summarize(a.FULL),NEURAL_OFF:summarize(a.NEURAL_OFF),DN_SHUFFLED:summarize(a.DN_SHUFFLED)}};
+}
 function summarizeVersion(runs,key){
   const mv=mean(runs.map(r=>r.MOVEMENT_ONLY.movementReachRate)),full=mean(runs.map(r=>r[key].FULL.hitRate)),off=mean(runs.map(r=>r[key].NEURAL_OFF.hitRate)),sh=mean(runs.map(r=>r[key].DN_SHUFFLED.hitRate)),wh=mean(runs.map(r=>r[key].FULL.whiffRate)),to=mean(runs.map(r=>r[key].FULL.timeoutRate));
   const gate=mv>=.85&&full>=.70&&full-off>=.25&&full-sh>=.20&&wh<=.30&&to<=.25&&runs.every(r=>r[key].FULL.hitRate>=.60);
@@ -129,16 +145,13 @@ async function main(){
   }
   const runs=[];
   for(let r=0;r<FINAL_SEEDS.length;r++){
-    const list=schedD(FINAL_EPISODES,FINAL_SEEDS[r],FINAL_DISTANCES),p=perm(aSkill.sparseFeatureCount,FINAL_SEEDS[r]^0xd15ea5e);
-    const movement=await evalSet(C,slots,dn.length,list,before,"MOVEMENT_ONLY",p),beforeEval={},afterEval={};
-    for(const cond of ["FULL","NEURAL_OFF","DN_SHUFFLED"])beforeEval[cond]=await evalSet(C,slots,dn.length,list,before,cond,p);
-    for(const cond of ["FULL","NEURAL_OFF","DN_SHUFFLED"])afterEval[cond]=await evalSet(C,slots,dn.length,list,after,cond,p);
-    runs.push({run:r+1,seed:FINAL_SEEDS[r],MOVEMENT_ONLY:movement,BEFORE:beforeEval,AFTER:afterEval});
-    console.log("[final] run="+(r+1)+" BEFORE="+pct(beforeEval.FULL.hitRate)+" AFTER="+pct(afterEval.FULL.hitRate)+" OFF="+pct(afterEval.NEURAL_OFF.hitRate)+" SHUFFLED="+pct(afterEval.DN_SHUFFLED.hitRate));
+    const list=schedD(FINAL_EPISODES,FINAL_SEEDS[r],FINAL_DISTANCES),p=perm(aSkill.sparseFeatureCount,FINAL_SEEDS[r]^0xd15ea5e),pairedEval=await evaluatePaired(C,slots,dn.length,list,before,after,p);
+    runs.push({run:r+1,seed:FINAL_SEEDS[r],MOVEMENT_ONLY:pairedEval.MOVEMENT_ONLY,BEFORE:pairedEval.BEFORE,AFTER:pairedEval.AFTER});
+    console.log("[final] run="+(r+1)+" BEFORE="+pct(pairedEval.BEFORE.FULL.hitRate)+" AFTER="+pct(pairedEval.AFTER.FULL.hitRate)+" OFF="+pct(pairedEval.AFTER.NEURAL_OFF.hitRate)+" SHUFFLED="+pct(pairedEval.AFTER.DN_SHUFFLED.hitRate));
   }
   const beforeSummary=summarizeVersion(runs,"BEFORE"),afterSummary=summarizeVersion(runs,"AFTER"),beforeState=before.serialize(),afterState=after.serialize(),weightChange=weightDiagnostics(beforeState,afterState);
   const comparison={fullHitDelta:afterSummary.meanFullHitRate-beforeSummary.meanFullHitRate,whiffDelta:afterSummary.meanFullWhiffRate-beforeSummary.meanFullWhiffRate,timeoutDelta:afterSummary.meanFullTimeoutRate-beforeSummary.meanFullTimeoutRate,neuronIdentityContributionDelta:afterSummary.neuronIdentityContribution-beforeSummary.neuronIdentityContribution};
-  const meta={schema:"maplefly.experiment-v10d.continued-practice.1",phase:"D",brainRepository:SOURCE.repository,brainCommit:SOURCE.commit,sourceAttackSkillVersion:aSkill.version,practiceSeeds:PRACTICE_SEEDS,practiceDistances:PRACTICE_DISTANCES,practiceEpisodesPerCohort:PRACTICE_EPISODES,finalSeeds:FINAL_SEEDS,finalDistances:FINAL_DISTANCES,finalEpisodesPerConditionPerRun:FINAL_EPISODES,probeRate:PROBE_RATE,maxProbesPerEpisode:MAX_PROBES,batchPerClass:BATCH_PER_CLASS,learningRate:LEARNING_RATE,weightAnchor:WEIGHT_ANCHOR,biasAnchor:BIAS_ANCHOR,attackThreshold:THRESHOLD,leakageGuard:"learner never receives target distance, coordinates, attack range, hittable flag, cohort name or correct timing; only actual exploratory ATTACK HIT/WHIFF outcomes update the fixed v10C readout",gate:"movement>=85%; FULL>=70%; FULL-OFF>=25pp; FULL-SHUFFLED>=20pp; whiff<=30%; timeout<=25%; every FULL>=60%"};
+  const meta={schema:"maplefly.experiment-v10d.continued-practice.1",phase:"D",brainRepository:SOURCE.repository,brainCommit:SOURCE.commit,sourceAttackSkillVersion:aSkill.version,practiceSeeds:PRACTICE_SEEDS,practiceDistances:PRACTICE_DISTANCES,practiceEpisodesPerCohort:PRACTICE_EPISODES,finalSeeds:FINAL_SEEDS,finalDistances:FINAL_DISTANCES,finalEpisodesPerConditionPerRun:FINAL_EPISODES,pairedEvaluation:"one full MaleCNS trajectory per final episode; BEFORE/AFTER/OFF/SHUFFLED scored on identical DN windows because ATTACK has no trajectory feedback in this headless gate",probeRate:PROBE_RATE,maxProbesPerEpisode:MAX_PROBES,batchPerClass:BATCH_PER_CLASS,learningRate:LEARNING_RATE,weightAnchor:WEIGHT_ANCHOR,biasAnchor:BIAS_ANCHOR,attackThreshold:THRESHOLD,leakageGuard:"learner never receives target distance, coordinates, attack range, hittable flag, cohort name or correct timing; only actual exploratory ATTACK HIT/WHIFF outcomes update the fixed v10C readout",gate:"movement>=85%; FULL>=70%; FULL-OFF>=25pp; FULL-SHUFFLED>=20pp; whiff<=30%; timeout<=25%; every FULL>=60%"};
   await writeFile(resolve(OUT,"experiment_v10d.json"),JSON.stringify({meta,practice,totalUpdates:updates,replayPool:{hits:pos.length,whiffs:neg.length},beforeCandidate:beforeState,afterCandidate:afterState,weightChange,comparison,beforeSummary,afterSummary,runs},null,2));
   console.log("V10D-BEFORE-GATE="+(beforeSummary.gate?"PASS":"FAIL")+" FULL="+pct(beforeSummary.meanFullHitRate)+" OFF="+pct(beforeSummary.meanNeuralOffHitRate)+" SHUFFLED="+pct(beforeSummary.meanDnShuffledHitRate)+" whiff="+pct(beforeSummary.meanFullWhiffRate)+" timeout="+pct(beforeSummary.meanFullTimeoutRate));
   console.log("V10D-AFTER-GATE="+(afterSummary.gate?"PASS":"FAIL")+" FULL="+pct(afterSummary.meanFullHitRate)+" OFF="+pct(afterSummary.meanNeuralOffHitRate)+" SHUFFLED="+pct(afterSummary.meanDnShuffledHitRate)+" whiff="+pct(afterSummary.meanFullWhiffRate)+" timeout="+pct(afterSummary.meanFullTimeoutRate));
