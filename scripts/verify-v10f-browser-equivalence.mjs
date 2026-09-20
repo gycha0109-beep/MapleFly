@@ -192,7 +192,11 @@ function attackDecision(counts, baselineHz) {
 
   for (let index = 0; index < counts.length; index += 1) {
     const currentHz = counts[index] / seconds;
-    feature[index] = (currentHz - baselineHz[index]) / 50;
+    feature[index] = clamp(
+      (currentHz - baselineHz[index]) / 50,
+      -1,
+      1,
+    );
   }
 
   return attackApi.chooseSparseCurrent(
