@@ -12,7 +12,7 @@ on:
       - "scripts/verify-v10f-browser-equivalence.mjs"
       - ".github/workflows/verify-v10f-browser-deployment.yml"
   push:
-    branches: ["main"]
+    branches: ["main", "feat/v10f-browser-deploy"]
     paths:
       - "index.html"
       - "src/brain/fly-worker.js"
