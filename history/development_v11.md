@@ -420,3 +420,23 @@ shuffle seed = cohort base seed + 5000
 ~~~
 
 따라서 curriculum 순서도 run마다 재현 가능하며 결과 후 변경하지 않는다.
+
+
+## Phase A authoritative result
+
+Run `35542467674`는 workflow success / scientific FAIL이다.
+
+~~~text
+FULL          100%
+VISUAL_OFF    100%
+DN_SHUFFLED   100%
+NO_OBS_JUMP   100%
+GATE          FAIL
+~~~
+
+정책이 obstacle-specific timing을 배우지 않고
+상시 점프 전략으로 붕괴했다.
+
+따라서 reward를 바로 재튜닝하지 않는다.
+preregister한 FAIL 분석 우선순위 1번에 따라,
+먼저 obstacle LC4 cue의 DN sensory separability를 별도 paired assay로 측정한다.
