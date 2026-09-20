@@ -1,0 +1,345 @@
+# MapleFly v11 개발 기록 — Fly #001 Skill03 JUMP preregistration
+
+## 목적
+
+Skill01 LEFT / RIGHT와 Skill02 ATTACK 다음으로,
+Fly #001이 **언제 점프해야 장애물을 넘을 수 있는지**를
+frozen MaleCNS descending-neuron state에서 reward-only로 배우는지 검증한다.
+
+이 문서는 v11 결과를 보기 전에 실험 조건을 고정하는 preregistration이다.
+
+## 과학적 경계
+
+MaleCNS connectome synapse는 계속 고정한다.
+
+학습 대상은:
+
+~~~text
+MaleCNS DN activity
+-> linear action-value readout
+-> WAIT / JUMP
+~~~
+
+뿐이다.
+
+다음 값은 JUMP policy input에 직접 넣지 않는다.
+
+~~~text
+obstacle distance
+obstacle x/y
+obstacle width/height
+player x/y
+jump arc
+ground-truth jump timing
+can-clear / should-jump flag
+target coordinate
+episode cohort
+~~~
+
+환경은 시각 자극으로만 obstacle 정보를 MaleCNS에 전달하고,
+trainer는 action을 선택하지 않는다.
+
+trainer가 사용하는 것은 실제 게임 outcome / reward뿐이다.
+
+## 환경
+
+브라우저 물리와 동일한 상수를 사용한다.
+
+~~~text
+world width     1000 px
+groundY          530 px
+gravity         1400 px/s^2
+move speed       280 px/s
+jump velocity    600 px/s
+brain dt        0.02 s
+~~~
+
+player:
+
+~~~text
+width  34 px
+height 46 px
+~~~
+
+obstacle:
+
+~~~text
+width  38 px
+height 54 px
+~~~
+
+장애물은 시작점 기준 이동 방향 앞쪽에 둔다.
+
+practice obstacle distance:
+
+~~~text
+145 / 185 / 225 / 265 px
+~~~
+
+target beacon은 obstacle far edge보다 160 px 더 멀리 둔다.
+
+좌/우 방향은 block마다 교대한다.
+
+## sensory encoding
+
+ground:
+
+~~~text
+SNta_L = 0.05 when grounded
+SNta_R = 0.05 when grounded
+~~~
+
+target beacon은 기존 movement encoder의
+LC10a / LPLC1 / LPLC2를 사용한다.
+
+obstacle looming cue는 이동 방향 쪽 `LC4`에만 추가한다.
+
+~~~text
+obstacle visual radius = 280 px
+LC4 drive =
+clamp((280 - front_distance) / 280 * 0.80, 0, 0.80)
+~~~
+
+LC4는 sensory transduction이며 policy 입력이 아니다.
+policy는 LC4 값이나 obstacle distance를 보지 않고
+그 자극을 통과한 MaleCNS DN activity만 본다.
+
+## 기존 Skill01 사용
+
+horizontal movement는 frozen v7 Skill01을 그대로 사용한다.
+
+~~~text
+movement window 26 brain steps
+baseline        26 brain steps
+settle          26 brain steps
+~~~
+
+v11은 movement readout을 다시 학습하지 않는다.
+
+ATTACK / POTION / climbing은 v11 tutorial에서 비활성화한다.
+
+## JUMP policy state
+
+매 5 brain steps마다 전체 1,316 DN의 현재 rate를 계산한다.
+
+~~~text
+feature_i =
+clamp((current_dn_hz_i - baseline_dn_hz_i) / 50, -1, 1)
+~~~
+
+policy는 이 feature만 사용한다.
+
+## action
+
+~~~text
+WAIT
+JUMP
+~~~
+
+5-step decision boundary에서 policy가 action을 선택한다.
+
+JUMP가 선택되어도 실제 actuator는 grounded일 때만 발동한다.
+airborne 상태에서 JUMP를 선택해도 별도 hidden correction은 하지 않는다.
+
+실제 JUMP actuator cooldown은 750 ms로 둔다.
+
+## learner
+
+Phase A는 full 1,316-DN linear SARSA(0) readout으로 시작한다.
+
+action별:
+
+~~~text
+Q_WAIT(x) = b_wait + w_wait · x
+Q_JUMP(x) = b_jump + w_jump · x
+~~~
+
+epsilon-greedy exploration:
+
+~~~text
+cohort 1 epsilon 0.35
+cohort 2 epsilon 0.20
+cohort 3 epsilon 0.08
+~~~
+
+optimizer:
+
+~~~text
+learning rate 0.005
+gamma         0.95
+TD error clamp [-2, 2]
+L2 decay      0.0001
+~~~
+
+정책은 trainer의 correct action을 받지 않는다.
+
+## reward
+
+reward는 action 정답표가 아니라 실제 게임 outcome에서 계산한다.
+
+장애물 episode:
+
+~~~text
+obstacle 완전 통과            +2.00 terminal
+5-step 동안 obstacle에 block  -0.04
+실제 JUMP actuator 발동       -0.02
+timeout                       -1.00 terminal
+~~~
+
+no-obstacle episode:
+
+~~~text
+target beacon 도달            +1.00 terminal
+실제 JUMP actuator 발동       -0.02
+timeout                       -0.50 terminal
+~~~
+
+즉 "지금 점프가 정답"이라는 label은 제공하지 않는다.
+
+## practice curriculum
+
+총 288 episodes:
+
+~~~text
+3 cohorts × 96 episodes
+~~~
+
+각 cohort:
+
+~~~text
+72 obstacle episodes
+24 no-obstacle episodes
+~~~
+
+practice base seeds:
+
+~~~text
+451000
+461000
+471000
+~~~
+
+practice obstacle distances:
+
+~~~text
+145 / 185 / 225 / 265 px
+~~~
+
+각 episode의 brain seed / side / obstacle distance는
+미리 결정된 deterministic schedule로 생성한다.
+
+## final evaluation
+
+학습 종료 후 weights를 freeze하고
+epsilon=0 greedy policy로 unseen final을 측정한다.
+
+final seeds:
+
+~~~text
+501000
+511000
+521000
+~~~
+
+final obstacle distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+각 run:
+
+~~~text
+32 obstacle episodes
+16 no-obstacle specificity episodes
+~~~
+
+조건:
+
+~~~text
+FULL
+  obstacle visual ON
+  learned DN identity 그대로
+
+VISUAL_OFF
+  obstacle LC4 cue만 제거
+  target beacon / ground input 유지
+
+DN_SHUFFLED
+  obstacle visual ON
+  fixed DN identity permutation
+
+NO_OBSTACLE
+  obstacle 없음
+  obstacle cue 없음
+  target beacon은 유지
+~~~
+
+VISUAL_OFF / DN_SHUFFLED에서도 trainer가 action을 수정하지 않는다.
+
+## 측정값
+
+obstacle episode:
+
+~~~text
+clear rate
+collision-block windows
+timeout rate
+actual jumps / episode
+first jump step
+closest obstacle-front distance before first jump
+~~~
+
+NO_OBSTACLE:
+
+~~~text
+target reach rate
+episodes with >=1 unnecessary jump
+mean jumps / episode
+~~~
+
+## 사전 deployment gate
+
+Phase A PASS 조건:
+
+~~~text
+FULL clear                    >= 70%
+FULL - VISUAL_OFF             >= 25 percentage points
+FULL - DN_SHUFFLED            >= 20 percentage points
+every FULL run clear          >= 60%
+FULL timeout                  <= 25%
+FULL mean actual jumps        <= 2.0 / episode
+NO_OBSTACLE any-jump episodes <= 30%
+NO_OBSTACLE target reach      >= 85%
+~~~
+
+이 gate는 결과를 본 뒤 낮추지 않는다.
+
+## PASS 이후
+
+Phase A가 PASS하더라도 full 1,316-DN readout을 바로 browser에 배치하지 않는다.
+
+다음 순서:
+
+~~~text
+unlabeled / weight-magnitude 기반 sparse deployment candidate
+-> unseen sparse equivalence gate
+-> exact 5-step browser sampler
+-> browser/headless equivalence
+-> Pages deploy
+~~~
+
+를 별도로 거친다.
+
+## FAIL 이후
+
+FAIL이면 gate를 낮추지 않는다.
+
+분석 우선순위:
+
+1. obstacle visual cue가 DN에 구분 가능한 state를 만드는가
+2. movement Skill01이 obstacle까지 안정적으로 접근하는가
+3. sparse reward가 credit assignment에 충분한가
+4. WAIT/JUMP sequential policy가 jump spam 또는 late-jump로 붕괴하는가
+
+새 phase를 만들 경우 새로운 final seed를 preregister한다.
