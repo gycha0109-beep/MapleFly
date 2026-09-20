@@ -446,6 +446,9 @@ async function verifyStaticContract() {
     !controller.includes(
       'reason: "live"',
     ) ||
+    !controller.includes(
+      "decisionStep === this.attackSkillDecisionStep",
+    ) ||
     index.indexOf(attackScript) < 0 ||
     index.indexOf(controllerScript) < 0 ||
     index.indexOf(attackScript) >
