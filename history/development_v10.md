@@ -1974,3 +1974,55 @@ FULL timeout        <= 25%
 결과가 안 좋다고 낮추지 않는다.
 
 Phase F PASS 전에는 browser ATTACK decoder를 변경하지 않는다.
+
+
+### Phase F 첫 실행 실패 — 결과 serialization 결함, 성능 판정 보류
+
+GitHub Actions:
+
+~~~text
+run      35513768722
+head     e3c649d18fbfed3a732f3202cdbca8c015faa900
+workflow Run MapleFly Experiment v10F Retry Practice
+conclusion failure
+~~~
+
+실험 계산 자체는 practice 3 cohort와 final 3 run까지 완료했지만,
+결과 JSON을 쓰기 직전에:
+
+~~~text
+ReferenceError: replayPool is not defined
+~~~
+
+로 종료됐다.
+
+원인은 Phase E의 단일 `replayPool` 집계 코드 두 줄이
+Phase F의 분리된:
+
+~~~text
+hitPool
+whiffPool
+~~~
+
+구조로 전환된 뒤에도 남아 있던 serialization 결함이다.
+
+이 run에서 출력된 final 수치는 artifact / receipt가 생성되지 않았으므로
+공식 Phase F 결과로 판정하지 않는다.
+
+수정은 stale `replayPool` 집계 제거뿐이다.
+
+중요:
+
+~~~text
+practice seed      변경 없음
+final seed         변경 없음
+practice 거리      변경 없음
+final 거리         변경 없음
+420ms cooldown      변경 없음
+learning rate      변경 없음
+anchor coefficient 변경 없음
+threshold          변경 없음
+deployment gate    변경 없음
+~~~
+
+동일 조건으로 다시 실행한다.
