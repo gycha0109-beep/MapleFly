@@ -410,3 +410,13 @@ brain seed = final base seed + 7000 + block
 ~~~
 
 side 순서는 block + distanceIndex parity로 L/R 순서를 교대한다.
+
+
+practice 각 cohort의 96 episodes는
+obstacle 72 + NO_OBSTACLE 24를 만든 뒤 deterministic Fisher-Yates로 섞는다.
+
+~~~text
+shuffle seed = cohort base seed + 5000
+~~~
+
+따라서 curriculum 순서도 run마다 재현 가능하며 결과 후 변경하지 않는다.
