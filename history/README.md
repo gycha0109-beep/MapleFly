@@ -109,3 +109,6 @@ result_v2.md
 
 - [result_v10.md](./result_v10.md)  
   Phase A/B 실패, Phase C 학습 PASS 후 deployment FAIL. Phase D random continued practice와 Phase E on-policy first-strike practice도 FAIL
+
+
+- v10 Phase F: self-retry after WHIFF practice가 authoritative run 35516619170에서 deployment gate PASS. ATTACK browser exact-window 배치 단계로 이동.
