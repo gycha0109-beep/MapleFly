@@ -663,3 +663,20 @@ PASS:
 FAIL:
 - reward를 바꾸기 전에 sensory encoding 자체를 재설계한다.
 - action learner를 추가 실행하지 않는다.
+
+
+Phase B seed/geometry 세부 규칙도 구현 전에 고정한다.
+
+~~~text
+distance는 episode 시작 시 player front -> obstacle near edge 거리
+distanceIndex = 0..3
+sideIndex: L=0, R=1
+brain seed = baseSeed + distanceIndex * 2 + sideIndex
+~~~
+
+ON/OFF pair는 동일 brain seed를 공유한다.
+
+각 5-step window에서 scripted player는 매 brain step마다
+해당 side 방향으로 정확히 `280 * 0.02 = 5.6 px` 이동한다.
+obstacle collision physics는 diagnostic trajectory에 적용하지 않는다.
+이는 action policy가 없는 sensory isolation assay이기 때문이다.
