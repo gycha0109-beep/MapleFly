@@ -2026,3 +2026,85 @@ deployment gate    변경 없음
 ~~~
 
 동일 조건으로 다시 실행한다.
+
+
+### Phase F 두 번째 실행 — 성능 PASS, receipt 파일명 불일치로 provenance 보류
+
+GitHub Actions:
+
+~~~text
+run      35515717958
+head     be96c23424f062c96490ff42cc1c29d3c8f57d09
+artifact 10606304168
+digest   sha256:c3d2e2feb36a405560c78ac3b2ce7bb83b664f910e435a82b01346177c57c62f
+~~~
+
+workflow와 실험 본체는 모두 성공했고 final 로그는:
+
+~~~text
+BEFORE
+FULL        75.0%
+OFF          0.0%
+SHUFFLED     4.2%
+whiff       25.0%
+timeout      0.0%
+
+AFTER
+FULL        84.4%
+OFF          0.0%
+SHUFFLED    34.4%
+whiff       15.6%
+timeout      0.0%
+~~~
+
+per-run AFTER:
+
+~~~text
+Run 1 93.8%
+Run 2 81.3%
+Run 3 78.1%
+~~~
+
+따라서 로그 기준 deployment gate는 PASS다.
+
+하지만 script가 결과를:
+
+~~~text
+results/experiment-v10f/experiment_v10e.json
+~~~
+
+으로 저장했고 workflow receipt 단계는:
+
+~~~text
+results/experiment-v10f/experiment_v10f.json
+~~~
+
+을 찾았다.
+
+그 결과 artifact는 생성됐지만 receipt의 meta / practice / summary / candidate가 null이 됐다.
+
+이 상태에서는 provenance chain이 불완전하므로 browser 승격을 아직 수행하지 않는다.
+
+수정은 결과 파일명:
+
+~~~text
+experiment_v10e.json
+-> experiment_v10f.json
+~~~
+
+뿐이다.
+
+다음 재실행에서도:
+
+~~~text
+practice seed
+final seed
+거리
+420ms cooldown
+learning rate
+anchor
+threshold
+deployment gate
+~~~
+
+는 전부 변경하지 않는다.
