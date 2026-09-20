@@ -907,3 +907,62 @@ whiff          <= 30%
 timeout        <= 25%
 모든 run FULL  >= 60%
 ~~~
+
+
+---
+
+## Phase C full confirmation — PASS
+
+GitHub Actions:
+
+~~~text
+run      35465429673
+commit   5e1f5a85528039af4b6b6bdd2b894fc37eace610
+artifact 10590739330
+
+digest
+sha256:552b71415945f82cddcbfe38c1397ea1c7a4eb8a5140708dbe26eb9cc2c92e51
+~~~
+
+결과:
+
+~~~text
+Run 1 FULL 87.5%
+Run 2 FULL 75.0%
+Run 3 FULL 65.6%
+
+mean FULL         76.0%
+mean NEURAL_OFF    0.0%
+difference       +76.0%p
+
+mean whiff        24.0%
+mean timeout       0.0%
+movement reach   100.0%
+
+V10C-GATE
+PASS
+~~~
+
+사전 gate를 변경하지 않고 통과했다.
+
+따라서 Phase C 학습 자체는 성공으로 닫는다.
+
+다만 browser 배치 승격은 아직 아니다.
+
+Run 1 classifier를 frozen candidate로 만들고
+새 seed / 새 start distance / DN_SHUFFLED control로
+deployment gate를 별도로 돌린다.
+
+deployment gate는 결과를 보기 전에:
+
+~~~text
+MOVEMENT_ONLY reach >= 85%
+FULL hit            >= 70%
+FULL - NEURAL_OFF   >= 25%p
+FULL - DN_SHUFFLED  >= 20%p
+FULL whiff          <= 30%
+FULL timeout        <= 25%
+각 run FULL hit     >= 60%
+~~~
+
+로 고정한다.

@@ -1,0 +1,81 @@
+name: Verify MapleFly v10C Attack Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: "Independent deployment-check runs"
+        required: true
+        default: "3"
+      eval:
+        description: "Evaluation episodes per condition per run"
+        required: true
+        default: "32"
+      seed:
+        description: "Unseen base seed"
+        required: true
+        default: "41000"
+      max_seconds:
+        description: "Max seconds per episode"
+        required: true
+        default: "4.5"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v10c-deploy.yml"
+      - "scripts/experiment-v10c-deploy-check.mjs"
+      - "src/brain/fly-skill-v10-attack.js"
+      - "src/brain/fly-skill-v7.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      EXP_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '3' }}
+      EXP_EVAL: ${{ github.event_name == 'workflow_dispatch' && inputs.eval || '32' }}
+      EXP_SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || '41000' }}
+      EXP_MAX_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_seconds || '4.5' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: |
+          node --check src/brain/fly-skill-v10-attack.js
+          node --check scripts/experiment-v10c-deploy-check.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Verify frozen attack skill on unseen seeds
+        run: >
+          node scripts/experiment-v10c-deploy-check.mjs
+          --runs "$EXP_RUNS"
+          --eval "$EXP_EVAL"
+          --seed "$EXP_SEED"
+          --max-seconds "$EXP_MAX_SECONDS"
+          --out results/experiment-v10c-deploy
+          --cache .cache/maplefly-connectome
+
+      - name: Upload deployment result
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v10c-deploy-${{ github.run_id }}
+          path: results/experiment-v10c-deploy
+          if-no-files-found: error
+          retention-days: 30
