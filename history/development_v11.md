@@ -1659,3 +1659,128 @@ mean actual jumps = 1.198과 exact episode aggregate 일치
 부동소수점 점수 자체보다 action/outcome trajectory equivalence를 우선 검증한다.
 
 browser equivalence PASS 전에는 README에 JUMP deployed라고 표기하지 않는다.
+
+
+# Cross-skill sensory coexistence preregistration
+
+v10F ATTACK과 v11F JUMP는 실제 browser runtime에서 같은 MaleCNS를 공유한다.
+
+중요한 차이:
+
+~~~text
+v10F target encoder:
+  LC10a / LPLC1 / LPLC2
+  + target distance < 175 px일 때 LC4
+
+v11F obstacle encoder:
+  obstacle front distance < 280 px에서 LC4
+~~~
+
+따라서 browser deployment 완료 전,
+target LC4와 obstacle LC4가 동시에 존재하는 실제 runtime sensory composition을
+새 unseen seed에서 검증한다.
+
+## frozen components
+
+~~~text
+MaleCNS commit
+95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+movement
+v7 frozen
+
+JUMP
+source run 35607509887
+browser equivalence run 35610126652
+threshold 0.5
+persistence 2 x 5-step windows
+cooldown 38 brain steps
+selected DN 128
+~~~
+
+v11 JUMP weight / bias / mean / scale / selected DN / threshold / persistence / cooldown은 변경하지 않는다.
+
+## combined encoder
+
+target cue는 v10F와 동일:
+
+~~~text
+LC10a
+LPLC1
+LPLC2
+
+if targetDistance < 175:
+  LC4_target =
+    clamp(((175-distance)/175)*0.72 + approaching*0.18, 0, 0.8)
+~~~
+
+obstacle cue는 v11F와 동일:
+
+~~~text
+LC4_obstacle =
+  clamp(((280-max(0,frontDistance))/280)*0.8, 0, 0.8)
+~~~
+
+동일 side에서 둘 다 존재하면:
+
+~~~text
+LC4_side = max(LC4_target, LC4_obstacle)
+~~~
+
+으로 고정한다. 합산으로 cue 크기를 인위적으로 증폭하지 않는다.
+
+## unseen seeds
+
+~~~text
+1151000
+1161000
+1171000
+~~~
+
+distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+각 run:
+
+~~~text
+32 FULL_COMBINED
+32 OBSTACLE_CUE_OFF
+32 DN_SHUFFLED
+16 NO_OBSTACLE_TARGET_ONLY
+~~~
+
+OBSTACLE_CUE_OFF에서는 target cue 전체와 target LC4는 유지하고
+obstacle LC4만 제거한다.
+
+NO_OBSTACLE_TARGET_ONLY에서도 v10F target LC4를 포함한다.
+즉 target LC4가 JUMP false-positive를 일으키는지 직접 본다.
+
+## frozen gate
+
+~~~text
+mean FULL_COMBINED clear           >= 75%
+every FULL_COMBINED run            >= 65%
+FULL - OBSTACLE_CUE_OFF            >= 25 percentage points
+FULL - DN_SHUFFLED                 >= 20 percentage points
+FULL timeout                       <= 20%
+FULL mean actual jumps             <= 1.75
+NO_OBSTACLE target reach           >= 85%
+NO_OBSTACLE any-jump episodes      <= 30%
+~~~
+
+gate는 결과 후 낮추지 않는다.
+
+## interpretation
+
+PASS:
+target LC4와 obstacle LC4가 같은 MaleCNS에 공존해도
+v11F JUMP의 obstacle-specific behavior가 유지된다.
+
+FAIL:
+browser deployed 표기를 하지 않는다.
+먼저 target-only false jump인지, obstacle cue masking인지,
+DN identity interaction인지 분석한다.
+ATTACK/JUMP 중 어느 쪽이든 결과를 보고 cue를 임의 변경하지 않는다.
