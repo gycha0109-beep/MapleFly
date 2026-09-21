@@ -943,3 +943,27 @@ gate를 낮추지 않는다.
 2. FULL vs VISUAL_OFF first-jump timing 차이
 3. NO_OBSTACLE false jump state 분포
 4. SARSA value collapse / action prior
+
+
+## Phase C authoritative result
+
+Run `35544510915`:
+
+~~~text
+FULL clear        9.4%
+VISUAL_OFF        0.0%
+DN_SHUFFLED       0.0%
+NO_OBS jump       0.0%
+NO_OBS reach    100.0%
+FULL timeout     90.6%
+GATE              FAIL
+~~~
+
+Phase A의 jump-spam 문제는 해결됐지만,
+single-jump policy가 useful timing을 찾지 못했다.
+
+다음 작업은 새 learning run이 아니라 기존 artifact의
+`firstJumpStep` / `firstJumpFrontDistance`를 추출하는
+짧은 timing audit이다.
+
+이 audit은 frozen artifact만 읽으며 MaleCNS를 다시 실행하지 않는다.
