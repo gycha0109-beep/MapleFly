@@ -1784,3 +1784,86 @@ browser deployed 표기를 하지 않는다.
 먼저 target-only false jump인지, obstacle cue masking인지,
 DN identity interaction인지 분석한다.
 ATTACK/JUMP 중 어느 쪽이든 결과를 보고 cue를 임의 변경하지 않는다.
+
+
+## Cross-skill LC4 result and next diagnostic
+
+Run 35627450424는 scientific FAIL.
+
+핵심:
+
+~~~text
+combined obstacle + target:
+  FULL clear 100%
+
+target only, no obstacle:
+  JUMP false-positive 68.8%
+~~~
+
+즉 shared LC4 channel에서 target cue가 JUMP를 자극한다.
+
+# Target-LC4 ablation for frozen v10F ATTACK — preregistration
+
+목적:
+
+v10F ATTACK이 target LC4 없이도 기존 frozen gate를 유지하는지 확인한다.
+
+변경점은 sensory encoder 하나뿐이다.
+
+기존 v10F target cue:
+
+~~~text
+LC10a
+LPLC1
+LPLC2
+LC4 when distance < 175
+~~~
+
+ablation:
+
+~~~text
+LC10a unchanged
+LPLC1 unchanged
+LPLC2 unchanged
+target LC4 = 0
+~~~
+
+다음은 전부 frozen:
+
+~~~text
+v10F weights / bias
+selected DN 128
+threshold 0.5
+movement v7
+attack window 5
+settle 26
+baseline 26
+attack cooldown 420 ms
+final seeds 401000 / 411000 / 421000
+final distances 185 / 285 / 385 / 485
+~~~
+
+기존 v10F deployment gate를 그대로 사용한다.
+
+~~~text
+movement reach                >= 85%
+mean FULL hit                 >= 70%
+FULL - NEURAL_OFF             >= 25pp
+FULL - DN_SHUFFLED            >= 20pp
+whiff                         <= 30%
+timeout                       <= 25%
+each FULL run                 >= 60%
+~~~
+
+판정:
+
+PASS:
+target LC4를 shared runtime에서 제거하고
+LC4를 obstacle JUMP cue 전용으로 사용한 뒤
+새 unseen cross-skill validation을 다시 수행한다.
+
+FAIL:
+target LC4를 임의 제거하지 않는다.
+ATTACK 또는 JUMP sensory representation을 별도 학습 phase에서 재설계한다.
+
+결과를 보고 gate/threshold를 변경하지 않는다.
