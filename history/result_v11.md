@@ -601,3 +601,42 @@ v11F JUMP classifier의 positive persistence를 만들며 false JUMP를 유발�
 
 따라서 현재 browser wiring은 deployed 완료로 판정하지 않는다.
 frozen JUMP gate/threshold/persistence/cooldown을 낮추거나 바꾸지 않는다.
+
+
+---
+
+## v10F target-LC4 ablation — authoritative FAIL
+
+Workflow:
+
+~~~text
+run      35629138137
+head     d5702cbd0e0dd814a5ce3025f4e9c479eec1933e
+artifact 10653426792
+digest   sha256:5e51eca880e003837de6c42d10f5499125babd5c6721c4ea9d9f5d6700e69e8a
+~~~
+
+Frozen v10F ATTACK에서 target LC4만 제거:
+
+~~~text
+movement reach     92.7%
+FULL hit           20.8%
+NEURAL_OFF          0.0%
+DN_SHUFFLED        17.7%
+FULL whiff         16.7%
+FULL timeout       62.5%
+GATE                FAIL
+~~~
+
+Per-run FULL hit:
+
+~~~text
+401000  18.75%
+411000  28.125%
+421000  15.625%
+~~~
+
+따라서 target LC4는 v10F ATTACK의 핵심 sensory component다.
+shared runtime에서 LC4를 JUMP 전용으로 빼는 해법은 폐기한다.
+
+cross-skill FAIL이 해결되기 전까지 browser learned JUMP deployment는 withheld 상태로 유지한다.
