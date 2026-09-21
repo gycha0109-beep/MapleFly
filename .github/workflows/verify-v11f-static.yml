@@ -1,0 +1,98 @@
+name: Verify MapleFly v11F Static
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11f-static.yml"
+      - "scripts/experiment-v11f-self-retry.mjs"
+      - "src/brain/fly-skill-v11e-jump-candidate.json"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/experiment-v11f-self-retry.mjs
+
+      - name: Verify frozen Phase E candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const c = JSON.parse(
+            fs.readFileSync(
+              "src/brain/fly-skill-v11e-jump-candidate.json",
+              "utf8"
+            )
+          );
+          if (c.schema !== "maplefly.fly-jump-candidate.v11e.1") {
+            throw new Error("schema mismatch");
+          }
+          if (c.provenance.runId !== 35596856019) {
+            throw new Error("source run mismatch");
+          }
+          if (c.provenance.headSha !== "5d460569816b342010aa8ad8320f040e8053ef64") {
+            throw new Error("source head mismatch");
+          }
+          if (c.provenance.artifactId !== 10636579724) {
+            throw new Error("source artifact mismatch");
+          }
+          if (c.provenance.artifactDigest !==
+              "fde1df68e40c0908d090e1b61749a714ab7cc3c19898a9746ce0e43a98544afe") {
+            throw new Error("source digest mismatch");
+          }
+          if (c.classifier.featureIndices.length !== 128 ||
+              c.classifier.means.length !== 128 ||
+              c.classifier.scales.length !== 128 ||
+              c.classifier.weights.length !== 128) {
+            throw new Error("sparse shape mismatch");
+          }
+          if (c.classifier.threshold !== 0.5) {
+            throw new Error("threshold drift");
+          }
+          if (c.temporal?.positivePersistenceWindows !== 2 ||
+              c.temporal?.resetOnActuatedJump !== true) {
+            throw new Error("temporal contract mismatch");
+          }
+          console.log("V11F-CANDIDATE=PASS");
+          NODE
+
+      - name: Verify real cooldown self-retry actuator
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const s = fs.readFileSync(
+            "scripts/experiment-v11f-self-retry.mjs",
+            "utf8"
+          );
+          if (s.includes("state.jumpSpent = true")) {
+            throw new Error("single-jump actuator still active");
+          }
+          if (s.includes("state.jumpSpent ||")) {
+            throw new Error("single-jump gate still active");
+          }
+          if (!s.includes("state.jumpCooldown = JUMP_COOLDOWN_STEPS")) {
+            throw new Error("real cooldown assignment missing");
+          }
+          if (!s.includes("policy.onActuatedJump?.()")) {
+            throw new Error("post-actuation streak reset missing");
+          }
+          if (!s.includes("policy.observeUnavailable?.(")) {
+            throw new Error("unavailable-state observation contract missing");
+          }
+          console.log("V11F-STATIC=PASS cooldown=38 persistence=2 budget=none");
+          NODE
