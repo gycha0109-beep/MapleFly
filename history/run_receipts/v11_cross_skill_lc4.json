@@ -1,0 +1,140 @@
+{
+  "schema": "maplefly.v11-cross-skill-lc4-receipt.1",
+  "runId": 35627450424,
+  "headSha": "7a071d5592f24dc2aa67bbe903206b5f0300e4c9",
+  "sourceJumpRunId": 35607509887,
+  "sourceJumpBrowserEquivalenceRunId": 35610126652,
+  "artifact": {
+    "id": 10653765408,
+    "name": "maplefly-v11-cross-skill-lc4-35627450424",
+    "digest": "c878fd4aa00232e1bceab84535758a9732f1c127ef35f14189327f31e02ebca8"
+  },
+  "meta": {
+    "schema": "maplefly.verify-v11-cross-skill-lc4-coexistence.1",
+    "phase": "cross-skill-lc4-coexistence",
+    "brainRepository": "alextitonis/fly.ai",
+    "brainCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "dnCount": 1316,
+    "movementVersion": "v7-run2-top64",
+    "sourceCandidate": {
+      "path": "src/brain/fly-skill-v11e-jump-candidate.json",
+      "runId": 35596856019,
+      "headSha": "5d460569816b342010aa8ad8320f040e8053ef64",
+      "artifactId": 10636579724,
+      "artifactDigest": "fde1df68e40c0908d090e1b61749a714ab7cc3c19898a9746ce0e43a98544afe"
+    },
+    "classifier": {
+      "selectedFeatureCount": 128,
+      "threshold": 0.5,
+      "persistenceWindows": 2,
+      "realCooldownSteps": 38,
+      "singleJumpBudget": false
+    },
+    "windows": {
+      "settle": 26,
+      "baseline": 26,
+      "movement": 26,
+      "jump": 5
+    },
+    "finalSeeds": [
+      1151000,
+      1161000,
+      1171000
+    ],
+    "finalDistances": [
+      155,
+      195,
+      235,
+      275
+    ],
+    "antiLeak": "jump uses only frozen MaleCNS DN classifier threshold history; no obstacle distance/coordinates/timing labels enter policy"
+  },
+  "summary": {
+    "meanFullClearRate": 1,
+    "meanVisualOffClearRate": 0,
+    "visualContribution": 1,
+    "meanDnShuffledClearRate": 0,
+    "dnIdentityContribution": 1,
+    "minRunFullClearRate": 1,
+    "meanFullTimeoutRate": 0,
+    "meanFullActualJumps": 1.2291666666666667,
+    "meanFullRetryJumps": 0.22916666666666666,
+    "noObstacleAnyJumpRate": 0.6875,
+    "noObstacleTargetReachRate": 1,
+    "gate": false
+  },
+  "perRun": [
+    {
+      "run": 1,
+      "baseSeed": 1151000,
+      "FULL": {
+        "clearRate": 1,
+        "timeoutRate": 0,
+        "meanActualJumps": 1.125,
+        "meanRetryJumps": 0.125
+      },
+      "OBSTACLE_CUE_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1
+      },
+      "NO_OBSTACLE_TARGET_ONLY": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0.8125,
+        "meanActualJumps": 0.8125
+      }
+    },
+    {
+      "run": 2,
+      "baseSeed": 1161000,
+      "FULL": {
+        "clearRate": 1,
+        "timeoutRate": 0,
+        "meanActualJumps": 1.21875,
+        "meanRetryJumps": 0.21875
+      },
+      "OBSTACLE_CUE_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1
+      },
+      "NO_OBSTACLE_TARGET_ONLY": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0.875,
+        "meanActualJumps": 0.875
+      }
+    },
+    {
+      "run": 3,
+      "baseSeed": 1171000,
+      "FULL": {
+        "clearRate": 1,
+        "timeoutRate": 0,
+        "meanActualJumps": 1.34375,
+        "meanRetryJumps": 0.34375
+      },
+      "OBSTACLE_CUE_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1
+      },
+      "NO_OBSTACLE_TARGET_ONLY": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0.375,
+        "meanActualJumps": 0.375
+      }
+    }
+  ]
+}
