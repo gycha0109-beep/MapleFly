@@ -1,4 +1,4 @@
-name: Verify v11F JUMP Runtime Wiring
+name: Verify v11F JUMP Deployment State
 
 on:
   workflow_dispatch:
@@ -6,7 +6,6 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/verify-v11f-jump-runtime-wiring.yml"
-      - "scripts/verify-v11f-jump-runtime-wiring.mjs"
       - "src/brain/fly-controller.js"
       - "src/game.js"
       - "src/brain/fly-skill-v11-jump.js"
@@ -31,6 +30,39 @@ jobs:
           node --check src/brain/fly-controller.js
           node --check src/game.js
           node --check src/brain/fly-skill-v11-jump.js
-          node --check scripts/verify-v11f-jump-runtime-wiring.mjs
-      - name: Verify runtime wiring
-        run: node scripts/verify-v11f-jump-runtime-wiring.mjs
+      - name: Verify fail-closed deployment state
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const controller = fs.readFileSync(
+            "src/brain/fly-controller.js",
+            "utf8"
+          );
+          const game = fs.readFileSync(
+            "src/game.js",
+            "utf8"
+          );
+          const index = fs.readFileSync(
+            "index.html",
+            "utf8"
+          );
+
+          if (controller.includes("MapleFlyJumpSkillV11")) {
+            throw new Error("learned JUMP is still wired into controller");
+          }
+          if (controller.includes('id: "jump"')) {
+            throw new Error("JUMP sampler is still active");
+          }
+          if (game.includes("JUMP_TUTORIAL")) {
+            throw new Error("JUMP tutorial obstacle is still active");
+          }
+          if (!index.includes(
+            '<script src="./src/brain/fly-skill-v11-jump.js"></script>'
+          )) {
+            throw new Error("research bundle unexpectedly removed");
+          }
+          console.log(
+            "V11F-JUMP-DEPLOYMENT=WITHHELD " +
+            "bundle=preserved controller=disabled arena=restored"
+          );
+          NODE
