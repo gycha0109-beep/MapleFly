@@ -457,3 +457,52 @@ single-jump budget을 조기 소모하는 **early-trigger preemption**으로 설
 다음 Phase는 classifier/threshold를 재학습·재튜닝하지 않고,
 동일 frozen classifier의 positive가 연속 window에서 지속될 때만 actuator를 허용하는
 temporal persistence를 새 unseen seed에서 검증한다.
+
+
+---
+
+## Phase E — frozen classifier + 2-window persistence
+
+판정:
+
+~~~text
+V11E-JUMP-GATE=PASS
+~~~
+
+Workflow:
+
+~~~text
+run      35596856019
+head     5d460569816b342010aa8ad8320f040e8053ef64
+artifact 10636579724
+digest   sha256:fde1df68e40c0908d090e1b61749a714ab7cc3c19898a9746ce0e43a98544afe
+~~~
+
+Final unseen:
+
+~~~text
+Run 1 FULL 90.6% / VISUAL_OFF 0% / SHUFFLED 0%
+Run 2 FULL 71.9% / VISUAL_OFF 0% / SHUFFLED 0%
+Run 3 FULL 96.9% / VISUAL_OFF 0% / SHUFFLED 0%
+
+mean FULL          86.5%
+minimum FULL       71.9%
+FULL timeout       13.5%
+VISUAL_OFF          0.0%
+DN_SHUFFLED         0.0%
+NO_OBSTACLE jump    0.0%
+NO_OBSTACLE reach 100.0%
+~~~
+
+사전 gate는 전 항목 PASS다.
+
+Phase D의 frozen classifier와 threshold 0.5는 변경하지 않았고,
+positive threshold가 2개 연속 5-step window에서 유지되어야
+JUMP actuator를 허용한 것만 달라졌다.
+
+따라서 Phase E는 frozen MaleCNS DN classifier + 2-window temporal persistence가
+unseen obstacle-specific JUMP timing을 single-jump tutorial 조건에서 통과한 것으로 판정한다.
+
+아직 실제 runtime 배치 조건은 아니다.
+episode당 1회 jump budget을 사용했으므로
+다음 Phase F에서 제한 제거 + 실제 750 ms cooldown/self-retry를 검증한다.
