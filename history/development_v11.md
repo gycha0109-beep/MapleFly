@@ -1459,3 +1459,138 @@ browser exact-window equivalence
 3. NO_OBSTACLE false-positive streak
 4. VISUAL_OFF delayed-trigger artifact
 5. 필요 시 classifier 자체의 temporal-state representation 재설계
+
+
+## Phase E authoritative result
+
+Run 35596856019:
+
+~~~text
+FULL          86.5%
+VISUAL_OFF     0.0%
+DN_SHUFFLED    0.0%
+NO_OBS jump    0.0%
+NO_OBS reach 100.0%
+timeout       13.5%
+GATE           PASS
+~~~
+
+2-window persistence는 Phase D의 early-trigger preemption을 해결했다.
+
+# Phase F — real cooldown + self-retry preregistration
+
+Phase E policy를 frozen candidate로 고정한 뒤 single-jump tutorial 제약을 제거한다.
+
+## frozen policy
+
+~~~text
+source Phase E run 35596856019
+source classifier Phase D run 35550206430
+selected DN 128
+threshold 0.5
+positive persistence 2 consecutive 5-step windows
+~~~
+
+classifier weight / bias / mean / scale / selected DN / threshold / persistence count는
+Phase F 결과를 보고 변경하지 않는다.
+
+## actuator
+
+Phase F에서는 actualJumpBudget=1 제한을 제거한다.
+
+실제 runtime과 같은 jump actuator 조건:
+
+~~~text
+grounded == true
+jump cooldown == 0
+~~~
+
+실제 JUMP 성공 시:
+
+~~~text
+vy = -600
+cooldown = 38 brain steps ~= 750 ms
+positive streak = 0
+~~~
+
+cooldown/airborne 동안 classifier는 계속 관찰하지만 JUMP actuator는 실행되지 않는다.
+
+다시 grounded + cooldown 0이 된 뒤
+새로운 2-window positive streak가 만들어지면 self-retry가 가능하다.
+
+## anti-leak
+
+policy와 actuator에 다음을 넣지 않는다.
+
+~~~text
+obstacle distance
+coordinates
+correct timing
+clearability
+collision state를 이용한 action override
+side
+seed
+~~~
+
+collision/clear 상태는 outcome 측정과 episode terminal에만 사용한다.
+
+## unseen final
+
+새 seeds:
+
+~~~text
+1051000
+1061000
+1071000
+~~~
+
+distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+각 run:
+
+~~~text
+32 obstacle FULL
+32 VISUAL_OFF
+32 DN_SHUFFLED
+16 NO_OBSTACLE
+~~~
+
+DN_SHUFFLED permutation은 finalBaseSeed + 900000.
+
+## metrics
+
+~~~text
+clear rate
+timeout rate
+actual jumps / episode
+first jump step / front distance
+retry jump count
+NO_OBSTACLE any-jump
+NO_OBSTACLE reach
+~~~
+
+## Phase F gate
+
+~~~text
+mean FULL clear               >= 75%
+every FULL run                >= 65%
+FULL - VISUAL_OFF             >= 25 percentage points
+FULL - DN_SHUFFLED            >= 20 percentage points
+FULL timeout                  <= 20%
+FULL mean actual jumps        <= 1.75
+NO_OBSTACLE target reach      >= 85%
+NO_OBSTACLE any-jump episodes <= 30%
+~~~
+
+gate는 결과 후 낮추지 않는다.
+
+## PASS 이후
+
+Phase F PASS 후에만 browser controller에 Skill03 JUMP candidate를 통합하고,
+exact 5-step x 2 persistence 및 real 750 ms cooldown equivalence를 검증한다.
+
+multi-obstacle generalization은 별도 Phase G에서 새 obstacle schedule로 검증한다.
