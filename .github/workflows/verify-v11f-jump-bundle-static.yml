@@ -1,0 +1,36 @@
+name: Verify v11F JUMP Bundle Static
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11f-jump-bundle-static.yml"
+      - "scripts/verify-v11f-jump-bundle-static.mjs"
+      - "src/brain/fly-skill-v11-jump.js"
+      - "src/brain/fly-skill-v11f-jump-candidate.json"
+      - "index.html"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: |
+          node --check src/brain/fly-skill-v11-jump.js
+          node --check scripts/verify-v11f-jump-bundle-static.mjs
+      - name: Verify bundle
+        run: node scripts/verify-v11f-jump-bundle-static.mjs
+      - name: Verify page load order
+        run: |
+          grep -F '<script src="./src/brain/fly-skill-v11-jump.js"></script>' index.html
