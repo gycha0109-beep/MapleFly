@@ -758,11 +758,16 @@
       );
 
       if (bestDistance < 175) {
-        drive[`LC4_${side}`] = clamp(
+        const targetLc4 = clamp(
           ((175 - bestDistance) / 175) * 0.72 +
             approaching * 0.18,
           0,
           0.8,
+        );
+        const key = `LC4_${side}`;
+        drive[key] = Math.max(
+          Number(drive[key] ?? 0),
+          targetLc4,
         );
       }
 
