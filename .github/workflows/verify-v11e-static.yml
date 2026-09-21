@@ -1,0 +1,68 @@
+name: Verify MapleFly v11E Static
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11e-static.yml"
+      - "scripts/experiment-v11e-persistence.mjs"
+      - "src/brain/fly-skill-v11d-jump-candidate.json"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check Phase E runner
+        run: node --check scripts/experiment-v11e-persistence.mjs
+
+      - name: Verify frozen candidate contract
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const c = JSON.parse(
+            fs.readFileSync(
+              "src/brain/fly-skill-v11d-jump-candidate.json",
+              "utf8"
+            )
+          );
+          if (c.schema !== "maplefly.fly-jump-candidate.v11d.1") {
+            throw new Error("schema mismatch");
+          }
+          if (c.provenance.runId !== 35550206430) {
+            throw new Error("run mismatch");
+          }
+          if (c.provenance.headSha !== "2c9daa3320d597e417217e5ccb2dcc2ffeb56953") {
+            throw new Error("head mismatch");
+          }
+          if (c.provenance.artifactId !== 10618482118) {
+            throw new Error("artifact mismatch");
+          }
+          if (c.provenance.artifactDigest !==
+              "3709991bed590ecfeea023a0229a27ce228deade0a830ff20db1ee53455ffd9e") {
+            throw new Error("digest mismatch");
+          }
+          if (c.classifier.featureIndices.length !== 128 ||
+              c.classifier.means.length !== 128 ||
+              c.classifier.scales.length !== 128 ||
+              c.classifier.weights.length !== 128) {
+            throw new Error("sparse shape mismatch");
+          }
+          if (c.classifier.threshold !== 0.5) {
+            throw new Error("threshold drift");
+          }
+          console.log("V11E-STATIC=PASS features=128 threshold=0.5 persistence=2");
+          NODE
