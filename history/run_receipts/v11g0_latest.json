@@ -1,0 +1,153 @@
+{
+  "schema": "maplefly.v11g0-run-receipt.1",
+  "runId": 35630336587,
+  "headSha": "da911f909ced2b35c4180ebab35e6103be9fadb8",
+  "artifact": {
+    "id": 10654383263,
+    "name": "maplefly-v11g0-looming-screen-35630336587",
+    "digest": "66bb6065f1a5a6bb5167891c261903f477799c91b00216d189869b0cc7c1c919"
+  },
+  "meta": {
+    "schema": "maplefly.experiment-v11g0.alternate-looming-screen.1",
+    "brainRepository": "alextitonis/fly.ai",
+    "brainCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "dnCount": 1316,
+    "candidateChannels": [
+      "LC6",
+      "LC16"
+    ],
+    "channelCounts": {
+      "LC6": {
+        "L": 59,
+        "R": 65
+      },
+      "LC16": {
+        "L": 88,
+        "R": 94
+      }
+    },
+    "trainBaseSeeds": [
+      1201000,
+      1201100,
+      1201200,
+      1201300
+    ],
+    "evalBaseSeeds": [
+      1211000,
+      1211100,
+      1211200
+    ],
+    "distances": [
+      300,
+      340,
+      380,
+      420
+    ],
+    "sampleBins": [
+      240,
+      180,
+      120,
+      60
+    ],
+    "windows": {
+      "settle": 26,
+      "baseline": 26,
+      "sample": 5
+    },
+    "classifier": {
+      "epochs": 120,
+      "learningRate": 0.02,
+      "l2": 0.0005,
+      "threshold": 0.5
+    },
+    "sharedTargetSensory": "LC10a + LPLC1 + LPLC2 + target LC4 preserved",
+    "antiLeak": "diagnostic classifier input is 1316-DN activity only; distance/side/geometry/seed/channel identity are never model inputs",
+    "selectionRule": "single passing candidate wins; if both pass choose higher mean FULL; <=2pp tie chooses LC16"
+  },
+  "results": [
+    {
+      "obstacleChannel": "LC6",
+      "summary": {
+        "fullBalancedAccuracy": 0.5833333333333334,
+        "labelShuffledBalancedAccuracy": 0.46875,
+        "fullMinusLabelShuffled": 0.11458333333333337,
+        "dnPermutedBalancedAccuracy": 0.515625,
+        "fullMinusDnPermuted": 0.06770833333333337,
+        "minRunFullBalancedAccuracy": 0.5625,
+        "pairedL2": {
+          "pairCount": 96,
+          "meanL2": 1.6585076422826452,
+          "minL2": 0,
+          "maxL2": 2.939387691339813
+        },
+        "gate": false
+      },
+      "perRun": [
+        {
+          "run": 1,
+          "baseSeed": 1211000,
+          "fullBalancedAccuracy": 0.609375,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.515625
+        },
+        {
+          "run": 2,
+          "baseSeed": 1211100,
+          "fullBalancedAccuracy": 0.578125,
+          "labelShuffledBalancedAccuracy": 0.484375,
+          "dnPermutedBalancedAccuracy": 0.5
+        },
+        {
+          "run": 3,
+          "baseSeed": 1211200,
+          "fullBalancedAccuracy": 0.5625,
+          "labelShuffledBalancedAccuracy": 0.421875,
+          "dnPermutedBalancedAccuracy": 0.53125
+        }
+      ]
+    },
+    {
+      "obstacleChannel": "LC16",
+      "summary": {
+        "fullBalancedAccuracy": 0.5677083333333334,
+        "labelShuffledBalancedAccuracy": 0.4635416666666667,
+        "fullMinusLabelShuffled": 0.10416666666666669,
+        "dnPermutedBalancedAccuracy": 0.4583333333333333,
+        "fullMinusDnPermuted": 0.10937500000000006,
+        "minRunFullBalancedAccuracy": 0.546875,
+        "pairedL2": {
+          "pairCount": 96,
+          "meanL2": 1.7009552662244112,
+          "minL2": 0,
+          "maxL2": 2.84253408071038
+        },
+        "gate": false
+      },
+      "perRun": [
+        {
+          "run": 1,
+          "baseSeed": 1211000,
+          "fullBalancedAccuracy": 0.546875,
+          "labelShuffledBalancedAccuracy": 0.515625,
+          "dnPermutedBalancedAccuracy": 0.46875
+        },
+        {
+          "run": 2,
+          "baseSeed": 1211100,
+          "fullBalancedAccuracy": 0.5625,
+          "labelShuffledBalancedAccuracy": 0.390625,
+          "dnPermutedBalancedAccuracy": 0.4375
+        },
+        {
+          "run": 3,
+          "baseSeed": 1211200,
+          "fullBalancedAccuracy": 0.59375,
+          "labelShuffledBalancedAccuracy": 0.484375,
+          "dnPermutedBalancedAccuracy": 0.46875
+        }
+      ]
+    }
+  ],
+  "selectedChannel": null,
+  "gate": false
+}
