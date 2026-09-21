@@ -6,7 +6,7 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/verify-v11f-jump-bundle-static.yml"
-      - "scripts/verify-v11f-jump-bundle-static.mjs"
+      - "scripts/verify-v11f-jump-bundle-static.mjs"\n      - "scripts/verify-v11f-jump-browser-equivalence.mjs"
       - "src/brain/fly-skill-v11-jump.js"
       - "src/brain/fly-skill-v11f-jump-candidate.json"
       - "index.html"
@@ -28,7 +28,7 @@ jobs:
       - name: Syntax check
         run: |
           node --check src/brain/fly-skill-v11-jump.js
-          node --check scripts/verify-v11f-jump-bundle-static.mjs
+          node --check scripts/verify-v11f-jump-bundle-static.mjs\n          node --check scripts/verify-v11f-jump-browser-equivalence.mjs
       - name: Verify bundle
         run: node scripts/verify-v11f-jump-bundle-static.mjs
       - name: Verify page load order
