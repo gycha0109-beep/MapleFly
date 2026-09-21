@@ -336,3 +336,85 @@ jump 시작 후 약 240 px 이내에 far edge clearance가 끝나야 한다.
 
 이 기하학 계산은 진단/환경 검증용이며
 다음 learner의 policy input이나 정답 timing label로 사용하지 않는다.
+
+
+---
+
+## Phase D — random one-jump outcome classifier
+
+판정:
+
+~~~text
+V11D-JUMP-GATE=FAIL
+~~~
+
+Workflow:
+
+~~~text
+run      35550206430
+head     2c9daa3320d597e417217e5ccb2dcc2ffeb56953
+artifact 10618482118
+digest   sha256:3709991bed590ecfeea023a0229a27ce228deade0a830ff20db1ee53455ffd9e
+~~~
+
+Practice support:
+
+~~~text
+CLEAR 130
+FAIL  158
+support gate PASS
+practice clear rate 45.1%
+~~~
+
+practice random-jump outcome은 세 cohort 모두 충분한 양쪽 class를 만들었다.
+
+~~~text
+cohort 1 CLEAR 45 / FAIL 51
+cohort 2 CLEAR 43 / FAIL 53
+cohort 3 CLEAR 42 / FAIL 54
+~~~
+
+random practice의 평균 first-jump distance:
+
+~~~text
+cohort 1 CLEAR  51.6 px / FAIL 183.5 px
+cohort 2 CLEAR  59.2 px / FAIL 181.9 px
+cohort 3 CLEAR  69.0 px / FAIL 176.7 px
+~~~
+
+Final unseen:
+
+~~~text
+Run 1 FULL 12.5% / VISUAL_OFF 62.5% / SHUFFLED 0.0%
+Run 2 FULL 18.8% / VISUAL_OFF 56.3% / SHUFFLED 0.0%
+Run 3 FULL 12.5% / VISUAL_OFF 40.6% / SHUFFLED 0.0%
+
+mean FULL         14.6%
+mean VISUAL_OFF   53.1%
+mean DN_SHUFFLED   0.0%
+FULL timeout      85.4%
+NO_OBS any jump   39.6%
+NO_OBS reach     100.0%
+~~~
+
+사전 gate는 FAIL이다.
+
+특히:
+
+~~~text
+FULL - VISUAL_OFF = -38.5%p
+~~~
+
+로 방향이 역전됐다.
+
+이 결과는 obstacle cue가 없을 때 더 잘 학습됐다는 뜻으로 해석하지 않는다.
+Phase B에서 LC4 cue 자체의 DN separability는 이미 PASS했다.
+
+더 가능성이 높은 설명은,
+FULL의 LC4-driven state가 classifier threshold를 **너무 이른 시점에 먼저 통과**해
+single-jump budget을 소모하고,
+VISUAL_OFF에서는 그 early trigger가 사라져 일부 episode에서
+target-approach state가 더 늦게 threshold를 넘는 현상이다.
+
+이를 확인하기 위해 기존 authoritative artifact의
+FULL / VISUAL_OFF first-jump step과 obstacle-front distance를 별도 audit한다.
