@@ -1867,3 +1867,149 @@ target LC4를 임의 제거하지 않는다.
 ATTACK 또는 JUMP sensory representation을 별도 학습 phase에서 재설계한다.
 
 결과를 보고 gate/threshold를 변경하지 않는다.
+
+
+# Phase G0 — alternate looming channel screen preregistration
+
+Cross-skill LC4 coexistence FAIL과 target-LC4 ablation FAIL 때문에
+기존 ATTACK sensory contract를 유지하면서 JUMP obstacle cue만 다른 biological visual channel로 분리한다.
+
+후보:
+
+~~~text
+LC6
+LC16
+~~~
+
+선정 근거:
+
+- 두 타입 모두 Drosophila visual projection neuron 계열의 looming / avoidance 반응이 보고되어 있다.
+- 현재 v10F ATTACK encoder가 사용하는 LC4 / LPLC1 / LPLC2 / LC10a와 겹치지 않는다.
+- LC16은 looming visual threat에서 backward escape/retreat 회로와 연결된 보고가 있다.
+
+이 단계는 action learning이 아니라 frozen MaleCNS sensory separability screen이다.
+
+## shared target sensory
+
+모든 조건에서 v10F target encoder는 그대로 유지한다.
+
+~~~text
+LC10a
+LPLC1
+LPLC2
+target LC4 (<175 px)
+~~~
+
+즉 후보 obstacle channel이 실제 ATTACK sensory와 공존하는 상태에서만 평가한다.
+
+## candidate obstacle cue
+
+geometry는 기존 v11과 동일:
+
+~~~text
+obstacle width  38
+obstacle height 54
+visual radius   280 px
+drive =
+  clamp(((280-max(0,frontDistance))/280)*0.8, 0, 0.8)
+~~~
+
+단 obstacle cue의 입력 population만:
+
+~~~text
+LC6_side
+또는
+LC16_side
+~~~
+
+으로 바꾼다.
+
+## train / eval seeds
+
+train:
+
+~~~text
+1201000
+1201100
+1201200
+1201300
+~~~
+
+eval:
+
+~~~text
+1211000
+1211100
+1211200
+~~~
+
+distances:
+
+~~~text
+300 / 340 / 380 / 420
+~~~
+
+sample front-distance bins:
+
+~~~text
+240 / 180 / 120 / 60
+~~~
+
+settle 26 / baseline 26 / sample window 5.
+
+## diagnostic classifier
+
+input:
+
+~~~text
+1316-DN activity only
+feature = clamp((currentHz-baselineHz)/50,-1,1)
+~~~
+
+geometry / side / seed / channel label은 model input에 넣지 않는다.
+
+각 candidate별:
+
+~~~text
+logistic regression
+epochs 120
+LR 0.02
+L2 0.0005
+threshold 0.5
+~~~
+
+controls:
+
+~~~text
+LABEL_SHUFFLED
+DN_PERMUTED
+paired ON/OFF L2
+~~~
+
+## candidate gate
+
+각 후보는 모두 만족해야 PASS:
+
+~~~text
+mean FULL balanced accuracy      >= 80%
+every eval run FULL              >= 70%
+FULL - LABEL_SHUFFLED            >= 20pp
+FULL - DN_PERMUTED               >= 20pp
+~~~
+
+## selection rule
+
+1. PASS 후보가 하나면 그 후보 선택.
+2. 둘 다 PASS면 mean FULL balanced accuracy가 높은 후보 선택.
+3. 두 후보 차이가 <= 2pp이면 LC16 선택.
+4. 둘 다 FAIL이면 새 JUMP action learning으로 진행하지 않는다.
+
+이 selection rule은 결과 전에 고정한다.
+
+## PASS 이후
+
+선택된 channel을 사용해 JUMP policy를 처음부터 다시 학습한다.
+기존 v11F LC4 JUMP weights를 재사용하지 않는다.
+
+새 JUMP 학습은 target LC4가 항상 존재하는 shared sensory environment에서 진행하고,
+target-only no-obstacle false JUMP gate를 반드시 포함한다.
