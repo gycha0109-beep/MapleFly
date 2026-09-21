@@ -1,0 +1,36 @@
+name: Verify v11F JUMP Runtime Wiring
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11f-jump-runtime-wiring.yml"
+      - "scripts/verify-v11f-jump-runtime-wiring.mjs"
+      - "src/brain/fly-controller.js"
+      - "src/game.js"
+      - "src/brain/fly-skill-v11-jump.js"
+      - "index.html"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: |
+          node --check src/brain/fly-controller.js
+          node --check src/game.js
+          node --check src/brain/fly-skill-v11-jump.js
+          node --check scripts/verify-v11f-jump-runtime-wiring.mjs
+      - name: Verify runtime wiring
+        run: node scripts/verify-v11f-jump-runtime-wiring.mjs
