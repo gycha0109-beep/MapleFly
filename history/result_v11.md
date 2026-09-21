@@ -418,3 +418,42 @@ target-approach state가 더 늦게 threshold를 넘는 현상이다.
 
 이를 확인하기 위해 기존 authoritative artifact의
 FULL / VISUAL_OFF first-jump step과 obstacle-front distance를 별도 audit한다.
+
+
+### Phase D timing audit
+
+기존 authoritative artifact만 읽은 분석-only CI:
+
+~~~text
+run      35587347745
+artifact 10632953594
+digest   sha256:131963a4a52fa5c53dc9209b090c6aedae6c58d94cab6fde360c853a1da20f69
+~~~
+
+FULL:
+
+~~~text
+first-jump distance median      150 px
+successful first-jump median    118 px
+failed first-jump median        174 px
+
+first-jump step median            30
+successful step median            40
+failed step median                15
+~~~
+
+VISUAL_OFF:
+
+~~~text
+first-jump distance median        0 px
+first-jump step median          100
+clear 51 / 96
+~~~
+
+즉 Phase D의 역전 현상은 obstacle cue가 유용하지 않아서가 아니라,
+LC4가 켜진 FULL에서 classifier가 너무 일찍 threshold를 넘는 경우가 많아
+single-jump budget을 조기 소모하는 **early-trigger preemption**으로 설명된다.
+
+다음 Phase는 classifier/threshold를 재학습·재튜닝하지 않고,
+동일 frozen classifier의 positive가 연속 window에서 지속될 때만 actuator를 허용하는
+temporal persistence를 새 unseen seed에서 검증한다.
