@@ -1,0 +1,92 @@
+name: Audit MapleFly v11C Jump Timing
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/audit-v11c-timing.yml"
+      - "scripts/analyze-v11c-timing.mjs"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/analyze-v11c-timing.mjs
+
+      - name: Download authoritative v11C artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: maplefly-v11c-single-jump-35544510915
+          path: .tmp/v11c
+          run-id: 35544510915
+          github-token: ${{ github.token }}
+
+      - name: Audit first-jump timing
+        run: |
+          node scripts/analyze-v11c-timing.mjs \
+            .tmp/v11c/experiment_v11c.json \
+            results/experiment-v11c-timing/timing_audit.json
+
+      - name: Upload timing audit
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11c-timing-audit-${{ github.run_id }}
+          path: results/experiment-v11c-timing
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record timing audit
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          mkdir -p history/run_receipts
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const audit = JSON.parse(
+            fs.readFileSync(
+              "results/experiment-v11c-timing/timing_audit.json",
+              "utf8"
+            )
+          );
+          const receipt = {
+            schema: "maplefly.v11c-timing-audit-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            headSha: process.env.GITHUB_SHA,
+            sourceRunId: 35544510915,
+            sourceArtifactId: 10616841358,
+            sourceArtifactDigest:
+              "sha256:32ba178ad3d6af7d97462ede099b3c5e32b88bcdd07b032eef17d768ad29ecc4",
+            artifact: {
+              id: Number(process.env.ARTIFACT_ID),
+              digest: process.env.ARTIFACT_DIGEST || null
+            },
+            audit
+          };
+          fs.writeFileSync(
+            "history/run_receipts/v11c_timing_audit.json",
+            JSON.stringify(receipt, null, 2) + "\n"
+          );
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/run_receipts/v11c_timing_audit.json
+          git commit -m "ci(results): record v11C timing audit ${GITHUB_RUN_ID}" || exit 0
+          git push
