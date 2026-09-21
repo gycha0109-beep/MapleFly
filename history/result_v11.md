@@ -168,3 +168,103 @@ FULL - LABEL_SHUFFLED >= 20pp    PASS
 - DN identity permutation에서 약 chance까지 붕괴하므로 단순 global-rate 증가만으로 설명되지 않는다.
 - Phase A의 jump-spam 실패를 "obstacle sensory cue가 brain에 전달되지 않았다"로 설명할 수 없다.
 - 다음 단계는 sensory encoding 변경이 아니라 action-learning 구조를 바꾸는 것이다.
+
+
+---
+
+## Phase C — single-jump reward-only tutorial
+
+판정:
+
+~~~text
+V11C-JUMP-GATE=FAIL
+~~~
+
+Workflow:
+
+~~~text
+run      35544510915
+head     2c7f1880870fd156353df2bec0ea8ed4ea8e4438
+artifact 10616841358
+digest   sha256:32ba178ad3d6af7d97462ede099b3c5e32b88bcdd07b032eef17d768ad29ecc4
+~~~
+
+Practice:
+
+~~~text
+Cohort 1 obstacle clear   0.0%
+         timeout        100.0%
+         mean jumps       1.0
+         NO_OBS jump    100.0%
+
+Cohort 2 obstacle clear   0.0%
+         timeout        100.0%
+         mean jumps       1.0
+         NO_OBS jump     83.3%
+
+Cohort 3 obstacle clear   0.0%
+         timeout        100.0%
+         mean jumps       1.0
+         NO_OBS jump     39.6%
+~~~
+
+Final unseen:
+
+~~~text
+Run 1 FULL          0.0%
+Run 2 FULL          9.4%
+Run 3 FULL         18.8%
+
+mean FULL           9.4%
+VISUAL_OFF          0.0%
+DN_SHUFFLED         0.0%
+NO_OBSTACLE jump    0.0%
+NO_OBSTACLE reach 100.0%
+FULL timeout       90.6%
+FULL actual jumps   1.0
+~~~
+
+사전 gate와 비교:
+
+~~~text
+mean FULL >= 70%                    FAIL
+every FULL run >= 60%               FAIL
+FULL - VISUAL_OFF >= 25pp           FAIL (+9.4pp)
+FULL - DN_SHUFFLED >= 20pp          FAIL (+9.4pp)
+FULL timeout <= 25%                 FAIL
+NO_OBSTACLE target reach >= 85%     PASS
+NO_OBSTACLE any-jump <= 30%         PASS
+~~~
+
+## Phase C 해석
+
+Phase A의 obstacle-independent jump spam은 제거됐다.
+
+Final에서:
+
+~~~text
+FULL           actual jump = 1.0 / episode
+VISUAL_OFF     clear = 0%
+DN_SHUFFLED    clear = 0%
+NO_OBSTACLE    jump = 0%
+~~~
+
+이므로 learned policy가 obstacle sensory/DN identity와 무관하게
+항상 점프하는 상태는 아니다.
+
+그러나 FULL에서도 clear가 9.4%에 불과하고 timeout이 90.6%다.
+
+현재 근거가 지지하는 범위는:
+
+~~~text
+obstacle cue에 의존한 JUMP 선택성은 생겼다.
+하지만 useful jump timing은 학습되지 않았다.
+~~~
+
+이다.
+
+특히 FULL의 blocked-window 평균이 run별 약 27.2~32.9로 매우 높아,
+실제 1회 jump가 obstacle clearance에 유효한 시간대로 충분히 정렬되지 않았음을 시사한다.
+
+정확한 early/late 분포는 artifact의 per-episode
+`firstJumpStep` / `firstJumpFrontDistance`를 별도 timing audit으로 추출해 판정한다.
