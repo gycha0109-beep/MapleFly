@@ -555,3 +555,49 @@ NO_OBSTACLE에서는 점프가 전혀 발생하지 않았다.
 
 따라서 Skill03 JUMP의 학습 정책은 headless 조건에서
 runtime actuator 제약까지 통과한 것으로 판정한다.
+
+
+---
+
+## Cross-skill LC4 coexistence — authoritative FAIL
+
+Workflow:
+
+~~~text
+run      35627450424
+head     7a071d5592f24dc2aa67bbe903206b5f0300e4c9
+artifact 10653765408
+digest   sha256:c878fd4aa00232e1bceab84535758a9732f1c127ef35f14189327f31e02ebca8
+~~~
+
+Result:
+
+~~~text
+FULL_COMBINED clear      100.0%
+OBSTACLE_CUE_OFF clear     0.0%
+DN_SHUFFLED clear          0.0%
+FULL timeout               0.0%
+FULL actual jumps          1.229
+FULL retry jumps           0.229
+
+NO_OBSTACLE target reach 100.0%
+NO_OBSTACLE any JUMP      68.8%
+GATE                       FAIL
+~~~
+
+Per-run target-only false JUMP:
+
+~~~text
+1151000  81.25%
+1161000  87.50%
+1171000  37.50%
+~~~
+
+해석:
+
+v11F obstacle JUMP 자체는 combined sensory에서도 96/96 clear를 유지했다.
+문제는 v10F ATTACK용 target LC4 cue가 장애물이 없는 target-only 상황에서
+v11F JUMP classifier의 positive persistence를 만들며 false JUMP를 유발한다는 것이다.
+
+따라서 현재 browser wiring은 deployed 완료로 판정하지 않는다.
+frozen JUMP gate/threshold/persistence/cooldown을 낮추거나 바꾸지 않는다.
