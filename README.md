@@ -14,7 +14,7 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 - v10F post-merge browser/headless equivalence passed at FULL 84.4%, whiff 15.6%
 - JUMP / UP / DOWN still use legacy connectome decoders
 - POTION still uses the engineered taste / head-motor proxy
-- Skill03 JUMP v11 Phase A failed: policy collapsed to obstacle-independent jump spam; sensory separability diagnostic next
+- Skill03 JUMP: Phase A jump-spam FAIL; Phase B sensory separability PASS; Phase C single-jump policy became cue-specific but clear rate was only 9.4% (timing FAIL)
 - no claim is made that the fly understands MapleStory
 
 ## Brain source
