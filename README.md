@@ -14,7 +14,7 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 - v10F post-merge browser/headless equivalence passed at FULL 84.4%, whiff 15.6%
 - JUMP / UP / DOWN still use legacy connectome decoders
 - POTION still uses the engineered taste / head-motor proxy
-- Skill03 JUMP: Phase E single-jump unseen gate PASS (FULL 86.5%, VISUAL_OFF/DN_SHUFFLED 0%); Phase F real cooldown + self-retry validation next
+- Skill03 JUMP: Phase F headless self-retry gate PASS (FULL 100%, VISUAL_OFF/DN_SHUFFLED 0%); browser deployment equivalence next
 - no claim is made that the fly understands MapleStory
 
 ## Brain source
