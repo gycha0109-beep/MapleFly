@@ -1,0 +1,91 @@
+{
+  "schema": "maplefly.v11g1-run-receipt.1",
+  "runId": 35631188184,
+  "headSha": "7b1a0700b78d642d3f20fb023f3d7834992cede4",
+  "artifact": {
+    "id": 10653879710,
+    "name": "maplefly-v11g1-shared-lc4-35631188184",
+    "digest": "8b13683ed04cd4ed5e7506a88e8989d8c8ced1b10c925180ab714c9a4ebe7d50"
+  },
+  "meta": {
+    "schema": "maplefly.experiment-v11g1.shared-lc4-context-separability.1",
+    "brainRepository": "alextitonis/fly.ai",
+    "brainCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "dnCount": 1316,
+    "trainBaseSeeds": [
+      1301000,
+      1301100,
+      1301200,
+      1301300
+    ],
+    "evalBaseSeeds": [
+      1311000,
+      1311100,
+      1311200
+    ],
+    "distances": [
+      260,
+      300,
+      340,
+      380
+    ],
+    "sampleBins": [
+      150,
+      120,
+      90,
+      60
+    ],
+    "windows": {
+      "settle": 26,
+      "baseline": 26,
+      "sample": 5
+    },
+    "classifier": {
+      "epochs": 120,
+      "learningRate": 0.02,
+      "l2": 0.0005,
+      "threshold": 0.5,
+      "orderSeed": 1306000,
+      "labelShuffleSeed": 1316000
+    },
+    "antiLeak": "classifier input is 1316-DN activity only; context identity/distance/coordinates/side/seed are metadata only"
+  },
+  "summary": {
+    "fullBalancedAccuracy": 0.5885416666666666,
+    "labelShuffledBalancedAccuracy": 0.4635416666666667,
+    "fullMinusLabelShuffled": 0.12499999999999994,
+    "dnPermutedBalancedAccuracy": 0.484375,
+    "fullMinusDnPermuted": 0.10416666666666663,
+    "minRunFullBalancedAccuracy": 0.578125,
+    "pairedL2": {
+      "pairCount": 96,
+      "meanL2": 3.0284136148545993,
+      "minL2": 2.4357179421047803,
+      "maxL2": 3.7536491121047346
+    },
+    "gate": false
+  },
+  "perRun": [
+    {
+      "run": 1,
+      "baseSeed": 1311000,
+      "fullBalancedAccuracy": 0.578125,
+      "labelShuffledBalancedAccuracy": 0.453125,
+      "dnPermutedBalancedAccuracy": 0.453125
+    },
+    {
+      "run": 2,
+      "baseSeed": 1311100,
+      "fullBalancedAccuracy": 0.609375,
+      "labelShuffledBalancedAccuracy": 0.515625,
+      "dnPermutedBalancedAccuracy": 0.5
+    },
+    {
+      "run": 3,
+      "baseSeed": 1311200,
+      "fullBalancedAccuracy": 0.578125,
+      "labelShuffledBalancedAccuracy": 0.421875,
+      "dnPermutedBalancedAccuracy": 0.5
+    }
+  ]
+}
