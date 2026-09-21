@@ -1,0 +1,30 @@
+{
+  "schema": "maplefly.v11f-jump-browser-equivalence-receipt.1",
+  "runId": 35610126652,
+  "headSha": "191146a7bab13fc609faeb0894b14092f3d56ccd",
+  "sourceRunId": 35607509887,
+  "sourceArtifactId": 10643127642,
+  "sourceArtifactDigest": "sha256:80c316f633b5fb97e8de3123eaf4271542ef4b5917612e9814e265687e2577b9",
+  "artifact": {
+    "id": 10644007062,
+    "name": "maplefly-v11f-jump-browser-equivalence-35610126652",
+    "digest": "5714d2fb16bec17e4239153a00df0e647164a622c08729482a2359007ec86a74"
+  },
+  "summary": {
+    "meanFullClearRate": 1,
+    "meanVisualOffClearRate": 0,
+    "visualContribution": 1,
+    "meanDnShuffledClearRate": 0,
+    "dnIdentityContribution": 1,
+    "minRunFullClearRate": 1,
+    "meanFullTimeoutRate": 0,
+    "meanFullActualJumps": 1.1979166666666667,
+    "meanFullRetryJumps": 0.19791666666666666,
+    "noObstacleAnyJumpRate": 0,
+    "noObstacleTargetReachRate": 1,
+    "gate": true
+  },
+  "bundle": {
+    "schema": null
+  }
+}
