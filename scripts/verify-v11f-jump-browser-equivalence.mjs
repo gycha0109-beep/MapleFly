@@ -8,7 +8,8 @@ import {
   cells,
   loadConnectome,
 } from "../src/headless/connectome-runtime.mjs";
-import "../src/brain/fly-skill-v7.js";\nimport "../src/brain/fly-skill-v11-jump.js";
+import "../src/brain/fly-skill-v7.js";
+import "../src/brain/fly-skill-v11-jump.js";
 
 const STEP_SECONDS = 0.02;
 const SETTLE_STEPS = 26;
