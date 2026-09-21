@@ -39,13 +39,6 @@
 
   const PLAYER_SPAWN_X = WORLD.width / 2 - 17;
 
-  const JUMP_TUTORIAL = Object.freeze({
-    obstacleWidth: 38,
-    obstacleHeight: 54,
-    targetOffset: 160,
-    distances: Object.freeze([155, 195, 235, 275]),
-  });
-
   const RESPAWN = Object.freeze({
     delayMs: 700,
     minX: 55,
@@ -102,16 +95,6 @@
     healed: 0,
     wastedHealing: 0,
     lastContactAt: null,
-  };
-
-  const obstacle = {
-    id: "O-JUMP",
-    active: false,
-    side: "R",
-    x: 0,
-    y: WORLD.groundY - JUMP_TUTORIAL.obstacleHeight,
-    width: JUMP_TUTORIAL.obstacleWidth,
-    height: JUMP_TUTORIAL.obstacleHeight,
   };
 
   const mushroom = {
@@ -176,39 +159,7 @@
     player.vx = 0;
   });
 
-  function configureJumpTutorial(seed) {
-    const index =
-      Math.abs(Math.trunc(Number(seed) || 0)) %
-      JUMP_TUTORIAL.distances.length;
-    const startDistance =
-      JUMP_TUTORIAL.distances[index];
-    const side =
-      hashUnit(seed, 97) < 0.5 ? "L" : "R";
-    const center = WORLD.width / 2;
-
-    obstacle.active = true;
-    obstacle.side = side;
-    obstacle.y =
-      WORLD.groundY - obstacle.height;
-
-    if (side === "R") {
-      obstacle.x = center + startDistance;
-      mushroom.x =
-        obstacle.x +
-        obstacle.width +
-        JUMP_TUTORIAL.targetOffset;
-    } else {
-      const front = center - startDistance;
-      obstacle.x = front - obstacle.width;
-      mushroom.x =
-        obstacle.x - JUMP_TUTORIAL.targetOffset;
-    }
-  }
-
-  function resetArena(
-    seed = 64,
-    { skillObstacle = true } = {},
-  ) {
+  function resetArena(seed = 64) {
     player.x = PLAYER_SPAWN_X;
     player.y = WORLD.groundY - player.height;
     player.vx = 0;
@@ -233,15 +184,7 @@
     player.lastContactAt = null;
 
     mushroom.spawnIndex = 0;
-    obstacle.active = Boolean(skillObstacle);
-    if (obstacle.active) {
-      configureJumpTutorial(seed);
-    } else {
-      mushroom.x = spawnPosition(
-        seed,
-        mushroom.spawnIndex,
-      );
-    }
+    mushroom.x = spawnPosition(seed, mushroom.spawnIndex);
     player.facing =
       mushroom.x < player.x + player.width / 2 ? -1 : 1;
 
@@ -272,7 +215,7 @@
   }
 
   function startTrial({ seed = 64 } = {}) {
-    resetArena(seed, { skillObstacle: false });
+    resetArena(seed);
     trial = {
       active: true,
       seed,
@@ -631,19 +574,6 @@
           alive: mushroom.alive,
         },
       ],
-      obstacles: obstacle.active
-        ? [
-            {
-              id: obstacle.id,
-              active: true,
-              side: obstacle.side,
-              x: obstacle.x,
-              y: obstacle.y,
-              width: obstacle.width,
-              height: obstacle.height,
-            },
-          ]
-        : [],
     };
   }
 
@@ -700,25 +630,6 @@
       player.y = WORLD.groundY - player.height;
       player.vy = 0;
       player.grounded = true;
-    }
-
-    if (obstacle.active) {
-      const overlapsVertically =
-        player.y < obstacle.y + obstacle.height &&
-        player.y + player.height > obstacle.y;
-      const overlapsHorizontally =
-        player.x < obstacle.x + obstacle.width &&
-        player.x + player.width > obstacle.x;
-
-      if (overlapsVertically && overlapsHorizontally) {
-        if (horizontalInput > 0) {
-          player.x = obstacle.x - player.width;
-        } else if (horizontalInput < 0) {
-          player.x = obstacle.x + obstacle.width;
-        } else {
-          player.x = previousX;
-        }
-      }
     }
 
     updateContactDamage(dt);
@@ -848,7 +759,6 @@
     return {
       player: { ...player },
       mushroom: { ...mushroom },
-      obstacle: { ...obstacle },
       trial: getTrialSnapshot(),
     };
   }
@@ -876,7 +786,6 @@
     ctx.clearRect(0, 0, WORLD.width, WORLD.height);
     drawBackground();
     drawArenaLabel();
-    drawObstacle();
     drawMushroom();
     drawAttackEffect();
     drawPlayer();
@@ -946,48 +855,9 @@
     );
     ctx.font = "600 12px Inter, sans-serif";
     ctx.fillText(
-      "learned LEFT/RIGHT + ATTACK + JUMP · potion/climb legacy decoder",
+      "v7에서 학습한 LEFT/RIGHT + 기존 JUMP/ATTACK/POTION decoder",
       WORLD.width / 2,
       122,
-    );
-    ctx.restore();
-  }
-
-  function drawObstacle() {
-    if (!obstacle.active) {
-      return;
-    }
-
-    ctx.save();
-    ctx.fillStyle = "#8d725c";
-    ctx.fillRect(
-      obstacle.x,
-      obstacle.y,
-      obstacle.width,
-      obstacle.height,
-    );
-    ctx.fillStyle = "#b49473";
-    ctx.fillRect(
-      obstacle.x + 4,
-      obstacle.y + 5,
-      obstacle.width - 8,
-      8,
-    );
-    ctx.strokeStyle = "rgba(55, 43, 34, 0.55)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(
-      obstacle.x,
-      obstacle.y,
-      obstacle.width,
-      obstacle.height,
-    );
-    ctx.fillStyle = "#4b3c31";
-    ctx.font = "800 9px Inter, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(
-      "JUMP",
-      obstacle.x + obstacle.width / 2,
-      obstacle.y - 6,
     );
     ctx.restore();
   }
