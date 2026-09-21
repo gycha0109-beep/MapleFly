@@ -988,3 +988,301 @@ cue가 처음 강해지는 먼 구간에서 너무 빨리 single jump를 소비�
 다음 Phase D는 state/action 정답을 teacher가 주지 않고,
 **random one-jump babbling -> 실제 CLEAR/FAIL outcome**으로
 jump-state DN feature를 직접 학습하는 outcome classifier로 전환한다.
+
+
+# Phase D — random one-jump outcome classifier preregistration
+
+Phase C timing audit에서 successful first jump는 median 118 px,
+failed first jump는 median 174 px였다.
+
+Phase D는 이 진단값을 policy input이나 정답 label로 사용하지 않는다.
+
+목표는:
+
+~~~text
+random one-jump babbling
+-> actual CLEAR / FAIL outcome
+-> jump-state MaleCNS DN feature classifier
+~~~
+
+로 credit assignment를 직접 단순화하는 것이다.
+
+## anti-leak invariant
+
+classifier input 금지:
+
+~~~text
+obstacle distance
+obstacle coordinate
+player coordinate
+jump window index
+jump arc
+can-clear / should-jump
+correct timing
+episode cohort
+side
+seed
+~~~
+
+classifier input은 frozen MaleCNS DN feature만 사용한다.
+
+CLEAR/FAIL label은 실제 physics outcome으로만 생성한다.
+
+## sensory / physics / movement
+
+Phase C와 동일:
+
+~~~text
+gravity          1400 px/s^2
+move speed        280 px/s
+jump velocity     600 px/s
+episode max       4.5 s
+settle             26 steps
+baseline           26 steps
+movement window    26 steps
+jump window         5 steps
+~~~
+
+obstacle LC4 encoder는 Phase B에서 PASS한 식 그대로다.
+horizontal movement는 frozen v7 Skill01을 그대로 쓴다.
+
+ATTACK / POTION / climbing은 비활성화한다.
+
+## Phase D practice action generation
+
+practice는 learned policy를 사용하지 않는다.
+
+각 obstacle episode 시작 전에
+state와 무관한 deterministic random jump decision window를 하나 뽑는다.
+
+~~~text
+jump decision window ∈ {1..12}
+random source seed = brainSeed + 3000
+~~~
+
+해당 decision window에서 grounded이면 실제 JUMP actuator를 딱 1회 발동한다.
+
+이 window 선택은 obstacle distance / DN state / game outcome을 보지 않는다.
+
+그 실제 JUMP 직전 5-step DN feature 하나를 저장한다.
+
+episode 종료 후:
+
+~~~text
+obstacle 완전 통과 -> label CLEAR = 1
+그 외 timeout       -> label FAIL  = 0
+~~~
+
+WAIT state는 label하지 않는다.
+
+## practice schedule
+
+새 base seeds:
+
+~~~text
+801000
+811000
+821000
+~~~
+
+각 cohort:
+
+~~~text
+12 blocks × 4 distances × 2 sides
+= 96 obstacle episodes
+~~~
+
+총:
+
+~~~text
+288 random one-jump attempts
+~~~
+
+practice distances:
+
+~~~text
+145 / 185 / 225 / 265 px
+~~~
+
+brain seed:
+
+~~~text
+baseSeed + block * 8 + distanceIndex * 2 + sideIndex
+sideIndex: L=0, R=1
+~~~
+
+side 순서는 block + distanceIndex parity로 L/R 순서를 교대한다.
+
+## practice support gate
+
+classifier 학습 전 실제 outcome support:
+
+~~~text
+CLEAR samples >= 24
+FAIL samples  >= 24
+~~~
+
+하나라도 부족하면 Phase D는 classifier를 억지로 만들지 않고 FAIL한다.
+
+## feature selection
+
+각 actual jump sample에서 full 1,316 DN current feature:
+
+~~~text
+clamp((current_dn_hz - baseline_dn_hz) / 50, -1, 1)
+~~~
+
+을 얻는다.
+
+label을 보기 전에 전체 practice sample의 feature variance만 계산해
+top 128 DN을 고른다.
+
+즉 sparse feature selection은 **unlabeled variance-only**다.
+
+그 128 feature를 practice-only mean/std로 standardize하고
+standardized feature는 [-5, 5]로 clip한다.
+
+## classifier
+
+class-balanced logistic regression:
+
+~~~text
+features       128
+epochs         300
+learning rate  0.03
+L2             0.001
+threshold      0.5
+~~~
+
+CLEAR / FAIL class가 같은 총 weight를 갖도록 sample weight를 준다.
+
+threshold는 결과를 본 뒤 조정하지 않는다.
+
+## online evaluation policy
+
+final에서는 random jump를 쓰지 않는다.
+
+매 5-step DN window마다 classifier를 계산한다.
+
+~~~text
+P(CLEAR) >= 0.5 -> JUMP
+P(CLEAR) <  0.5 -> WAIT
+~~~
+
+episode당 actual JUMP budget은 Phase C와 동일하게 1회다.
+
+첫 actual JUMP 뒤에는 WAIT만 가능하다.
+
+## unseen final
+
+새 final seeds:
+
+~~~text
+851000
+861000
+871000
+~~~
+
+final distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+각 run obstacle schedule:
+
+~~~text
+4 blocks × 4 distances × 2 sides
+= 32 episodes
+~~~
+
+paired conditions:
+
+~~~text
+FULL
+VISUAL_OFF
+DN_SHUFFLED
+~~~
+
+DN_SHUFFLED permutation:
+
+~~~text
+finalBaseSeed + 900000
+~~~
+
+NO_OBSTACLE:
+
+~~~text
+2 blocks × 4 virtual distances × 2 sides
+= 16 episodes
+brain seed offset +7000
+~~~
+
+## metrics
+
+practice:
+
+~~~text
+CLEAR / FAIL counts
+CLEAR rate
+CLEAR jump feature timing distribution
+FAIL jump feature timing distribution
+selected 128 DN indices
+~~~
+
+final:
+
+~~~text
+FULL clear
+VISUAL_OFF clear
+DN_SHUFFLED clear
+FULL timeout
+actual jump rate
+first jump step / front distance
+NO_OBSTACLE target reach
+NO_OBSTACLE any-jump
+~~~
+
+## Phase D gate
+
+practice support gate를 먼저 통과해야 한다.
+
+그 뒤 final gate:
+
+~~~text
+mean FULL clear               >= 70%
+every FULL run                >= 60%
+FULL - VISUAL_OFF             >= 25 percentage points
+FULL - DN_SHUFFLED            >= 20 percentage points
+FULL timeout                  <= 25%
+NO_OBSTACLE target reach      >= 85%
+NO_OBSTACLE any-jump episodes <= 30%
+~~~
+
+결과 후 gate/threshold를 낮추지 않는다.
+
+## PASS 이후
+
+Phase D PASS는 single-jump outcome classifier tutorial 성공이다.
+
+그 다음 Phase E에서 새 unseen seed로:
+
+~~~text
+single-jump budget 제거
+real 750 ms cooldown
+self-retry / multiple obstacle interaction
+~~~
+
+을 검증해야 browser deployment로 이동한다.
+
+## FAIL 이후
+
+classifier threshold를 결과 보고 튜닝하지 않는다.
+
+우선 확인:
+
+1. practice CLEAR/FAIL support
+2. practice CLEAR vs FAIL DN separability
+3. online final에서 early false-positive가 다시 발생하는지
+4. no-obstacle false-positive
+5. sparse top128가 full feature signal을 잃었는지
