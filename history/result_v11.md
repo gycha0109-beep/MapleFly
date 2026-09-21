@@ -506,3 +506,52 @@ unseen obstacle-specific JUMP timing을 single-jump tutorial 조건에서 통과
 아직 실제 runtime 배치 조건은 아니다.
 episode당 1회 jump budget을 사용했으므로
 다음 Phase F에서 제한 제거 + 실제 750 ms cooldown/self-retry를 검증한다.
+
+
+---
+
+## Phase F — real cooldown + self-retry
+
+판정:
+
+~~~text
+V11F-JUMP-GATE=PASS
+~~~
+
+Workflow:
+
+~~~text
+run      35607509887
+head     90f3e14f9c1e2456a84624826051357548b1e4b6
+artifact 10643127642
+digest   sha256:80c316f633b5fb97e8de3123eaf4271542ef4b5917612e9814e265687e2577b9
+~~~
+
+Final unseen:
+
+~~~text
+Run 1 FULL 100.0% / VISUAL_OFF 0.0% / SHUFFLED 0.0%
+Run 2 FULL 100.0% / VISUAL_OFF 0.0% / SHUFFLED 0.0%
+Run 3 FULL 100.0% / VISUAL_OFF 0.0% / SHUFFLED 0.0%
+
+mean FULL          100.0%
+minimum FULL       100.0%
+FULL timeout         0.0%
+FULL actual jumps    1.198
+FULL retry jumps     0.198
+VISUAL_OFF            0.0%
+DN_SHUFFLED           0.0%
+NO_OBSTACLE jump      0.0%
+NO_OBSTACLE reach   100.0%
+~~~
+
+사전 Phase F gate는 전 항목 PASS다.
+
+single-jump budget을 제거하고 real 750 ms cooldown을 복원했는데도
+frozen Phase E policy는 새 unseen seed에서 96/96 obstacle episode를 모두 clear했다.
+
+약 19.8% episode에서는 첫 점프 뒤 실제 self-retry가 발생했으며,
+NO_OBSTACLE에서는 점프가 전혀 발생하지 않았다.
+
+따라서 Skill03 JUMP의 학습 정책은 headless 조건에서
+runtime actuator 제약까지 통과한 것으로 판정한다.
