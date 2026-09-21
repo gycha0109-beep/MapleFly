@@ -1308,3 +1308,154 @@ Phase D classifier는 random practice의 CLEAR/FAIL support 부족으로 실패�
 FULL이 VISUAL_OFF보다 크게 낮은 역전 결과 때문에,
 다음 학습 phase 전에 기존 artifact만 읽는 timing audit으로
 early first-positive preemption 여부를 확인한다.
+
+
+## Phase D timing audit conclusion
+
+Run `35587347745`:
+
+~~~text
+FULL first jump median         150 px
+FULL successful median         118 px
+FULL failed median             174 px
+
+VISUAL_OFF first jump median     0 px
+~~~
+
+Phase D의 핵심 실패 모드는 early positive preemption으로 확정한다.
+
+# Phase E — frozen classifier + 2-window persistence preregistration
+
+Phase D의 learned classifier는 **재학습하지 않는다**.
+
+Frozen source:
+
+~~~text
+source run      35550206430
+source head     2c9daa3320d597e417217e5ccb2dcc2ffeb56953
+source artifact 10618482118
+source digest   sha256:3709991bed590ecfeea023a0229a27ce228deade0a830ff20db1ee53455ffd9e
+selected DN     128
+threshold       0.5
+~~~
+
+## change under test
+
+매 5-step decision window마다 frozen classifier를 계산한다.
+
+~~~text
+P(CLEAR) >= 0.5 -> positive
+P(CLEAR) <  0.5 -> negative
+~~~
+
+JUMP actuator는:
+
+~~~text
+positive가 2개 연속 window에서 관찰될 때만 1회 발동
+negative가 나오면 streak = 0
+~~~
+
+으로 고정한다.
+
+왜 2개인가:
+
+Phase D timing audit에서 FULL median 150 px,
+successful median 118 px였다.
+한 decision window는 5 × 0.02 s = 0.1 s이고
+수평 이동량은 약 28 px다.
+
+따라서 1개 추가 positive confirmation은
+관찰된 early-trigger gap과 같은 order의 지연이다.
+
+이 결정은 Phase E 결과를 보기 전에 고정한다.
+
+## anti-leak
+
+persistence state에는 다음을 넣지 않는다.
+
+~~~text
+obstacle distance
+coordinates
+jump timing label
+collision state
+correct-action flag
+side
+seed
+~~~
+
+오직 직전 classifier threshold 결과의 연속 횟수만 저장한다.
+
+## action constraint
+
+Phase C/D와 동일하게 actual JUMP budget은 episode당 1회다.
+Phase E PASS 후에만 multi-jump/self-retry generalization을 별도 검증한다.
+
+## unseen final
+
+새 final seeds:
+
+~~~text
+951000
+961000
+971000
+~~~
+
+distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+각 run:
+
+~~~text
+32 obstacle episodes:
+FULL / VISUAL_OFF / DN_SHUFFLED
+
+16 NO_OBSTACLE episodes
+~~~
+
+DN_SHUFFLED permutation:
+
+~~~text
+finalBaseSeed + 900000
+~~~
+
+## gate
+
+Phase D와 동일:
+
+~~~text
+mean FULL clear               >= 70%
+every FULL run                >= 60%
+FULL - VISUAL_OFF             >= 25 percentage points
+FULL - DN_SHUFFLED            >= 20 percentage points
+FULL timeout                  <= 25%
+NO_OBSTACLE target reach      >= 85%
+NO_OBSTACLE any-jump episodes <= 30%
+~~~
+
+gate/threshold/persistence count는 결과 후 낮추거나 바꾸지 않는다.
+
+## PASS 이후
+
+다음 Phase F에서:
+
+~~~text
+single-jump budget 제거
+real 750 ms cooldown 복원
+self-retry / multi-obstacle generalization
+browser exact-window equivalence
+~~~
+
+을 별도 preregister한다.
+
+## FAIL 이후
+
+먼저 확인:
+
+1. FULL first-positive / first-jump timing
+2. positive streak 길이 분포
+3. NO_OBSTACLE false-positive streak
+4. VISUAL_OFF delayed-trigger artifact
+5. 필요 시 classifier 자체의 temporal-state representation 재설계
