@@ -1,0 +1,158 @@
+{
+  "schema": "maplefly.v11f-run-receipt.1",
+  "runId": 35607509887,
+  "runAttempt": 1,
+  "headSha": "90f3e14f9c1e2456a84624826051357548b1e4b6",
+  "ref": "refs/heads/main",
+  "syntaxOutcome": "success",
+  "experimentOutcome": "success",
+  "uploadOutcome": "success",
+  "artifact": {
+    "id": 10643127642,
+    "name": "maplefly-v11f-self-retry-35607509887",
+    "digest": "80c316f633b5fb97e8de3123eaf4271542ef4b5917612e9814e265687e2577b9"
+  },
+  "meta": {
+    "schema": "maplefly.experiment-v11f.real-cooldown-self-retry.1",
+    "phase": "F",
+    "brainRepository": "alextitonis/fly.ai",
+    "brainCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "dnCount": 1316,
+    "movementVersion": "v7-run2-top64",
+    "sourceCandidate": {
+      "path": "src/brain/fly-skill-v11e-jump-candidate.json",
+      "runId": 35596856019,
+      "headSha": "5d460569816b342010aa8ad8320f040e8053ef64",
+      "artifactId": 10636579724,
+      "artifactDigest": "fde1df68e40c0908d090e1b61749a714ab7cc3c19898a9746ce0e43a98544afe"
+    },
+    "classifier": {
+      "selectedFeatureCount": 128,
+      "threshold": 0.5,
+      "persistenceWindows": 2,
+      "realCooldownSteps": 38,
+      "singleJumpBudget": false
+    },
+    "windows": {
+      "settle": 26,
+      "baseline": 26,
+      "movement": 26,
+      "jump": 5
+    },
+    "finalSeeds": [
+      1051000,
+      1061000,
+      1071000
+    ],
+    "finalDistances": [
+      155,
+      195,
+      235,
+      275
+    ],
+    "antiLeak": "jump uses only frozen MaleCNS DN classifier threshold history; no obstacle distance/coordinates/timing labels enter policy"
+  },
+  "summary": {
+    "meanFullClearRate": 1,
+    "meanVisualOffClearRate": 0,
+    "visualContribution": 1,
+    "meanDnShuffledClearRate": 0,
+    "dnIdentityContribution": 1,
+    "minRunFullClearRate": 1,
+    "meanFullTimeoutRate": 0,
+    "meanFullActualJumps": 1.1979166666666667,
+    "meanFullRetryJumps": 0.19791666666666666,
+    "noObstacleAnyJumpRate": 0,
+    "noObstacleTargetReachRate": 1,
+    "gate": true
+  },
+  "perRun": [
+    {
+      "run": 1,
+      "baseSeed": 1051000,
+      "FULL": {
+        "clearRate": 1,
+        "timeoutRate": 0,
+        "meanActualJumps": 1.1875,
+        "meanRetryJumps": 0.1875,
+        "meanBlockedWindows": 0.78125
+      },
+      "VISUAL_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      },
+      "NO_OBSTACLE": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      }
+    },
+    {
+      "run": 2,
+      "baseSeed": 1061000,
+      "FULL": {
+        "clearRate": 1,
+        "timeoutRate": 0,
+        "meanActualJumps": 1.125,
+        "meanRetryJumps": 0.125,
+        "meanBlockedWindows": 0.9375
+      },
+      "VISUAL_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      },
+      "NO_OBSTACLE": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      }
+    },
+    {
+      "run": 3,
+      "baseSeed": 1071000,
+      "FULL": {
+        "clearRate": 1,
+        "timeoutRate": 0,
+        "meanActualJumps": 1.28125,
+        "meanRetryJumps": 0.28125,
+        "meanBlockedWindows": 1.09375
+      },
+      "VISUAL_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      },
+      "NO_OBSTACLE": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0,
+        "meanActualJumps": 0,
+        "meanRetryJumps": 0
+      }
+    }
+  ]
+}
