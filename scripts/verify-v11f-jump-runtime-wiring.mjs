@@ -14,7 +14,6 @@ const requiredController = [
   'id: "jump"',
   "jumpWindowSteps: 5",
   "jumpCooldownSteps: 38",
-  "positiveStreak",
   "this.playerGrounded",
   "this.nextJumpSkillStep",
   "observeUnavailableSparseCurrent",
