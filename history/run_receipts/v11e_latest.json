@@ -1,0 +1,142 @@
+{
+  "schema": "maplefly.v11e-run-receipt.1",
+  "runId": 35596856019,
+  "runAttempt": 1,
+  "headSha": "5d460569816b342010aa8ad8320f040e8053ef64",
+  "ref": "refs/heads/main",
+  "syntaxOutcome": "success",
+  "experimentOutcome": "success",
+  "uploadOutcome": "success",
+  "artifact": {
+    "id": 10636579724,
+    "name": "maplefly-v11e-persistence-35596856019",
+    "digest": "fde1df68e40c0908d090e1b61749a714ab7cc3c19898a9746ce0e43a98544afe"
+  },
+  "meta": {
+    "schema": "maplefly.experiment-v11e.frozen-persistence.1",
+    "phase": "E",
+    "brainRepository": "alextitonis/fly.ai",
+    "brainCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "dnCount": 1316,
+    "movementVersion": "v7-run2-top64",
+    "sourceCandidate": {
+      "path": "src/brain/fly-skill-v11d-jump-candidate.json",
+      "runId": 35550206430,
+      "headSha": "2c9daa3320d597e417217e5ccb2dcc2ffeb56953",
+      "artifactId": 10618482118,
+      "artifactDigest": "3709991bed590ecfeea023a0229a27ce228deade0a830ff20db1ee53455ffd9e"
+    },
+    "classifier": {
+      "selectedFeatureCount": 128,
+      "threshold": 0.5,
+      "persistenceWindows": 2
+    },
+    "windows": {
+      "settle": 26,
+      "baseline": 26,
+      "movement": 26,
+      "jump": 5
+    },
+    "finalSeeds": [
+      951000,
+      961000,
+      971000
+    ],
+    "finalDistances": [
+      155,
+      195,
+      235,
+      275
+    ],
+    "antiLeak": "jump uses only frozen MaleCNS DN classifier threshold history; no obstacle distance/coordinates/timing labels enter policy"
+  },
+  "summary": {
+    "meanFullClearRate": 0.8645833333333334,
+    "meanVisualOffClearRate": 0,
+    "visualContribution": 0.8645833333333334,
+    "meanDnShuffledClearRate": 0,
+    "dnIdentityContribution": 0.8645833333333334,
+    "minRunFullClearRate": 0.71875,
+    "meanFullTimeoutRate": 0.13541666666666666,
+    "noObstacleAnyJumpRate": 0,
+    "noObstacleTargetReachRate": 1,
+    "gate": true
+  },
+  "perRun": [
+    {
+      "run": 1,
+      "baseSeed": 951000,
+      "FULL": {
+        "clearRate": 0.90625,
+        "timeoutRate": 0.09375,
+        "meanActualJumps": 1,
+        "meanBlockedWindows": 3.1875
+      },
+      "VISUAL_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "NO_OBSTACLE": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0,
+        "meanActualJumps": 0
+      }
+    },
+    {
+      "run": 2,
+      "baseSeed": 961000,
+      "FULL": {
+        "clearRate": 0.71875,
+        "timeoutRate": 0.28125,
+        "meanActualJumps": 1,
+        "meanBlockedWindows": 9.90625
+      },
+      "VISUAL_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "NO_OBSTACLE": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0,
+        "meanActualJumps": 0
+      }
+    },
+    {
+      "run": 3,
+      "baseSeed": 971000,
+      "FULL": {
+        "clearRate": 0.96875,
+        "timeoutRate": 0.03125,
+        "meanActualJumps": 1,
+        "meanBlockedWindows": 1.71875
+      },
+      "VISUAL_OFF": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "DN_SHUFFLED": {
+        "clearRate": 0,
+        "timeoutRate": 1,
+        "meanActualJumps": 0
+      },
+      "NO_OBSTACLE": {
+        "targetReachRate": 1,
+        "anyJumpRate": 0,
+        "meanActualJumps": 0
+      }
+    }
+  ]
+}
