@@ -640,3 +640,47 @@ Per-run FULL hit:
 shared runtime에서 LC4를 JUMP 전용으로 빼는 해법은 폐기한다.
 
 cross-skill FAIL이 해결되기 전까지 browser learned JUMP deployment는 withheld 상태로 유지한다.
+
+
+---
+
+## Phase G0 — alternate looming channel screen FAIL
+
+Workflow:
+
+~~~text
+run      35630336587
+head     da911f909ced2b35c4180ebab35e6103be9fadb8
+artifact 10654383263
+digest   sha256:66bb6065f1a5a6bb5167891c261903f477799c91b00216d189869b0cc7c1c919
+~~~
+
+Pinned MaleCNS population counts:
+
+~~~text
+LC6   L=59  R=65
+LC16  L=88  R=94
+~~~
+
+Shared v10F target sensory를 유지한 상태에서 obstacle cue만 후보 channel로 분리:
+
+~~~text
+LC6:
+  FULL balanced accuracy        58.3%
+  LABEL_SHUFFLED                46.9%
+  DN_PERMUTED                   51.6%
+  minimum run FULL              56.3%
+  gate                          FAIL
+
+LC16:
+  FULL balanced accuracy        56.8%
+  LABEL_SHUFFLED                46.4%
+  DN_PERMUTED                   45.8%
+  minimum run FULL              54.7%
+  gate                          FAIL
+~~~
+
+사전 selection rule에 따라 selected channel은 NONE.
+
+따라서 LC6/LC16으로 단순 sensory channel을 교체하는 방향은 중단한다.
+drive/gate를 결과 후 조정하지 않는다.
