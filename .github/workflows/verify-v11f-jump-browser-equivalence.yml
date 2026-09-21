@@ -1,0 +1,100 @@
+name: Verify v11F JUMP Browser Equivalence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11f-jump-browser-equivalence.yml"
+      - "scripts/verify-v11f-jump-browser-equivalence.mjs"
+      - "src/brain/fly-skill-v11-jump.js"
+      - "src/brain/fly-skill-v11f-jump-candidate.json"
+      - "src/brain/fly-skill-v7.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: write
+
+jobs:
+  equivalence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: |
+          node --check src/brain/fly-skill-v11-jump.js
+          node --check scripts/verify-v11f-jump-browser-equivalence.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Verify exact browser bundle replay
+        run: node scripts/verify-v11f-jump-browser-equivalence.mjs
+
+      - name: Upload equivalence evidence
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11f-jump-browser-equivalence-${{ github.run_id }}
+          path: results/verify-v11f-jump-browser
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record equivalence receipt
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const source =
+            "results/verify-v11f-jump-browser/verify_v11f_jump_browser.json";
+          const result = JSON.parse(fs.readFileSync(source, "utf8"));
+          const receipt = {
+            schema: "maplefly.v11f-jump-browser-equivalence-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            headSha: process.env.GITHUB_SHA,
+            sourceRunId: 35607509887,
+            sourceArtifactId: 10643127642,
+            sourceArtifactDigest:
+              "sha256:80c316f633b5fb97e8de3123eaf4271542ef4b5917612e9814e265687e2577b9",
+            artifact: {
+              id: process.env.ARTIFACT_ID
+                ? Number(process.env.ARTIFACT_ID)
+                : null,
+              name:
+                "maplefly-v11f-jump-browser-equivalence-" +
+                process.env.GITHUB_RUN_ID,
+              digest: process.env.ARTIFACT_DIGEST || null
+            },
+            summary: result.summary,
+            bundle: {
+              schema: globalThis.MapleFlyJumpSkillV11?.BUNDLED_STATE?.schema ?? null
+            }
+          };
+          fs.mkdirSync("history/run_receipts", { recursive: true });
+          fs.writeFileSync(
+            "history/run_receipts/v11f_jump_browser_equivalence.json",
+            JSON.stringify(receipt, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit equivalence receipt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/run_receipts/v11f_jump_browser_equivalence.json
+          git commit -m "ci(results): record v11F JUMP browser equivalence ${GITHUB_RUN_ID}" || exit 0
+          git push
