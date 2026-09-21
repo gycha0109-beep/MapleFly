@@ -1,0 +1,138 @@
+name: Verify v11 Cross-Skill LC4 Coexistence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11-cross-skill-lc4.yml"
+      - "scripts/verify-v11-cross-skill-lc4.mjs"
+      - "src/brain/fly-skill-v11-jump.js"
+      - "src/brain/fly-skill-v7.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/verify-v11-cross-skill-lc4.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Verify cross-skill LC4 coexistence
+        run: node scripts/verify-v11-cross-skill-lc4.mjs
+
+      - name: Upload coexistence evidence
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11-cross-skill-lc4-${{ github.run_id }}
+          path: results/verify-v11-cross-skill-lc4
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record coexistence receipt
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+
+          const source =
+            "results/verify-v11-cross-skill-lc4/verify_v11_cross_skill_lc4.json";
+          const result = JSON.parse(
+            fs.readFileSync(source, "utf8"),
+          );
+
+          const receipt = {
+            schema:
+              "maplefly.v11-cross-skill-lc4-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            headSha: process.env.GITHUB_SHA,
+            sourceJumpRunId: 35607509887,
+            sourceJumpBrowserEquivalenceRunId:
+              35610126652,
+            artifact: {
+              id: process.env.ARTIFACT_ID
+                ? Number(process.env.ARTIFACT_ID)
+                : null,
+              name:
+                "maplefly-v11-cross-skill-lc4-" +
+                process.env.GITHUB_RUN_ID,
+              digest:
+                process.env.ARTIFACT_DIGEST || null
+            },
+            meta: result.meta,
+            summary: result.summary,
+            perRun: result.perRun?.map((row) => ({
+              run: row.run,
+              baseSeed: row.baseSeed,
+              FULL: {
+                clearRate: row.FULL.clearRate,
+                timeoutRate: row.FULL.timeoutRate,
+                meanActualJumps:
+                  row.FULL.meanActualJumps,
+                meanRetryJumps:
+                  row.FULL.meanRetryJumps
+              },
+              OBSTACLE_CUE_OFF: {
+                clearRate:
+                  row.VISUAL_OFF.clearRate,
+                timeoutRate:
+                  row.VISUAL_OFF.timeoutRate,
+                meanActualJumps:
+                  row.VISUAL_OFF.meanActualJumps
+              },
+              DN_SHUFFLED: {
+                clearRate:
+                  row.DN_SHUFFLED.clearRate,
+                timeoutRate:
+                  row.DN_SHUFFLED.timeoutRate
+              },
+              NO_OBSTACLE_TARGET_ONLY: {
+                targetReachRate:
+                  row.NO_OBSTACLE.targetReachRate,
+                anyJumpRate:
+                  row.NO_OBSTACLE.anyJumpRate,
+                meanActualJumps:
+                  row.NO_OBSTACLE.meanActualJumps
+              }
+            })) ?? null
+          };
+
+          fs.mkdirSync(
+            "history/run_receipts",
+            { recursive: true },
+          );
+          fs.writeFileSync(
+            "history/run_receipts/v11_cross_skill_lc4.json",
+            JSON.stringify(receipt, null, 2) + "\n",
+          );
+          NODE
+
+      - name: Commit coexistence receipt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/run_receipts/v11_cross_skill_lc4.json
+          git commit -m "ci(results): record v11 cross-skill LC4 ${GITHUB_RUN_ID}" || exit 0
+          git push
