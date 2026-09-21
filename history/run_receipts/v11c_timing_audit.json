@@ -1,0 +1,1389 @@
+{
+  "schema": "maplefly.v11c-timing-audit-receipt.1",
+  "runId": 35549956342,
+  "headSha": "69afadde1b5a4f6e1d7d5da13caa6b0dde4e1702",
+  "sourceRunId": 35544510915,
+  "sourceArtifactId": 10616841358,
+  "sourceArtifactDigest": "sha256:32ba178ad3d6af7d97462ede099b3c5e32b88bcdd07b032eef17d768ad29ecc4",
+  "artifact": {
+    "id": 10617784401,
+    "digest": "dbf15734e8cdd11303e18cc82fe75babf77a6034a1719e0cab31734868cf7abc"
+  },
+  "audit": {
+    "schema": "maplefly.v11c-timing-audit.1",
+    "source": {
+      "schema": "maplefly.experiment-v11c.single-jump-sarsa.1",
+      "finalSeeds": [
+        751000,
+        761000,
+        771000
+      ],
+      "finalDistances": [
+        155,
+        195,
+        235,
+        275
+      ]
+    },
+    "aggregateFULL": {
+      "episodes": 96,
+      "jumpedEpisodes": 96,
+      "clearEpisodes": 9,
+      "timeoutEpisodes": 87,
+      "jumped": {
+        "episodes": 96,
+        "firstJumpStep": {
+          "n": 96,
+          "min": 5,
+          "q25": 10,
+          "median": 15,
+          "q75": 40,
+          "max": 50,
+          "mean": 23.90625
+        },
+        "firstJumpFrontDistance": {
+          "n": 96,
+          "min": 117.99999999999943,
+          "q25": 138,
+          "median": 167.99999999999972,
+          "q75": 178,
+          "max": 218,
+          "mean": 163.87499999999997
+        },
+        "blockedWindows": {
+          "n": 96,
+          "min": 0,
+          "q25": 30,
+          "median": 33,
+          "q75": 34,
+          "max": 36,
+          "mean": 30.03125
+        }
+      },
+      "clear": {
+        "episodes": 9,
+        "firstJumpStep": {
+          "n": 9,
+          "min": 40,
+          "q25": 50,
+          "median": 50,
+          "q75": 50,
+          "max": 50,
+          "mean": 47.77777777777778
+        },
+        "firstJumpFrontDistance": {
+          "n": 9,
+          "min": 117.99999999999943,
+          "q25": 117.99999999999943,
+          "median": 117.99999999999943,
+          "q75": 117.99999999999943,
+          "max": 133.99999999999966,
+          "mean": 121.55555555555505
+        },
+        "blockedWindows": {
+          "n": 9,
+          "min": 0,
+          "q25": 0,
+          "median": 0,
+          "q75": 0,
+          "max": 0,
+          "mean": 0
+        }
+      },
+      "failed": {
+        "episodes": 87,
+        "firstJumpStep": {
+          "n": 87,
+          "min": 5,
+          "q25": 10,
+          "median": 15,
+          "q75": 30,
+          "max": 45,
+          "mean": 21.436781609195403
+        },
+        "firstJumpFrontDistance": {
+          "n": 87,
+          "min": 138,
+          "q25": 138,
+          "median": 173.99999999999966,
+          "q75": 178,
+          "max": 218,
+          "mean": 168.25287356321834
+        },
+        "blockedWindows": {
+          "n": 87,
+          "min": 29,
+          "q25": 32,
+          "median": 33,
+          "q75": 35.5,
+          "max": 36,
+          "mean": 33.13793103448276
+        }
+      }
+    },
+    "byStartDistance": {
+      "unknown": {
+        "episodes": 96,
+        "jumpedEpisodes": 96,
+        "clearEpisodes": 9,
+        "timeoutEpisodes": 87,
+        "jumped": {
+          "episodes": 96,
+          "firstJumpStep": {
+            "n": 96,
+            "min": 5,
+            "q25": 10,
+            "median": 15,
+            "q75": 40,
+            "max": 50,
+            "mean": 23.90625
+          },
+          "firstJumpFrontDistance": {
+            "n": 96,
+            "min": 117.99999999999943,
+            "q25": 138,
+            "median": 167.99999999999972,
+            "q75": 178,
+            "max": 218,
+            "mean": 163.87499999999997
+          },
+          "blockedWindows": {
+            "n": 96,
+            "min": 0,
+            "q25": 30,
+            "median": 33,
+            "q75": 34,
+            "max": 36,
+            "mean": 30.03125
+          }
+        },
+        "clear": {
+          "episodes": 9,
+          "firstJumpStep": {
+            "n": 9,
+            "min": 40,
+            "q25": 50,
+            "median": 50,
+            "q75": 50,
+            "max": 50,
+            "mean": 47.77777777777778
+          },
+          "firstJumpFrontDistance": {
+            "n": 9,
+            "min": 117.99999999999943,
+            "q25": 117.99999999999943,
+            "median": 117.99999999999943,
+            "q75": 117.99999999999943,
+            "max": 133.99999999999966,
+            "mean": 121.55555555555505
+          },
+          "blockedWindows": {
+            "n": 9,
+            "min": 0,
+            "q25": 0,
+            "median": 0,
+            "q75": 0,
+            "max": 0,
+            "mean": 0
+          }
+        },
+        "failed": {
+          "episodes": 87,
+          "firstJumpStep": {
+            "n": 87,
+            "min": 5,
+            "q25": 10,
+            "median": 15,
+            "q75": 30,
+            "max": 45,
+            "mean": 21.436781609195403
+          },
+          "firstJumpFrontDistance": {
+            "n": 87,
+            "min": 138,
+            "q25": 138,
+            "median": 173.99999999999966,
+            "q75": 178,
+            "max": 218,
+            "mean": 168.25287356321834
+          },
+          "blockedWindows": {
+            "n": 87,
+            "min": 29,
+            "q25": 32,
+            "median": 33,
+            "q75": 35.5,
+            "max": 36,
+            "mean": 33.13793103448276
+          }
+        }
+      }
+    },
+    "perRun": [
+      {
+        "run": 1,
+        "baseSeed": 751000,
+        "FULL": {
+          "episodes": 32,
+          "jumpedEpisodes": 32,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 32,
+          "jumped": {
+            "episodes": 32,
+            "firstJumpStep": {
+              "n": 32,
+              "min": 5,
+              "q25": 10,
+              "median": 15,
+              "q75": 36.25,
+              "max": 45,
+              "mean": 21.25
+            },
+            "firstJumpFrontDistance": {
+              "n": 32,
+              "min": 138,
+              "q25": 143.99999999999966,
+              "median": 173.99999999999966,
+              "q75": 178,
+              "max": 218,
+              "mean": 170.8749999999999
+            },
+            "blockedWindows": {
+              "n": 32,
+              "min": 29,
+              "q25": 30.75,
+              "median": 33,
+              "q75": 34,
+              "max": 36,
+              "mean": 32.90625
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 32,
+            "firstJumpStep": {
+              "n": 32,
+              "min": 5,
+              "q25": 10,
+              "median": 15,
+              "q75": 36.25,
+              "max": 45,
+              "mean": 21.25
+            },
+            "firstJumpFrontDistance": {
+              "n": 32,
+              "min": 138,
+              "q25": 143.99999999999966,
+              "median": 173.99999999999966,
+              "q75": 178,
+              "max": 218,
+              "mean": 170.8749999999999
+            },
+            "blockedWindows": {
+              "n": 32,
+              "min": 29,
+              "q25": 30.75,
+              "median": 33,
+              "q75": 34,
+              "max": 36,
+              "mean": 32.90625
+            }
+          }
+        },
+        "VISUAL_OFF": {
+          "episodes": 32,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 32,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        },
+        "DN_SHUFFLED": {
+          "episodes": 32,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 32,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        },
+        "NO_OBSTACLE": {
+          "episodes": 16,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 0,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        }
+      },
+      {
+        "run": 2,
+        "baseSeed": 761000,
+        "FULL": {
+          "episodes": 32,
+          "jumpedEpisodes": 32,
+          "clearEpisodes": 3,
+          "timeoutEpisodes": 29,
+          "jumped": {
+            "episodes": 32,
+            "firstJumpStep": {
+              "n": 32,
+              "min": 5,
+              "q25": 10,
+              "median": 22.5,
+              "q75": 40,
+              "max": 50,
+              "mean": 24.6875
+            },
+            "firstJumpFrontDistance": {
+              "n": 32,
+              "min": 117.99999999999943,
+              "q25": 138,
+              "median": 167.99999999999972,
+              "q75": 178,
+              "max": 218,
+              "mean": 162.1249999999999
+            },
+            "blockedWindows": {
+              "n": 32,
+              "min": 0,
+              "q25": 30,
+              "median": 33,
+              "q75": 34.5,
+              "max": 36,
+              "mean": 29.96875
+            }
+          },
+          "clear": {
+            "episodes": 3,
+            "firstJumpStep": {
+              "n": 3,
+              "min": 40,
+              "q25": 45,
+              "median": 50,
+              "q75": 50,
+              "max": 50,
+              "mean": 46.666666666666664
+            },
+            "firstJumpFrontDistance": {
+              "n": 3,
+              "min": 117.99999999999943,
+              "q25": 117.99999999999943,
+              "median": 117.99999999999943,
+              "q75": 125.99999999999955,
+              "max": 133.99999999999966,
+              "mean": 123.33333333333285
+            },
+            "blockedWindows": {
+              "n": 3,
+              "min": 0,
+              "q25": 0,
+              "median": 0,
+              "q75": 0,
+              "max": 0,
+              "mean": 0
+            }
+          },
+          "failed": {
+            "episodes": 29,
+            "firstJumpStep": {
+              "n": 29,
+              "min": 5,
+              "q25": 10,
+              "median": 20,
+              "q75": 35,
+              "max": 45,
+              "mean": 22.413793103448278
+            },
+            "firstJumpFrontDistance": {
+              "n": 29,
+              "min": 138,
+              "q25": 138,
+              "median": 173.99999999999966,
+              "q75": 178,
+              "max": 218,
+              "mean": 166.13793103448262
+            },
+            "blockedWindows": {
+              "n": 29,
+              "min": 29,
+              "q25": 31,
+              "median": 33,
+              "q75": 36,
+              "max": 36,
+              "mean": 33.06896551724138
+            }
+          }
+        },
+        "VISUAL_OFF": {
+          "episodes": 32,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 32,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        },
+        "DN_SHUFFLED": {
+          "episodes": 32,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 32,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        },
+        "NO_OBSTACLE": {
+          "episodes": 16,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 0,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        }
+      },
+      {
+        "run": 3,
+        "baseSeed": 771000,
+        "FULL": {
+          "episodes": 32,
+          "jumpedEpisodes": 32,
+          "clearEpisodes": 6,
+          "timeoutEpisodes": 26,
+          "jumped": {
+            "episodes": 32,
+            "firstJumpStep": {
+              "n": 32,
+              "min": 10,
+              "q25": 13.75,
+              "median": 20,
+              "q75": 40,
+              "max": 50,
+              "mean": 25.78125
+            },
+            "firstJumpFrontDistance": {
+              "n": 32,
+              "min": 117.99999999999943,
+              "q25": 138,
+              "median": 149.9999999999999,
+              "q75": 178,
+              "max": 218,
+              "mean": 158.6249999999999
+            },
+            "blockedWindows": {
+              "n": 32,
+              "min": 0,
+              "q25": 30,
+              "median": 33,
+              "q75": 34.5,
+              "max": 36,
+              "mean": 27.21875
+            }
+          },
+          "clear": {
+            "episodes": 6,
+            "firstJumpStep": {
+              "n": 6,
+              "min": 40,
+              "q25": 50,
+              "median": 50,
+              "q75": 50,
+              "max": 50,
+              "mean": 48.333333333333336
+            },
+            "firstJumpFrontDistance": {
+              "n": 6,
+              "min": 117.99999999999943,
+              "q25": 117.99999999999943,
+              "median": 117.99999999999943,
+              "q75": 117.99999999999943,
+              "max": 133.99999999999966,
+              "mean": 120.66666666666613
+            },
+            "blockedWindows": {
+              "n": 6,
+              "min": 0,
+              "q25": 0,
+              "median": 0,
+              "q75": 0,
+              "max": 0,
+              "mean": 0
+            }
+          },
+          "failed": {
+            "episodes": 26,
+            "firstJumpStep": {
+              "n": 26,
+              "min": 10,
+              "q25": 10,
+              "median": 15,
+              "q75": 30,
+              "max": 45,
+              "mean": 20.576923076923077
+            },
+            "firstJumpFrontDistance": {
+              "n": 26,
+              "min": 138,
+              "q25": 138,
+              "median": 173.99999999999966,
+              "q75": 178,
+              "max": 218,
+              "mean": 167.3846153846153
+            },
+            "blockedWindows": {
+              "n": 26,
+              "min": 29,
+              "q25": 32,
+              "median": 34,
+              "q75": 36,
+              "max": 36,
+              "mean": 33.5
+            }
+          }
+        },
+        "VISUAL_OFF": {
+          "episodes": 32,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 32,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        },
+        "DN_SHUFFLED": {
+          "episodes": 32,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 32,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        },
+        "NO_OBSTACLE": {
+          "episodes": 16,
+          "jumpedEpisodes": 0,
+          "clearEpisodes": 0,
+          "timeoutEpisodes": 0,
+          "jumped": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "clear": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          },
+          "failed": {
+            "episodes": 0,
+            "firstJumpStep": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "firstJumpFrontDistance": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            },
+            "blockedWindows": {
+              "n": 0,
+              "min": null,
+              "q25": null,
+              "median": null,
+              "q75": null,
+              "max": null,
+              "mean": null
+            }
+          }
+        }
+      }
+    ]
+  }
+}
