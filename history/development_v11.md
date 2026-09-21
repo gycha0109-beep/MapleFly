@@ -1286,3 +1286,25 @@ classifier threshold를 결과 보고 튜닝하지 않는다.
 3. online final에서 early false-positive가 다시 발생하는지
 4. no-obstacle false-positive
 5. sparse top128가 full feature signal을 잃었는지
+
+
+## Phase D authoritative result
+
+Run `35550206430`:
+
+~~~text
+practice support CLEAR 130 / FAIL 158 PASS
+
+FULL         14.6%
+VISUAL_OFF   53.1%
+DN_SHUFFLED   0.0%
+NO_OBS jump  39.6%
+NO_OBS reach 100.0%
+GATE          FAIL
+~~~
+
+Phase D classifier는 random practice의 CLEAR/FAIL support 부족으로 실패한 것이 아니다.
+
+FULL이 VISUAL_OFF보다 크게 낮은 역전 결과 때문에,
+다음 학습 phase 전에 기존 artifact만 읽는 timing audit으로
+early first-positive preemption 여부를 확인한다.
