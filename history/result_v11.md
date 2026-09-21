@@ -268,3 +268,71 @@ obstacle cue에 의존한 JUMP 선택성은 생겼다.
 
 정확한 early/late 분포는 artifact의 per-episode
 `firstJumpStep` / `firstJumpFrontDistance`를 별도 timing audit으로 추출해 판정한다.
+
+
+### Phase C timing audit
+
+기존 authoritative artifact `10616841358`만 다시 읽었다.
+MaleCNS는 재실행하지 않았다.
+
+~~~text
+audit run      35549956342
+audit artifact 10617784401
+source run     35544510915
+source artifact 10616841358
+~~~
+
+FULL 96 episodes:
+
+~~~text
+jumped episodes   96 / 96
+clear              9 / 96
+timeout           87 / 96
+~~~
+
+첫 JUMP obstacle-front distance:
+
+~~~text
+ALL
+median 168 px
+mean   163.9 px
+
+CLEAR
+median 118 px
+mean   121.6 px
+
+FAILED
+median 174 px
+mean   168.3 px
+~~~
+
+첫 JUMP decision step:
+
+~~~text
+CLEAR
+median 50
+mean   47.8
+
+FAILED
+median 15
+mean   21.4
+~~~
+
+blocked windows:
+
+~~~text
+CLEAR  median 0
+FAILED median 33
+~~~
+
+따라서 Phase C의 주된 실패 모드는
+**cue가 없는 것이 아니라 obstacle cue의 이른 구간에서 jump budget을 너무 빨리 소비하는 것**이다.
+
+현재 물리에서도 이 차이는 일관된다.
+초기 수평 속도 280 px/s, jump air-time 약 0.857 s이고,
+player width 34 + obstacle width 38까지 완전히 넘어가려면
+jump 시작 후 약 240 px 이내에 far edge clearance가 끝나야 한다.
+따라서 아주 먼 거리에서 시작한 jump는 착지 전에 obstacle 전체를 넘지 못할 수 있다.
+
+이 기하학 계산은 진단/환경 검증용이며
+다음 learner의 policy input이나 정답 timing label로 사용하지 않는다.
