@@ -2013,3 +2013,132 @@ FULL - DN_PERMUTED               >= 20pp
 
 새 JUMP 학습은 target LC4가 항상 존재하는 shared sensory environment에서 진행하고,
 target-only no-obstacle false JUMP gate를 반드시 포함한다.
+
+
+## Phase G0 authoritative result
+
+Run 35630336587:
+
+~~~text
+LC6  FULL 58.3%  gate FAIL
+LC16 FULL 56.8%  gate FAIL
+selected NONE
+~~~
+
+다음 action learning 전,
+shared LC4 자체가 target-vs-obstacle context에서 DN 수준으로 구분 가능한지 진단한다.
+
+# Phase G1 — shared-LC4 source-context separability preregistration
+
+목적:
+
+같은 LC4 population을 사용하더라도
+전체 MaleCNS DN state가 다음 두 시각 context를 구분할 수 있는지 확인한다.
+
+Class A — OBSTACLE:
+
+~~~text
+38x54 obstacle
+target = obstacle far edge + 160 px
+v10F target sensory 유지
+obstacle LC4 유지
+~~~
+
+Class B — TARGET_ONLY:
+
+~~~text
+obstacle 없음
+가까운 target 자체가 LC4를 발생
+v10F target sensory 그대로
+~~~
+
+이것은 action learning이 아닌 sensory representation diagnostic이다.
+
+## input
+
+classifier input:
+
+~~~text
+1316-DN activity only
+feature = clamp((currentHz-baselineHz)/50,-1,1)
+~~~
+
+금지 input:
+
+~~~text
+class identity
+distance
+coordinates
+side
+seed
+obstacle flag
+target flag
+~~~
+
+## sampling
+
+context source distance bins:
+
+~~~text
+150 / 120 / 90 / 60 px
+~~~
+
+OBSTACLE class에서는 obstacle front distance 기준.
+TARGET_ONLY class에서는 target center distance 기준.
+
+settle 26 / baseline 26 / sample window 5.
+
+train seeds:
+
+~~~text
+1301000
+1301100
+1301200
+1301300
+~~~
+
+eval seeds:
+
+~~~text
+1311000
+1311100
+1311200
+~~~
+
+## classifier
+
+~~~text
+linear logistic regression
+epochs 120
+LR 0.02
+L2 0.0005
+threshold 0.5
+~~~
+
+controls:
+
+~~~text
+LABEL_SHUFFLED
+DN_PERMUTED
+~~~
+
+## frozen gate
+
+~~~text
+mean FULL balanced accuracy   >= 85%
+every eval run FULL           >= 75%
+FULL - LABEL_SHUFFLED         >= 25pp
+FULL - DN_PERMUTED            >= 25pp
+~~~
+
+결과 후 gate를 낮추지 않는다.
+
+## interpretation
+
+PASS:
+shared LC4라도 target-vs-obstacle context가 DN 수준에서 충분히 분리 가능하다.
+다음 단계에서 direct state label 없이 reward-only mixed-context JUMP learner를 설계한다.
+
+FAIL:
+현재 sensory representation 자체가 policy가 구분하기에 불충분하다고 본다.
+기존 JUMP weights를 억지 보정하지 않고 sensory architecture를 더 크게 재설계한다.
