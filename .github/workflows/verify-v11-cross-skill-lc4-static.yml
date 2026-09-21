@@ -1,0 +1,33 @@
+name: Verify v11 Cross-Skill LC4 Static
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11-cross-skill-lc4-static.yml"
+      - "scripts/verify-v11-cross-skill-lc4.mjs"
+      - "src/brain/fly-skill-v11-jump.js"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/verify-v11-cross-skill-lc4.mjs
+      - name: Verify frozen cross-skill contract
+        run: |
+          grep -F '1151000, 1161000, 1171000' scripts/verify-v11-cross-skill-lc4.mjs
+          grep -F 'targetDistance < 175' scripts/verify-v11-cross-skill-lc4.mjs
+          grep -F 'Math.max(' scripts/verify-v11-cross-skill-lc4.mjs
+          grep -F 'V11-CROSS-SKILL-LC4=PASS' scripts/verify-v11-cross-skill-lc4.mjs
