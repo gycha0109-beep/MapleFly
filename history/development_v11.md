@@ -967,3 +967,24 @@ single-jump policy가 useful timing을 찾지 못했다.
 짧은 timing audit이다.
 
 이 audit은 frozen artifact만 읽으며 MaleCNS를 다시 실행하지 않는다.
+
+
+## Phase C timing audit conclusion
+
+Run `35549956342`는 기존 v11C artifact를 읽는 분석-only CI였고 1분 미만에 완료됐다.
+
+핵심:
+
+~~~text
+successful first jump distance median 118 px
+failed first jump distance median     174 px
+successful first jump step median      50
+failed first jump step median          15
+~~~
+
+Phase C policy는 obstacle-specific JUMP 선택성은 만들었지만,
+cue가 처음 강해지는 먼 구간에서 너무 빨리 single jump를 소비했다.
+
+다음 Phase D는 state/action 정답을 teacher가 주지 않고,
+**random one-jump babbling -> 실제 CLEAR/FAIL outcome**으로
+jump-state DN feature를 직접 학습하는 outcome classifier로 전환한다.
