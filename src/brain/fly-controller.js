@@ -33,8 +33,6 @@
     baselineSteps: 26,
     movementWindowSteps: 26,
     attackWindowSteps: 5,
-    jumpWindowSteps: 5,
-    jumpCooldownSteps: 38,
   });
 
   function clamp(value, min, max) {
@@ -78,41 +76,25 @@
         global.MapleFlyAttackSkillV10 ?? null;
       this.attackSkillState =
         this.attackSkillApi?.loadState?.() ?? null;
-      this.jumpSkillApi =
-        global.MapleFlyJumpSkillV11 ?? null;
-      this.jumpSkillState =
-        this.jumpSkillApi?.loadState?.() ?? null;
-      this.jumpSkillRuntime =
-        this.jumpSkillApi?.createRuntime?.() ?? null;
       this.skillConfigured =
-        !(this.skillState ||
-          this.attackSkillState ||
-          this.jumpSkillState);
+        !(this.skillState || this.attackSkillState);
       this.skillPhase =
-        this.skillState ||
-        this.attackSkillState ||
-        this.jumpSkillState
+        this.skillState || this.attackSkillState
           ? "WAITING"
           : "DISABLED";
       this.skillCalibrationStartStep = null;
       this.skillBaselineReady = {
         movement: false,
         attack: false,
-        jump: false,
       };
       this.skillBaselineHz = null;
       this.attackBaselineHz = null;
-      this.jumpBaselineHz = null;
       this.skillAction = "IDLE";
       this.skillScore = 0;
       this.attackSkillAction = "WAIT";
       this.attackSkillProbability = 0;
       this.attackSkillDecisionStep = null;
-      this.jumpSkillAction = "WAIT";
-      this.jumpSkillProbability = 0;
-      this.jumpSkillDecisionStep = null;
-      this.nextJumpSkillStep = 0;
-      this.playerGrounded = true;
+      this.attackSkillDecisionStep = null;
       this.skillTargetAvailable = false;
 
       this.elements = {
@@ -217,13 +199,9 @@
             Number(message.nnz ?? SOURCE.synapses).toLocaleString();
         }
 
-        if (
-          this.skillState &&
-          this.attackSkillState &&
-          this.jumpSkillState
-        ) {
+        if (this.skillState && this.attackSkillState) {
           this.setProgress(
-            "MaleCNS 준비 완료 · Fly #001 movement + ATTACK + JUMP skill 연결 중",
+            "MaleCNS 준비 완료 · Fly #001 movement + ATTACK skill 연결 중",
           );
           this.worker.postMessage({
             type: "configure-skills",
@@ -251,29 +229,11 @@
                 windowSteps:
                   SKILL_RUNTIME.attackWindowSteps,
               },
-              {
-                id: "jump-baseline",
-                featureIndices:
-                  this.jumpSkillState.selectedIndices,
-                windowSteps:
-                  SKILL_RUNTIME.baselineSteps,
-              },
-              {
-                id: "jump",
-                featureIndices:
-                  this.jumpSkillState.selectedIndices,
-                windowSteps:
-                  SKILL_RUNTIME.jumpWindowSteps,
-              },
             ],
           });
-        } else if (
-          this.skillState ||
-          this.attackSkillState ||
-          this.jumpSkillState
-        ) {
+        } else if (this.skillState || this.attackSkillState) {
           this.fail(
-            "Fly #001 movement/ATTACK/JUMP skill bundle mismatch",
+            "Fly #001 movement/ATTACK skill bundle mismatch",
           );
           return;
         } else {
@@ -289,11 +249,7 @@
       }
 
       if (message.type === "skills-ready") {
-        if (
-          !this.skillState ||
-          !this.attackSkillState ||
-          !this.jumpSkillState
-        ) {
+        if (!this.skillState || !this.attackSkillState) {
           return;
         }
 
@@ -307,9 +263,6 @@
         const attackBaseline =
           specs.get("attack-baseline");
         const attack = specs.get("attack");
-        const jumpBaseline =
-          specs.get("jump-baseline");
-        const jump = specs.get("jump");
 
         if (
           message.dnCount !==
@@ -325,15 +278,7 @@
           attack?.selectedCount !==
             this.attackSkillState.sparseFeatureCount ||
           attack?.windowSteps !==
-            SKILL_RUNTIME.attackWindowSteps ||
-          jumpBaseline?.selectedCount !==
-            this.jumpSkillState.sparseFeatureCount ||
-          jumpBaseline?.windowSteps !==
-            SKILL_RUNTIME.baselineSteps ||
-          jump?.selectedCount !==
-            this.jumpSkillState.sparseFeatureCount ||
-          jump?.windowSteps !==
-            SKILL_RUNTIME.jumpWindowSteps
+            SKILL_RUNTIME.attackWindowSteps
         ) {
           this.fail(
             "Fly #001 exact-window skill contract mismatch",
@@ -346,12 +291,10 @@
           new Float64Array(move.selectedCount);
         this.attackBaselineHz =
           new Float64Array(attack.selectedCount);
-        this.jumpBaselineHz =
-          new Float64Array(jump.selectedCount);
         this.skillPhase = "WAITING";
 
         this.setProgress(
-          "Fly #001 v7 movement + v10F ATTACK + v11F JUMP 준비 완료",
+          "Fly #001 v7 movement + v10F ATTACK 준비 완료",
         );
         this.render();
         return;
@@ -364,7 +307,6 @@
           this.skillBaselineReady = {
             movement: false,
             attack: false,
-            jump: false,
           };
           this.skillPhase = "SETTLE";
           this.setProgress(
@@ -377,16 +319,9 @@
           this.attackSkillAction = "WAIT";
           this.attackSkillProbability = 0;
           this.attackSkillDecisionStep = null;
-          this.jumpSkillApi?.resetRuntime?.(
-            this.jumpSkillRuntime,
-          );
-          this.jumpSkillAction = "WAIT";
-          this.jumpSkillProbability = 0;
-          this.jumpSkillDecisionStep = null;
-          this.nextJumpSkillStep = 0;
           this.setStatus("FLY SKILL");
           this.setProgress(
-            "Fly #001 LIVE · learned movement + v10F ATTACK + v11F JUMP",
+            "Fly #001 LIVE · learned movement + v10F ATTACK readout",
           );
         }
         this.renderTelemetry();
@@ -589,9 +524,6 @@
       this.potionAvailable = Boolean(
         observation?.player?.potionCue,
       );
-      this.playerGrounded = Boolean(
-        observation?.player?.grounded,
-      );
       this.skillTargetAvailable = Boolean(
         (observation?.mushrooms ?? []).some(
           (mushroom) => mushroom.alive,
@@ -653,53 +585,6 @@
         drive.taste_R = DECODER.potionTasteDrive;
       }
 
-      const obstacles = (
-        observation.obstacles ?? []
-      ).filter((obstacle) => obstacle.active !== false);
-
-      for (const obstacle of obstacles) {
-        const obstacleSide =
-          obstacle.side === "L" ? "L" : "R";
-        const obstacleWidth =
-          Number(obstacle.width ?? 38);
-        const obstacleX = Number(obstacle.x ?? 0);
-        const obstaclePassed =
-          obstacleSide === "R"
-            ? observation.player.x >
-              obstacleX + obstacleWidth
-            : observation.player.x +
-                observation.player.width <
-              obstacleX;
-        if (obstaclePassed) {
-          continue;
-        }
-
-        const playerFront =
-          obstacleSide === "R"
-            ? observation.player.x +
-              observation.player.width
-            : observation.player.x;
-        const obstacleFront =
-          obstacleSide === "R"
-            ? obstacleX
-            : obstacleX + obstacleWidth;
-        const frontDistance =
-          obstacleSide === "R"
-            ? obstacleFront - playerFront
-            : playerFront - obstacleFront;
-        const obstacleDrive = clamp(
-          ((280 - Math.max(0, frontDistance)) / 280) *
-            0.8,
-          0,
-          0.8,
-        );
-        const key = `LC4_${obstacleSide}`;
-        drive[key] = Math.max(
-          Number(drive[key] ?? 0),
-          obstacleDrive,
-        );
-      }
-
       if (living.length === 0) {
         this.lastTargetId = null;
         this.lastTargetDistance = null;
@@ -758,16 +643,11 @@
       );
 
       if (bestDistance < 175) {
-        const targetLc4 = clamp(
+        drive[`LC4_${side}`] = clamp(
           ((175 - bestDistance) / 175) * 0.72 +
             approaching * 0.18,
           0,
           0.8,
-        );
-        const key = `LC4_${side}`;
-        drive[key] = Math.max(
-          Number(drive[key] ?? 0),
-          targetLc4,
         );
       }
 
@@ -794,22 +674,13 @@
       this.skillBaselineReady = {
         movement: false,
         attack: false,
-        jump: false,
       };
       this.skillBaselineHz?.fill(0);
       this.attackBaselineHz?.fill(0);
-      this.jumpBaselineHz?.fill(0);
       this.skillAction = "IDLE";
       this.skillScore = 0;
       this.attackSkillAction = "WAIT";
       this.attackSkillProbability = 0;
-      this.jumpSkillApi?.resetRuntime?.(
-        this.jumpSkillRuntime,
-      );
-      this.jumpSkillAction = "WAIT";
-      this.jumpSkillProbability = 0;
-      this.jumpSkillDecisionStep = null;
-      this.nextJumpSkillStep = 0;
     }
 
     startSkillCalibration() {
@@ -828,7 +699,6 @@
         !this.enabled ||
         !this.skillState ||
         !this.attackSkillState ||
-        !this.jumpSkillState ||
         !this.skillConfigured ||
         !Array.isArray(message.spikes)
       ) {
@@ -929,28 +799,8 @@
         }
 
         if (
-          skillId === "jump-baseline" &&
-          windowSteps ===
-            SKILL_RUNTIME.baselineSteps &&
-          message.spikes.length ===
-            this.jumpSkillState.sparseFeatureCount
-        ) {
-          for (
-            let index = 0;
-            index < this.jumpBaselineHz.length;
-            index += 1
-          ) {
-            this.jumpBaselineHz[index] =
-              (message.spikes[index] ?? 0) /
-              seconds;
-          }
-          this.skillBaselineReady.jump = true;
-        }
-
-        if (
           this.skillBaselineReady.movement &&
-          this.skillBaselineReady.attack &&
-          this.skillBaselineReady.jump
+          this.skillBaselineReady.attack
         ) {
           this.skillPhase = "LIVE_PENDING";
           this.worker?.postMessage({
@@ -1067,58 +917,6 @@
         this.attackSkillProbability =
           decision.attackProbability;
         this.attackSkillDecisionStep = endStep;
-        return;
-      }
-
-      if (
-        skillId === "jump" &&
-        windowSteps ===
-          SKILL_RUNTIME.jumpWindowSteps &&
-        message.spikes.length ===
-          this.jumpSkillState.sparseFeatureCount
-      ) {
-        const seconds =
-          windowSteps *
-          SKILL_RUNTIME.stepSeconds;
-        const currentFeature =
-          new Float64Array(message.spikes.length);
-
-        for (
-          let index = 0;
-          index < currentFeature.length;
-          index += 1
-        ) {
-          const cueHz =
-            (message.spikes[index] ?? 0) /
-            seconds;
-          currentFeature[index] = clamp(
-            (cueHz -
-              this.jumpBaselineHz[index]) /
-              50,
-            -1,
-            1,
-          );
-        }
-
-        const available =
-          this.playerGrounded &&
-          endStep >= this.nextJumpSkillStep;
-        const decision = available
-          ? this.jumpSkillApi.chooseSparseCurrent(
-              currentFeature,
-              this.jumpSkillState,
-              this.jumpSkillRuntime,
-            )
-          : this.jumpSkillApi.observeUnavailableSparseCurrent(
-              currentFeature,
-              this.jumpSkillState,
-              this.jumpSkillRuntime,
-            );
-
-        this.jumpSkillAction = decision.action;
-        this.jumpSkillProbability =
-          decision.jumpProbability;
-        this.jumpSkillDecisionStep = endStep;
       }
     }
 
@@ -1211,32 +1009,7 @@
       let up = false;
       let down = false;
 
-      if (
-        this.jumpSkillState &&
-        this.skillConfigured &&
-        this.skillPhase === "LIVE"
-      ) {
-        if (
-          this.jumpSkillAction === "JUMP" &&
-          decisionStep === this.jumpSkillDecisionStep &&
-          this.playerGrounded &&
-          decisionStep >= this.nextJumpSkillStep
-        ) {
-          jump = true;
-          this.nextJumpSkillStep =
-            decisionStep +
-            SKILL_RUNTIME.jumpCooldownSteps;
-          this.nextJumpAt =
-            this.nextJumpSkillStep *
-            DECODER.brainStepMs;
-          this.jumpSkillApi.onActuatedJump(
-            this.jumpSkillRuntime,
-          );
-        }
-      } else if (
-        escape >= DECODER.jumpHz &&
-        now >= this.nextJumpAt
-      ) {
+      if (escape >= DECODER.jumpHz && now >= this.nextJumpAt) {
         jump = true;
         this.nextJumpAt = now + DECODER.jumpCooldownMs;
       }
@@ -1334,10 +1107,6 @@
             this.attackSkillAction,
           attackSkillProbability:
             this.attackSkillProbability,
-          jumpSkillAction:
-            this.jumpSkillAction,
-          jumpSkillProbability:
-            this.jumpSkillProbability,
         },
       });
     }
@@ -1421,16 +1190,12 @@
 
       if (this.elements.skill) {
         this.elements.skill.textContent =
-          this.skillState &&
-          this.attackSkillState &&
-          this.jumpSkillState
+          this.skillState && this.attackSkillState
             ? this.skillState.flyId +
               " · " +
               this.skillState.version +
               " + " +
-              this.attackSkillState.version +
-              " + " +
-              this.jumpSkillState.version
+              this.attackSkillState.version
             : "LEGACY";
       }
 
@@ -1444,9 +1209,7 @@
             ? this.attackSkillProbability.toFixed(3)
             : "—";
         this.elements.skillState.textContent =
-          this.skillState &&
-          this.attackSkillState &&
-          this.jumpSkillState
+          this.skillState && this.attackSkillState
             ? this.skillPhase +
               (this.skillPhase === "LIVE"
                 ? " · MOVE " +
@@ -1454,11 +1217,7 @@
                   " " +
                   score +
                   " · ATK " +
-                  attackProbability +
-                  " · JMP " +
-                  (Number.isFinite(this.jumpSkillProbability)
-                    ? this.jumpSkillProbability.toFixed(3)
-                    : "—")
+                  attackProbability
                 : "")
             : "—";
       }
