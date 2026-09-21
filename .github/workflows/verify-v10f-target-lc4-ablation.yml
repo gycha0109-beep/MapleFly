@@ -1,0 +1,92 @@
+name: Verify v10F Target LC4 Ablation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v10f-target-lc4-ablation.yml"
+      - "scripts/verify-v10f-target-lc4-ablation.mjs"
+      - "src/brain/fly-skill-v10-attack.js"
+      - "src/brain/fly-skill-v7.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/verify-v10f-target-lc4-ablation.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run target LC4 ablation
+        run: node scripts/verify-v10f-target-lc4-ablation.mjs
+
+      - name: Upload ablation evidence
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v10f-target-lc4-ablation-${{ github.run_id }}
+          path: results/verify-v10f-target-lc4-ablation
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record ablation receipt
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const source =
+            "results/verify-v10f-target-lc4-ablation/result.json";
+          const result = JSON.parse(fs.readFileSync(source, "utf8"));
+          const receipt = {
+            schema: "maplefly.v10f-target-lc4-ablation-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            headSha: process.env.GITHUB_SHA,
+            sourceAttackRunId: 35516619170,
+            artifact: {
+              id: process.env.ARTIFACT_ID
+                ? Number(process.env.ARTIFACT_ID)
+                : null,
+              name:
+                "maplefly-v10f-target-lc4-ablation-" +
+                process.env.GITHUB_RUN_ID,
+              digest: process.env.ARTIFACT_DIGEST || null
+            },
+            summary: result.summary,
+            runs: result.runs
+          };
+          fs.mkdirSync("history/run_receipts", { recursive: true });
+          fs.writeFileSync(
+            "history/run_receipts/v10f_target_lc4_ablation.json",
+            JSON.stringify(receipt, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit ablation receipt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/run_receipts/v10f_target_lc4_ablation.json
+          git commit -m "ci(results): record v10F target LC4 ablation ${GITHUB_RUN_ID}" || exit 0
+          git push
