@@ -1594,3 +1594,68 @@ Phase F PASS 후에만 browser controller에 Skill03 JUMP candidate를 통합하
 exact 5-step x 2 persistence 및 real 750 ms cooldown equivalence를 검증한다.
 
 multi-obstacle generalization은 별도 Phase G에서 새 obstacle schedule로 검증한다.
+
+
+## Phase F authoritative result
+
+Run 35607509887:
+
+~~~text
+FULL          100.0%
+VISUAL_OFF      0.0%
+DN_SHUFFLED     0.0%
+timeout         0.0%
+actual jumps    1.198
+retry jumps     0.198
+NO_OBS jump     0.0%
+NO_OBS reach  100.0%
+GATE            PASS
+~~~
+
+Phase F PASS로 Skill03 JUMP는 headless runtime-level self-retry gate를 통과했다.
+
+# Browser integration preregistration
+
+다음 변경은 학습이 아니라 deployment equivalence다.
+
+고정할 것:
+
+~~~text
+source Phase F run 35607509887
+source artifact 10643127642
+classifier source Phase D
+threshold 0.5
+positive persistence 2 x 5-step windows
+cooldown 38 brain steps ~= 750 ms
+selected DN 128
+~~~
+
+browser worker/controller에서도:
+
+~~~text
+settle 26
+baseline 26
+movement window 26
+jump window 5
+positive streak 2
+cooldown 38
+~~~
+
+을 정확히 유지한다.
+
+browser JUMP policy에는 obstacle distance/coordinate/collision/target geometry를 전달하지 않는다.
+
+deployment equivalence PASS 조건:
+
+~~~text
+authoritative headless unseen seeds를 browser bundle implementation으로 replay
+FULL clear = 100%
+VISUAL_OFF = 0%
+DN_SHUFFLED = 0%
+NO_OBSTACLE jump = 0%
+mean actual jumps = 1.198과 exact episode aggregate 일치
+~~~
+
+부동소수점 점수 자체보다 action/outcome trajectory equivalence를 우선 검증한다.
+
+browser equivalence PASS 전에는 README에 JUMP deployed라고 표기하지 않는다.
