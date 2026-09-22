@@ -6,7 +6,7 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/verify-v11g4-reward-advantage-static.yml"
-      - "scripts/experiment-v11h1-broad-obstacle-screen.mjs"
+      - "scripts/experiment-v11h1-matched-looming-screen.mjs"
       - "history/prereg_v11h1.md"
 
 permissions:
@@ -16,50 +16,78 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
+
       - name: Syntax check
-        run: node --check scripts/experiment-v11h1-broad-obstacle-screen.mjs
-      - name: Verify H1 contract
+        run: node --check scripts/experiment-v11h1-matched-looming-screen.mjs
+
+      - name: Verify preregistered H1 contract
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
           const s = fs.readFileSync(
-            "scripts/experiment-v11h1-broad-obstacle-screen.mjs",
+            "scripts/experiment-v11h1-matched-looming-screen.mjs",
             "utf8"
           );
+
           const required = [
-            "2101000","2101100","2101200","2101300",
-            "2111000","2111100","2111200",
-            "\"LC6\"","\"LC16\"","\"LC12\"","\"LC15\"",
+            "2101000", "2101100", "2101200", "2101300",
+            "2111000", "2111100", "2111200",
+            "\"CURRENT\"",
+            "\"LC6_\" + obstacle.side",
+            "\"LC16_\" + obstacle.side",
+            "\"LC22_\" + obstacle.side",
+            "\"LPLC4_\" + obstacle.side",
+            "matchedTargetDistance",
+            "PLAYER_WIDTH / 2 +",
+            "OBSTACLE_WIDTH +",
             "fullMean >= 0.85",
             "minRun >= 0.75",
-            "fullMean - shuffledMean >= 0.25",
-            "fullMean - permutedMean >= 0.25",
-            "V11H1-CONTEXT-GATE="
+            "fullMean -",
+            "shuffledMean >= 0.25",
+            "permutedMean >= 0.25",
+            "V11H1-SCREEN="
           ];
+
           for (const token of required) {
             if (!s.includes(token)) {
               throw new Error("missing H1 contract: " + token);
             }
           }
+
+          const reps = s.slice(
+            s.indexOf("const REPRESENTATIONS"),
+            s.indexOf("const DISTANCES")
+          );
+          for (const forbidden of ["MEAN4", "DELTA", "CONCAT4"]) {
+            if (reps.includes(forbidden)) {
+              throw new Error("non-preregistered representation: " + forbidden);
+            }
+          }
+
           const encoder = s.slice(
-            s.indexOf("class BroadObstacleEncoder"),
+            s.indexOf("class OrthogonalLoomingEncoder"),
             s.indexOf("function makeContextEpisode")
           );
           const obstaclePart = encoder.slice(
             encoder.indexOf("if (obstacle)")
           );
           if (obstaclePart.includes("\"LC4_\" + obstacle.side")) {
-            throw new Error("obstacle still drives LC4");
+            throw new Error("obstacle still drives target LC4");
           }
           if (!encoder.includes("\"LC4_\" + side")) {
             throw new Error("target LC4 not preserved");
           }
+
           console.log(
-            "V11H1-STATIC=PASS input=CURRENT_DN obstacle=LC6+LC16+LC12+LC15 targetLC4=preserved"
+            "V11H1-STATIC=PASS target=matched obstacle=LC6+LC16+LC22+LPLC4 representation=CURRENT"
           );
           NODE
