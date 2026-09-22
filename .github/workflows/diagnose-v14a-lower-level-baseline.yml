@@ -1,0 +1,41 @@
+name: Diagnose v14A Lower-Level Baseline
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v14a-lower-level-baseline.mjs"
+      - ".github/workflows/diagnose-v14a-lower-level-baseline.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v14a-lower-level-baseline.mjs
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Replay frozen lower-level stack on v14A final seeds
+        run: node scripts/diagnose-v14a-lower-level-baseline.mjs
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v14a-lower-level-baseline-${{ github.run_id }}
+          path: results/diagnose-v14a-lower-level-baseline
+          if-no-files-found: error
+          retention-days: 30

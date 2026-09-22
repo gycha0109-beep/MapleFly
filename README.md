@@ -17,7 +17,7 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 - obstacle sensory uses LC6 + LC16 + LC22 + LPLC4; target LC4 remains reserved for target looming
 - UP / DOWN still use legacy connectome decoders
 - POTION still uses the engineered taste / head-motor proxy and is not a learned skill
-- current integration track: v12 continuous MOVE -> JUMP -> ATTACK -> KILL course
+- current integration track: v14 cross-skill interference learning after v12/v13 integration failures
 - no claim is made that the fly understands MapleStory
 
 ## Brain source
