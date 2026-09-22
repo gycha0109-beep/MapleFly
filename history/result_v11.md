@@ -1021,3 +1021,62 @@ shared-LC4 context collision을 해결하지 못했다.
 
 decision boundary, persistence, gate를 결과 후 조정하지 않는다.
 G4 candidate는 배포하지 않는다.
+
+
+---
+
+## Phase G5 — paired counterfactual reward-difference JUMP FAIL
+
+Authoritative workflow:
+
+~~~text
+run      35737844482
+head     29e6b5c0057d9c7f150bc5977085ae99b4631d36
+artifact 10699246668
+digest   sha256:a794711980c5806871a350e3fcad39858da1d2aa64763fe19f6534cd2e52367d
+receipt  9d15de6fac422ff6ec51495c7995d6d39cf9e079
+~~~
+
+Practice pair integrity:
+
+~~~text
+valid pairs                 286 / 288
+max paired feature diff     0
+deltaR > 0                  110
+deltaR < 0                  142
+deltaR = 0                   34
+support gate                PASS
+~~~
+
+Final aggregate:
+
+~~~text
+OBSTACLE FULL clear          100.00%
+OBSTACLE_CUE_OFF clear         0.00%
+DN_SHUFFLED clear             16.67%
+minimum FULL run             100.00%
+FULL timeout                   0.00%
+FULL mean actual jumps         1.6771
+
+TARGET_ONLY reach            100.00%
+TARGET_ONLY any-jump          54.17%
+
+GATE                           FAIL
+~~~
+
+Per run:
+
+~~~text
+1951000 FULL 100% / SHUFFLED 46.875% / TARGET jump 37.50%
+1961000 FULL 100% / SHUFFLED  3.125% / TARGET jump 31.25%
+1971000 FULL 100% / SHUFFLED  0.000% / TARGET jump 93.75%
+~~~
+
+WAIT/JUMP를 동일 pre-intervention DN state에서 paired하여 nuisance variation을 제거해도
+TARGET_ONLY false jump가 오히려 54.17%로 증가했다.
+
+G3 31.25%, 독립 G3R 31.25%, G4 43.75%, G5 54.17%를 종합하면
+현재 shared-LC4 sensory architecture에서 학습 목적함수만 바꾸는 접근은 중단한다.
+
+G5 candidate는 배포하지 않는다.
+현재 browser runtime은 계속 movement + ATTACK만 유지한다.
