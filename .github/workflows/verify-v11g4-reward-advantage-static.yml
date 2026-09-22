@@ -6,8 +6,8 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/verify-v11g4-reward-advantage-static.yml"
-      - "scripts/experiment-v11h1-matched-looming-screen.mjs"
-      - "history/prereg_v11h1.md"
+      - "scripts/experiment-v11h2-orthogonal-reward-jump.mjs"
+      - "history/prereg_v11h2.md"
 
 permissions:
   contents: read
@@ -27,67 +27,87 @@ jobs:
           node-version: "24"
 
       - name: Syntax check
-        run: node --check scripts/experiment-v11h1-matched-looming-screen.mjs
+        run: node --check scripts/experiment-v11h2-orthogonal-reward-jump.mjs
 
-      - name: Verify preregistered H1 contract
+      - name: Verify preregistered H2 contract
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
           const s = fs.readFileSync(
-            "scripts/experiment-v11h1-matched-looming-screen.mjs",
+            "scripts/experiment-v11h2-orthogonal-reward-jump.mjs",
             "utf8"
           );
-
           const compact = s.replace(/\s+/g, " ");
+
           const required = [
-            "2101000", "2101100", "2101200", "2101300",
-            "2111000", "2111100", "2111200",
-            "\"CURRENT\"",
+            "2201000", "2211000", "2221000",
+            "2251000", "2261000", "2271000",
+            "INTERVENTION_MAX_WINDOW = 14",
+            "POLICY_THRESHOLD = 0.5",
+            "PERSISTENCE_WINDOWS = 2",
+            "TRAIN_EPOCHS = 300",
+            "TRAIN_LEARNING_RATE = 0.03",
+            "TRAIN_L2 = 0.001",
+            "SELECTED_FEATURE_COUNT = 256",
+            "TEMPORAL_WINDOWS = 4",
             "\"LC6_\" + obstacle.side",
             "\"LC16_\" + obstacle.side",
             "\"LC22_\" + obstacle.side",
             "\"LPLC4_\" + obstacle.side",
             "matchedTargetDistance",
-            "PLAYER_WIDTH / 2 +",
-            "OBSTACLE_WIDTH +",
-            "fullMean >= 0.85",
-            "minRun >= 0.75",
-            "fullMean - shuffledMean >= 0.25",
-            "fullMean - permutedMean >= 0.25",
-            "V11H1-SCREEN="
+            "support.WAIT.positive >= 24",
+            "support.WAIT.negative >= 24",
+            "support.JUMP.positive >= 12",
+            "support.JUMP.negative >= 24",
+            "meanFull >= 0.75",
+            "minFull >= 0.65",
+            "meanFull - meanOff >= 0.25",
+            "meanTimeout <= 0.20",
+            "meanJumps <= 1.75",
+            "targetReach >= 0.85",
+            "targetJump <= 0.30",
+            "V11H2-JUMP-GATE="
           ];
-
           for (const token of required) {
             if (!compact.includes(token)) {
-              throw new Error("missing H1 contract: " + token);
+              throw new Error("missing H2 contract: " + token);
             }
           }
 
-          if (
-            !compact.includes(
-              'const REPRESENTATIONS = Object.freeze([ "CURRENT", ]);'
-            )
-          ) {
-            throw new Error(
-              "H1 must evaluate CURRENT representation only"
-            );
-          }
-
           const encoder = s.slice(
-            s.indexOf("class OrthogonalLoomingEncoder"),
-            s.indexOf("function makeContextEpisode")
+            s.indexOf("class VisualEncoder"),
+            s.indexOf("function makeGeometry")
           );
           const obstaclePart = encoder.slice(
-            encoder.indexOf("if (obstacle)")
+            encoder.indexOf("if (obstacle && obstacleVisual)")
           );
           if (obstaclePart.includes("\"LC4_\" + obstacle.side")) {
-            throw new Error("obstacle still drives target LC4");
+            throw new Error("H2 obstacle still drives target LC4");
           }
-          if (!encoder.includes("\"LC4_\" + side")) {
-            throw new Error("target LC4 not preserved");
+          if (!encoder.includes("\"LC4_\" + targetSide")) {
+            throw new Error("H2 target LC4 not preserved");
+          }
+
+          const policy = s.slice(
+            s.indexOf("class MixedRewardPolicy"),
+            s.indexOf("async function runPolicyEpisode")
+          );
+          for (const forbidden of [
+            "withObstacle",
+            "targetX",
+            "obstacle",
+            "startDistance",
+            "distance",
+            "side",
+            "seed",
+            "reward"
+          ]) {
+            if (policy.includes(forbidden)) {
+              throw new Error("H2 policy leak token: " + forbidden);
+            }
           }
 
           console.log(
-            "V11H1-STATIC=PASS target=matched obstacle=LC6+LC16+LC22+LPLC4 representation=CURRENT"
+            "V11H2-STATIC=PASS sensory=LC6+LC16+LC22+LPLC4 representation=CONCAT4 selected=256"
           );
           NODE
