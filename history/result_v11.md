@@ -684,3 +684,46 @@ LC16:
 
 따라서 LC6/LC16으로 단순 sensory channel을 교체하는 방향은 중단한다.
 drive/gate를 결과 후 조정하지 않는다.
+
+
+---
+
+## Phase G1 — shared-LC4 source-context separability FAIL
+
+Workflow:
+
+~~~text
+run      35631188184
+head     7b1a0700b78d642d3f20fb023f3d7834992cede4
+artifact 10653879710
+digest   sha256:8b13683ed04cd4ed5e7506a88e8989d8c8ced1b10c925180ab714c9a4ebe7d50
+~~~
+
+Single-window 1316-DN context classifier:
+
+~~~text
+mean FULL balanced accuracy       58.9%
+LABEL_SHUFFLED                    46.4%
+DN_PERMUTED                       48.4%
+FULL - LABEL_SHUFFLED             12.5pp
+FULL - DN_PERMUTED                10.4pp
+minimum eval-run FULL             57.8%
+paired OBSTACLE/TARGET L2          3.0284
+GATE                               FAIL
+~~~
+
+Per-run FULL:
+
+~~~text
+1311000  57.8125%
+1311100  60.9375%
+1311200  57.8125%
+~~~
+
+해석:
+
+shared LC4 sensory에서 현재 한 개 5-step window의 1316-DN state만으로는
+OBSTACLE과 TARGET_ONLY source context를 안정적으로 분리하지 못한다.
+
+따라서 single-window context classifier를 action policy에 사용하지 않는다.
+다음 Phase G2에서 sensory encoder는 그대로 유지하고 short temporal DN trajectory만 진단한다.
