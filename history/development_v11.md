@@ -2783,3 +2783,109 @@ episode 시작 전에 seeded random으로 결정한다.
 
 나머지 G3 preregistration, reward, feature selection, support gate,
 policy rule, final seeds와 final gate는 변경하지 않는다.
+
+
+# Phase G3R — one-shot frozen-candidate replication preregistration
+
+G3는 8개 final gate 중 TARGET_ONLY any-jump 하나만
+31.25%로 실패했다.
+
+이를 이유로 threshold, persistence, selected feature, weights,
+sensory encoder 또는 gate를 조정하지 않는다.
+
+대신 G3 candidate를 run 35726010847 artifact에서 그대로 freeze하고
+정확히 한 번의 independent replication을 수행한다.
+
+## frozen candidate
+
+source:
+
+~~~text
+run      35726010847
+head     72628f3a0d0ac8022598c1804c70bfe8ef2e21e8
+artifact 10694360455
+digest   sha256:cfe9a1efb444759dc4bb757e77384534ca919001b5bc647c217d57d242c17548
+~~~
+
+frozen:
+
+~~~text
+CONCAT4 raw 5264
+unlabeled-variance selected 256 slots
+practice-fitted means/scales
+WAIT logistic weights/bias
+JUMP logistic weights/bias
+threshold 0.5
+persistence 2
+cooldown 38 brain steps
+shared-LC4 sensory unchanged
+movement v7 unchanged
+~~~
+
+G3R에서 재학습하지 않는다.
+
+## replication seeds
+
+~~~text
+1751000
+1761000
+1771000
+~~~
+
+각 run:
+
+~~~text
+32 OBSTACLE FULL
+32 OBSTACLE_CUE_OFF
+32 DN_SHUFFLED
+16 TARGET_ONLY
+~~~
+
+distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+episode/sensory/physics/control 정의는 G3와 동일하다.
+
+## replication gate
+
+replication 자체가 다음을 모두 만족해야 한다.
+
+~~~text
+mean OBSTACLE FULL clear       >= 75%
+every FULL run                 >= 65%
+FULL - OBSTACLE_CUE_OFF        >= 25pp
+FULL - DN_SHUFFLED             >= 20pp
+FULL timeout                   <= 20%
+FULL mean actual jumps         <= 1.75
+TARGET_ONLY reach              >= 85%
+TARGET_ONLY any-jump           <= 30%
+~~~
+
+## pooled anti-optional-stopping gate
+
+원 G3와 G3R을 합친 TARGET_ONLY 96 episodes에서도:
+
+~~~text
+pooled TARGET_ONLY any-jump <= 30%
+~~~
+
+이어야 한다.
+
+원 G3는 15 / 48 jump이므로,
+G3R에서 13 / 48 이하일 때만 pooled gate를 통과할 수 있다.
+
+G3R은 결과와 무관하게 정확히 한 번만 실행한다.
+FAIL이면 동일 candidate를 추가 seed로 반복 실행해 PASS를 찾지 않는다.
+
+## interpretation
+
+PASS:
+G3의 31.25%는 frozen candidate의 경계 부근 표본 변동으로 취급할 근거가 생기며,
+원 run + 독립 replication을 함께 provenance로 보존한 뒤 browser equivalence로 이동한다.
+
+FAIL:
+현재 mixed-context candidate는 TARGET_ONLY false jump 억제가 불충분하다.
+candidate를 배포하지 않고 새로운 학습 설계를 별도 phase에서 사전등록한다.
