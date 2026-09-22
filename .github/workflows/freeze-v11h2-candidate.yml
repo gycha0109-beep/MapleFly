@@ -1,0 +1,150 @@
+name: Freeze v11H2 Authoritative Candidate
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/freeze-v11h2-candidate.yml"
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download authoritative H2 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf /tmp/v11h2
+          mkdir -p /tmp/v11h2
+          gh run download 35748844599 \
+            --repo "${GITHUB_REPOSITORY}" \
+            --name "maplefly-v11h2-orthogonal-reward-jump-35748844599" \
+            --dir /tmp/v11h2
+          test -f /tmp/v11h2/experiment_v11h2.json
+
+      - name: Freeze exact authoritative candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+
+          const source = JSON.parse(
+            fs.readFileSync("/tmp/v11h2/experiment_v11h2.json", "utf8")
+          );
+
+          const s = source.summary;
+          if (
+            s.gate !== true ||
+            s.supportGate !== true ||
+            s.meanFullClearRate !== 1 ||
+            s.meanObstacleCueOffClearRate !== 0 ||
+            s.meanDnShuffledClearRate !== 0 ||
+            s.minRunFullClearRate !== 1 ||
+            s.meanFullTimeoutRate !== 0 ||
+            s.targetOnlyReachRate !== 1 ||
+            s.targetOnlyAnyJumpRate !== 0 ||
+            Math.abs(s.meanFullActualJumps - 1.4479166666666667) > 1e-12
+          ) {
+            throw new Error("authoritative H2 summary mismatch");
+          }
+
+          if (
+            source.candidate.selectedIndices.length !== 256 ||
+            source.candidate.selectedTemporalSlots.length !== 256 ||
+            source.candidate.threshold !== 0.5 ||
+            source.candidate.persistenceWindows !== 2
+          ) {
+            throw new Error("authoritative H2 candidate contract mismatch");
+          }
+
+          const frozen = {
+            schema: "maplefly.fly-jump-candidate.v11h2.1",
+            version: "v11h2-after-run-35748844599",
+            status: "frozen-authoritative-pass-not-deployed",
+            provenance: {
+              h1: {
+                runId: 35748359986,
+                headSha: "d5f2e2ae8c2cf1f353de2ba7bac231874eff1b4b",
+                artifactId: 10704475534,
+                artifactDigest:
+                  "sha256:06e5aa6c788ec79c45b135f6e0dce8d2a9c8a7938faa28e82165f7fbad097c7f"
+              },
+              h2: {
+                runId: 35748844599,
+                headSha: "253072a7165d367fc990e882cbcb90fe85eebf25",
+                artifactId: 10704546925,
+                artifactDigest:
+                  "sha256:de8cbd9f37704728605b1624e04c891bf47f329b81569553ab2e7be49b895495"
+              }
+            },
+            brain: {
+              repository: source.meta.brainRepository,
+              commit: source.meta.brainCommit,
+              dnCount: source.meta.dnCount
+            },
+            movementVersion: source.meta.movementVersion,
+            sensory: {
+              target: ["LC10a", "LPLC1", "LPLC2", "LC4"],
+              obstacle: ["LC6", "LC16", "LC22", "LPLC4"],
+              obstacleUsesLC4: false,
+              matchedTargetGeometry: true
+            },
+            sensoryArchitecture: source.meta.sensoryArchitecture,
+            representation: source.meta.representation,
+            policy: source.meta.policy,
+            candidate: source.candidate,
+            acceptance: source.summary
+          };
+
+          fs.mkdirSync("src/brain", { recursive: true });
+          fs.writeFileSync(
+            "src/brain/fly-skill-v11h2-jump-candidate.json",
+            JSON.stringify(frozen, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Verify frozen candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const x = JSON.parse(
+            fs.readFileSync(
+              "src/brain/fly-skill-v11h2-jump-candidate.json",
+              "utf8"
+            )
+          );
+          if (x.status !== "frozen-authoritative-pass-not-deployed") {
+            throw new Error("candidate status mismatch");
+          }
+          if (x.sensory.obstacleUsesLC4 !== false) {
+            throw new Error("obstacle LC4 must remain disabled");
+          }
+          if (x.candidate.selectedIndices.length !== 256) {
+            throw new Error("selected feature count mismatch");
+          }
+          if (x.candidate.selectedTemporalSlots.length !== 256) {
+            throw new Error("temporal slot count mismatch");
+          }
+          if (x.policy.cooldownSteps !== 38) {
+            throw new Error("cooldown mismatch");
+          }
+          console.log(
+            "V11H2-CANDIDATE-FREEZE=PASS selected=256 CONCAT4 threshold=0.5 persistence=2 cooldown=38 obstacleLC4=false"
+          );
+          NODE
+
+      - name: Commit frozen candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/brain/fly-skill-v11h2-jump-candidate.json
+          git commit -m "ci(learning): freeze authoritative v11H2 candidate" || exit 0
+          git push
