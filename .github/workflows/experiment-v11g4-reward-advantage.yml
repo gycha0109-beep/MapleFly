@@ -1,4 +1,4 @@
-name: Run MapleFly v11G4 Reward Advantage JUMP
+name: Run MapleFly v11 JUMP Learning Experiment
 
 on:
   workflow_dispatch:
@@ -6,9 +6,6 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/experiment-v11g4-reward-advantage.yml"
-      - "scripts/experiment-v11g4-reward-advantage.mjs"
-      - "src/headless/connectome-runtime.mjs"
-      - "src/brain/fly-skill-v7.js"
 
 permissions:
   contents: write
@@ -28,7 +25,7 @@ jobs:
           node-version: "24"
 
       - name: Syntax check
-        run: node --check scripts/experiment-v11g4-reward-advantage.mjs
+        run: node --check scripts/experiment-v11g5-paired-counterfactual.mjs
 
       - name: Cache pinned MaleCNS assets
         uses: actions/cache@v6
@@ -36,15 +33,15 @@ jobs:
           path: .cache/maplefly-connectome
           key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
 
-      - name: Run v11G4 reward-advantage evaluation
-        run: node scripts/experiment-v11g4-reward-advantage.mjs
+      - name: Run v11G5 paired counterfactual evaluation
+        run: node scripts/experiment-v11g5-paired-counterfactual.mjs
 
       - name: Upload experiment result
         id: upload
         uses: actions/upload-artifact@v7
         with:
-          name: maplefly-v11g4-reward-advantage-${{ github.run_id }}
-          path: results/experiment-v11g4
+          name: maplefly-v11g5-paired-counterfactual-${{ github.run_id }}
+          path: results/experiment-v11g5
           if-no-files-found: error
           retention-days: 30
 
@@ -57,12 +54,12 @@ jobs:
           import fs from "node:fs";
           const result = JSON.parse(
             fs.readFileSync(
-              "results/experiment-v11g4/experiment_v11g4.json",
+              "results/experiment-v11g5/experiment_v11g5.json",
               "utf8"
             )
           );
           const receipt = {
-            schema: "maplefly.v11g4-run-receipt.1",
+            schema: "maplefly.v11g5-run-receipt.1",
             runId: Number(process.env.GITHUB_RUN_ID),
             headSha: process.env.GITHUB_SHA,
             artifact: {
@@ -70,7 +67,7 @@ jobs:
                 ? Number(process.env.ARTIFACT_ID)
                 : null,
               name:
-                "maplefly-v11g4-reward-advantage-" +
+                "maplefly-v11g5-paired-counterfactual-" +
                 process.env.GITHUB_RUN_ID,
               digest:
                 process.env.ARTIFACT_DIGEST || null
@@ -86,7 +83,7 @@ jobs:
             { recursive: true }
           );
           fs.writeFileSync(
-            "history/run_receipts/v11g4_latest.json",
+            "history/run_receipts/v11g5_latest.json",
             JSON.stringify(receipt, null, 2) + "\n"
           );
           NODE
@@ -95,11 +92,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add history/run_receipts/v11g4_latest.json
-          git commit -m "ci(results): record v11G4 run ${GITHUB_RUN_ID}" || exit 0
+          git add history/run_receipts/v11g5_latest.json
+          git commit -m "ci(results): record v11G5 run ${GITHUB_RUN_ID}" || exit 0
           git push
 
       - name: Enforce technical workflow success
         run: |
-          test -f results/experiment-v11g4/experiment_v11g4.json
-          echo "v11G4 artifact and receipt path verified"
+          test -f results/experiment-v11g5/experiment_v11g5.json
+          echo "v11G5 artifact and receipt path verified"
