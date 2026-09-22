@@ -958,3 +958,66 @@ G3R  : step 80 = 5, step 85 = 4, step 100 = 6
 진단적 패턴이지만 step/거리/target context는 후속 policy input으로 사용하지 않는다.
 
 G3 candidate는 배포하지 않는다.
+
+
+---
+
+## Phase G4 — reward-advantage JUMP FAIL
+
+Workflow:
+
+~~~text
+run      35734505887
+head     a6e76cea25cc444e7982fc002d468903c5aab990
+artifact 10697342557
+digest   sha256:6d80d72647bb8a54d005be2d06bf9dbcf080606e11145ce8cbb2d5f63e19d5df
+receipt  cb444ba93a12784ac7c1e1da4dc878b4fcdc8ed3
+~~~
+
+Practice support:
+
+~~~text
+sampled  283
+WAIT     141
+JUMP     142
+Z > 0    123
+Z < 0     86
+Z = 0     74
+
+support gate PASS
+~~~
+
+Final aggregate:
+
+~~~text
+OBSTACLE FULL clear          100.00%
+OBSTACLE_CUE_OFF clear        20.83%
+DN_SHUFFLED clear              0.00%
+minimum FULL run             100.00%
+FULL timeout                   0.00%
+FULL mean actual jumps         1.375
+
+TARGET_ONLY reach            100.00%
+TARGET_ONLY any-jump          43.75%
+
+GATE                           FAIL
+~~~
+
+Per-run TARGET_ONLY any-jump:
+
+~~~text
+1851000  68.75%  11 / 16
+1861000  43.75%   7 / 16
+1871000  18.75%   3 / 16
+~~~
+
+G4의 reward-advantage 목적함수는 obstacle clear 능력과
+DN identity dependence를 보존했지만 TARGET_ONLY false jump를
+G3/G3R의 31.25%보다 낮추지 못했다.
+
+따라서 단순한 class-balanced outcome classifier를
+marginal reward-advantage regression으로 교체하는 것만으로는
+shared-LC4 context collision을 해결하지 못했다.
+
+decision boundary, persistence, gate를 결과 후 조정하지 않는다.
+G4 candidate는 배포하지 않는다.
