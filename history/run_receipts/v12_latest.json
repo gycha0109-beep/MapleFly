@@ -1,0 +1,37 @@
+{
+  "schema": "maplefly.v12.integrated-course-receipt.1",
+  "preregCommit": "79da4228eae11917c9ef7d74a1f8311f13dbfda0",
+  "runnerCommit": "430fbc5041ee0050027340e5aaada2a9d60a1e93",
+  "runId": 35788390176,
+  "artifactId": 10721535319,
+  "artifactDigest": "sha256:4a9a76c77dcc7fd90133a73bba497376b9d527620d8c823c4de3b0d8a6082ce9",
+  "pass": false,
+  "gateChecks": {
+    "courseCompletion": true,
+    "minSeedCompletion": true,
+    "obstacleClear": true,
+    "targetKill": true,
+    "timeout": true,
+    "meanJumps": false,
+    "preClearAttack": true,
+    "airborneAttack": false,
+    "attackHitPrecision": false
+  },
+  "summary": {
+    "episodes": 24,
+    "courseCompletionRate": 0.75,
+    "minSeedCompletionRate": 0.625,
+    "obstacleClearRate": 1,
+    "targetKillRate": 0.75,
+    "timeoutRate": 0.25,
+    "meanActualJumps": 2.5416666666666665,
+    "jumpBeforeClearEpisodeRate": 1,
+    "preClearAttackEpisodeRate": 0.20833333333333334,
+    "airborneAttackEpisodeRate": 0.8333333333333334,
+    "actualAttacks": 157,
+    "hits": 63,
+    "whiffs": 94,
+    "attackHitPrecision": 0.4012738853503185
+  },
+  "interpretation": "Cross-skill continuation failure localized after obstacle clear: repeated JUMP and airborne ATTACK correlate with combat whiffs. Frozen v12 gate and learned parameters unchanged."
+}
