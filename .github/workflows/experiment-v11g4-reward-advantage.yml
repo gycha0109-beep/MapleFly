@@ -1,5 +1,4 @@
 name: Run MapleFly v11 JUMP Learning Experiment
-# authoritative H1 CURRENT-only rerun
 
 on:
   workflow_dispatch:
@@ -14,7 +13,7 @@ permissions:
 jobs:
   experiment:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
@@ -26,7 +25,7 @@ jobs:
           node-version: "24"
 
       - name: Syntax check
-        run: node --check scripts/experiment-v11h1-matched-looming-screen.mjs
+        run: node --check scripts/experiment-v11h2-orthogonal-reward-jump.mjs
 
       - name: Cache pinned MaleCNS assets
         uses: actions/cache@v6
@@ -34,15 +33,15 @@ jobs:
           path: .cache/maplefly-connectome
           key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
 
-      - name: Run v11H1 matched broad looming screen
-        run: node scripts/experiment-v11h1-matched-looming-screen.mjs
+      - name: Run v11H2 orthogonal reward-only JUMP
+        run: node scripts/experiment-v11h2-orthogonal-reward-jump.mjs
 
       - name: Upload experiment result
         id: upload
         uses: actions/upload-artifact@v7
         with:
-          name: maplefly-v11h1-matched-looming-${{ github.run_id }}
-          path: results/experiment-v11h1
+          name: maplefly-v11h2-orthogonal-reward-jump-${{ github.run_id }}
+          path: results/experiment-v11h2
           if-no-files-found: error
           retention-days: 30
 
@@ -51,6 +50,6 @@ jobs:
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
           ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
         run: |
-          echo "V11H1-ARTIFACT-ID=${ARTIFACT_ID}"
-          echo "V11H1-ARTIFACT-DIGEST=${ARTIFACT_DIGEST}"
-          test -f results/experiment-v11h1/experiment_v11h1.json
+          echo "V11H2-ARTIFACT-ID=${ARTIFACT_ID}"
+          echo "V11H2-ARTIFACT-DIGEST=${ARTIFACT_DIGEST}"
+          test -f results/experiment-v11h2/experiment_v11h2.json
