@@ -1080,3 +1080,46 @@ G3 31.25%, 독립 G3R 31.25%, G4 43.75%, G5 54.17%를 종합하면
 
 G5 candidate는 배포하지 않는다.
 현재 browser runtime은 계속 movement + ATTACK만 유지한다.
+
+
+---
+
+## Phase H0 — orthogonal LC6+LC16 looming composite screen FAIL
+
+Authoritative experiment evidence:
+
+~~~text
+run      35745831597
+head     8758ae57935c83452f193d22be194cf367f9f36b
+artifact 10701519484
+digest   sha256:dd125f1051c7ec7808be45ad9a574eb5d38eb8d9f1439ce40f874a1021f8ae42
+~~~
+
+원 workflow conclusion은 failure지만 과학 실험과 artifact upload는 정상 완료되었다.
+실패 step은 receipt의 main push였으며 실험 결과와 무관하다.
+
+Representation screen:
+
+~~~text
+CURRENT  FULL 91.7% / LABEL_SHUFFLED 46.4% / DN_PERMUTED 50.5%  PASS
+MEAN4    FULL 91.7% / LABEL_SHUFFLED 52.6% / DN_PERMUTED 50.0%  PASS
+DELTA    FULL 81.8% / LABEL_SHUFFLED 48.4% / DN_PERMUTED 51.0%  FAIL
+CONCAT4  FULL 95.8% / LABEL_SHUFFLED 52.1% / DN_PERMUTED 50.0%  PASS
+~~~
+
+그러나 preregistered history-value gate는 selected history - CURRENT >= 15pp였다.
+최고 history representation인 CONCAT4도 CURRENT 대비 약 +4.1pp에 그쳐:
+
+~~~text
+H0 SCREEN = FAIL
+selected representation = NONE
+~~~
+
+으로 판정한다.
+
+중요한 진단 결과는 LC6+LC16 obstacle code 자체가 실패한 것이 아니라,
+orthogonal obstacle code가 instantaneous DN state에서도 이미 높은 context separability를
+만들어 history가 추가 15pp를 제공하지 않았다는 점이다.
+
+사전등록 규칙상 H0 PASS로 재해석하지 않으며,
+FAIL branch대로 더 넓은 orthogonal looming population을 별도 phase에서 검사한다.
