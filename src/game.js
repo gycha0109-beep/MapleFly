@@ -184,7 +184,12 @@
       JUMP_TUTORIAL.distances[index];
     const side =
       hashUnit(seed, 97) < 0.5 ? "L" : "R";
-    const center = WORLD.width / 2;
+    const playerCenter =
+      player.x + player.width / 2;
+    const playerFront =
+      side === "R"
+        ? player.x + player.width
+        : player.x;
 
     obstacle.active = true;
     obstacle.side = side;
@@ -192,16 +197,37 @@
       WORLD.groundY - obstacle.height;
 
     if (side === "R") {
-      obstacle.x = center + startDistance;
+      obstacle.x =
+        playerFront + startDistance;
       mushroom.x =
         obstacle.x +
         obstacle.width +
         JUMP_TUTORIAL.targetOffset;
     } else {
-      const front = center - startDistance;
-      obstacle.x = front - obstacle.width;
+      const front =
+        playerFront - startDistance;
+      obstacle.x =
+        front - obstacle.width;
       mushroom.x =
-        obstacle.x - JUMP_TUTORIAL.targetOffset;
+        obstacle.x -
+        JUMP_TUTORIAL.targetOffset;
+    }
+
+    const matchedDistance =
+      Math.abs(mushroom.x - playerCenter);
+    const expectedDistance =
+      startDistance +
+      player.width / 2 +
+      obstacle.width +
+      JUMP_TUTORIAL.targetOffset;
+    if (
+      Math.abs(
+        matchedDistance - expectedDistance,
+      ) > 1e-9
+    ) {
+      throw new Error(
+        "v11H2 matched geometry mismatch",
+      );
     }
   }
 

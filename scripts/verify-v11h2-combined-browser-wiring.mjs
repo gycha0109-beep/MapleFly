@@ -77,6 +77,10 @@ for (const token of [
   "obstacles: obstacle.active",
   "skillObstacle: false",
   "drawObstacle();",
+  "playerFront + startDistance",
+  "playerFront - startDistance",
+  "matchedDistance - expectedDistance",
+  "v11H2 matched geometry mismatch",
 ]) {
   if (!game.includes(token)) {
     throw new Error("game missing " + token);
