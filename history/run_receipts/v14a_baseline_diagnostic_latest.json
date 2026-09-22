@@ -1,0 +1,31 @@
+{
+  "schema": "maplefly.v14a-lower-level-baseline-diagnostic-receipt.1",
+  "scientificGate": false,
+  "purpose": "Same-seed frozen lower-level replay for v14A failure localization.",
+  "runId": 35798003804,
+  "headSha": "cd81abf0c757a876b057ac5489b9f82f856756cf",
+  "artifact": {
+    "id": 10725085692,
+    "name": "maplefly-v14a-lower-level-baseline-35798003804",
+    "digest": "sha256:8b6e8351e4d921949ada45f415a8673e2e55d3ba856d94c2af81e21e7694b9e2"
+  },
+  "seeds": [
+    2551000,
+    2561000,
+    2571000
+  ],
+  "summary": {
+    "courseCompletionRate": 0.875,
+    "minSeedCompletionRate": 0.75,
+    "obstacleClearRate": 1,
+    "targetKillRate": 0.875,
+    "timeoutRate": 0.125,
+    "meanActualJumps": 2.375,
+    "preClearAttackEpisodeRate": 0.2916666666666667,
+    "airborneAttackEpisodeRate": 0.9166666666666666,
+    "attackHitPrecision": 0.412,
+    "postClearJumpEpisodeRate": 0.5,
+    "meanPostClearJumps": 0.708
+  },
+  "scientificParametersChanged": false
+}

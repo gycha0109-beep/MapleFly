@@ -147,3 +147,40 @@ v14A가 실제로 무엇을 개선했고 무엇을 남겼는지 먼저 비교한
 - sensory population / amplitude
 
 v14A candidate는 browser에 배포하지 않는다.
+
+## Same-seed lower-level baseline diagnostic
+
+v14A final seed를 그대로 사용하고 interruption gate만 제거한 frozen lower-level
+v7 + v10F + v11H2 stack을 재생했다.
+
+~~~text
+run       35798003804
+artifact  10725085692
+digest    sha256:8b6e8351e4d921949ada45f415a8673e2e55d3ba856d94c2af81e21e7694b9e2
+~~~
+
+~~~text
+                         lower-level baseline   v14A
+course completion              87.5%            91.7%
+obstacle clear                100.0%           100.0%
+target kill                    87.5%            91.7%
+timeout                        12.5%             8.3%
+mean JUMPs                      2.375             2.250
+pre-clear ATTACK ep            29.2%             4.2%
+airborne ATTACK ep             91.7%            62.5%
+ATTACK precision               41.2%            47.6%
+~~~
+
+따라서 v14A ATTACK interruption은 같은 unseen seed에서
+pre-clear ATTACK, airborne ATTACK, precision, completion을 모두 개선하는 방향의 효과는 있었다.
+
+그러나 JUMP 횟수는 2.375 -> 2.250으로 거의 남았고 frozen gate에는 미달했다.
+또 lower-level baseline에서 post-clear JUMP episode는 50.0%였다.
+
+baseline attack event 165개 중 airborne attack은 55개였고,
+그중 49개가 obstacle clear 이후였다.
+post-clear JUMP가 없던 episode도 airborne ATTACK episode rate가 83.3%였으므로
+repeat-JUMP만 단독으로 제거해도 airborne ATTACK 문제가 자동으로 사라진다고 볼 수 없다.
+
+다음 prereg는 MOVE를 건드리지 않고 ATTACK/JUMP proposal 각각에
+독립적인 learned interruption head를 두는 방향으로 진행한다.
