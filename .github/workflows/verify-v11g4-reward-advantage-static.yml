@@ -6,7 +6,8 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/verify-v11g4-reward-advantage-static.yml"
-      - "scripts/experiment-v11g5-paired-counterfactual.mjs"
+      - "scripts/experiment-v11h0-orthogonal-looming-screen.mjs"
+      - "history/prereg_v11h0.md"
 
 permissions:
   contents: read
@@ -26,80 +27,79 @@ jobs:
           node-version: "24"
 
       - name: Syntax check
-        run: node --check scripts/experiment-v11g5-paired-counterfactual.mjs
+        run: node --check scripts/experiment-v11h0-orthogonal-looming-screen.mjs
 
-      - name: Verify preregistered G5 contract
+      - name: Verify preregistered H0 contract
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
 
           const s = fs.readFileSync(
-            "scripts/experiment-v11g5-paired-counterfactual.mjs",
+            "scripts/experiment-v11h0-orthogonal-looming-screen.mjs",
             "utf8"
           );
 
           const required = [
-            "1901000",
-            "1911000",
-            "1921000",
-            "1951000",
-            "1961000",
-            "1971000",
-            "jumpResult.reward -",
-            "waitResult.reward",
-            "featureDifference >",
-            "1e-9",
-            "TRAIN_EPOCHS = 400",
-            "TRAIN_LEARNING_RATE = 0.01",
-            "TRAIN_L2 = 0.001",
-            "SELECTED_FEATURE_COUNT = 256",
+            "2001000",
+            "2001100",
+            "2001200",
+            "2001300",
+            "2011000",
+            "2011100",
+            "2011200",
             "TEMPORAL_WINDOWS = 4",
-            "PERSISTENCE_WINDOWS = 2",
-            "advantage > 0",
-            "support.validPairs >= 270",
-            "support.positiveDelta >= 24",
-            "support.negativeDelta >= 24",
-            "meanFull >= 0.75",
-            "minFull >= 0.65",
-            "meanFull - meanOff >= 0.25",
-            "meanTimeout <= 0.20",
-            "meanJumps <= 1.75",
-            "targetReach >= 0.85",
-            "targetJump <= 0.30",
-            "V11G5-JUMP-GATE="
+            "\"CURRENT\"",
+            "\"MEAN4\"",
+            "\"DELTA\"",
+            "\"CONCAT4\"",
+            "\"LC6_\" + obstacle.side",
+            "\"LC16_\" + obstacle.side",
+            "fullMean >= 0.85",
+            "minRun >= 0.75",
+            "shuffledMean >=",
+            "permutedMean >=",
+            "historyGain >= 0.15",
+            "V11H0-SCREEN="
           ];
 
           for (const token of required) {
             if (!s.includes(token)) {
               throw new Error(
-                "missing G5 contract: " + token
+                "missing H0 contract: " + token
               );
             }
           }
 
-          const policyInputBlock = s.slice(
-            s.indexOf("class RewardAdvantagePolicy"),
-            s.indexOf("async function runPolicyEpisode")
+          const encoder = s.slice(
+            s.indexOf("class OrthogonalLoomingEncoder"),
+            s.indexOf("function makeContextEpisode")
           );
 
-          for (const forbidden of [
-            "targetX",
-            "obstacle",
-            "startDistance",
-            "withObstacle",
-            "firstJumpFrontDistance",
-            "terminalStatus",
-            "deltaReward",
-            "reward"
-          ]) {
-            if (policyInputBlock.includes(forbidden)) {
-              throw new Error(
-                "policy leak token: " + forbidden
-              );
-            }
+          const obstaclePart = encoder.slice(
+            encoder.indexOf("if (obstacle)")
+          );
+
+          if (
+            obstaclePart.includes(
+              "\"LC4_\" + obstacle.side"
+            )
+          ) {
+            throw new Error(
+              "obstacle still drives LC4"
+            );
+          }
+
+          if (
+            !encoder.includes(
+              "\"LC4_\" + side"
+            )
+          ) {
+            throw new Error(
+              "target LC4 was not preserved"
+            );
           }
 
           console.log(
-            "V11G5-STATIC=PASS representation=CONCAT4 selected=256 target=paired-deltaR boundary=0 persistence=2"
+            "V11H0-STATIC=PASS targetLC4=preserved obstacle=LC6+LC16 history=4"
           );
           NODE
