@@ -81,6 +81,14 @@ if (!api.validState(state)) {
   throw new Error("bundled state invalid");
 }
 if (
+  state.sparseFeatureCount !== 96 ||
+  state.runtimeDnIndices.length !== 96 ||
+  state.selectedSparseSlots.length !== 256
+) {
+  throw new Error("runtime sparse contract mismatch");
+}
+
+if (
   state.provenance.h2.runId !==
     35748844599 ||
   state.provenance.h2.artifactId !==
@@ -190,6 +198,63 @@ for (let i = 0; i < histories.length; i += 1) {
       );
     }
   }
+  const sparseHistory = histories[i].map(
+    (window) =>
+      Float64Array.from(
+        state.runtimeDnIndices,
+        (dnIndex) => window[dnIndex],
+      ),
+  );
+  const sparseGot =
+    api.evaluateSparseHistory(
+      sparseHistory,
+      state,
+    );
+  sameArray(
+    sparseGot.selected,
+    want.selected,
+    "sparse selected trace " + i,
+  );
+  sameArray(
+    sparseGot.standardized,
+    want.standardized,
+    "sparse standardized trace " + i,
+    1e-15,
+  );
+  if (
+    Math.abs(
+      sparseGot.waitProbability -
+        want.waitProbability,
+    ) > 1e-15 ||
+    Math.abs(
+      sparseGot.jumpProbability -
+        want.jumpProbability,
+    ) > 1e-15
+  ) {
+    throw new Error(
+      "sparse probability mismatch trace " + i,
+    );
+  }
+}
+
+const sparseRt = api.createRuntime();
+for (let window = 0; window < 4; window += 1) {
+  const sparse = Float64Array.from(
+    state.runtimeDnIndices,
+    (dnIndex) => histories[0][window][dnIndex],
+  );
+  const got = api.observeSparseWindow(
+    sparse,
+    true,
+    state,
+    sparseRt,
+  );
+  if (got.ready !== (window === 3)) {
+    throw new Error(
+      "sparse stream readiness mismatch window " +
+        window,
+    );
+  }
 }
 
 const rt = api.createRuntime();
@@ -272,6 +337,6 @@ if (
 
 console.log(
   "V11H2-JUMP-BUNDLE-STATIC=PASS " +
-    "selected=256 windows=4 threshold=0.5 " +
+    "selected=256 sparse=96 windows=4 threshold=0.5 " +
     "persistence=2 cooldown=38 obstacleLC4=false",
 );
