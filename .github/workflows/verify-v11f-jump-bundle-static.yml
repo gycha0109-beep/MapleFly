@@ -1,4 +1,4 @@
-name: Verify v11F JUMP Bundle Static
+name: Verify v11F Research Bundle Static
 
 on:
   workflow_dispatch:
@@ -33,6 +33,10 @@ jobs:
           node --check scripts/verify-v11f-jump-browser-equivalence.mjs
       - name: Verify bundle
         run: node scripts/verify-v11f-jump-bundle-static.mjs
-      - name: Verify page load order
+      - name: Verify legacy bundle is not page-loaded
         run: |
-          grep -F '<script src="./src/brain/fly-skill-v11-jump.js"></script>' index.html
+          if grep -F '<script src="./src/brain/fly-skill-v11-jump.js"></script>' index.html; then
+            echo "legacy v11F bundle must not be page-loaded"
+            exit 1
+          fi
+          grep -F '<script src="./src/brain/fly-skill-v11h2-jump.js"></script>' index.html

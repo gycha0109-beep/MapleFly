@@ -1,4 +1,4 @@
-name: Verify v11F JUMP Deployment State
+name: Verify v11F Legacy JUMP Isolation
 
 on:
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
           node --check src/brain/fly-controller.js
           node --check src/game.js
           node --check src/brain/fly-skill-v11-jump.js
-      - name: Verify fail-closed deployment state
+      - name: Verify legacy v11F remains isolated
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
@@ -38,31 +38,42 @@ jobs:
             "src/brain/fly-controller.js",
             "utf8"
           );
-          const game = fs.readFileSync(
-            "src/game.js",
-            "utf8"
-          );
           const index = fs.readFileSync(
             "index.html",
             "utf8"
           );
 
-          if (controller.includes("MapleFlyJumpSkillV11")) {
-            throw new Error("learned JUMP is still wired into controller");
+          if (controller.includes(
+            "global.MapleFlyJumpSkillV11 ??"
+          )) {
+            throw new Error(
+              "legacy v11F JUMP is wired into controller"
+            );
           }
-          if (controller.includes('id: "jump"')) {
-            throw new Error("JUMP sampler is still active");
-          }
-          if (game.includes("JUMP_TUTORIAL")) {
-            throw new Error("JUMP tutorial obstacle is still active");
-          }
-          if (!index.includes(
+          if (index.includes(
             '<script src="./src/brain/fly-skill-v11-jump.js"></script>'
           )) {
-            throw new Error("research bundle unexpectedly removed");
+            throw new Error(
+              "legacy v11F JUMP is loaded by the page"
+            );
+          }
+          if (!index.includes(
+            '<script src="./src/brain/fly-skill-v11h2-jump.js"></script>'
+          )) {
+            throw new Error(
+              "deployed v11H2 JUMP bundle is not loaded"
+            );
+          }
+          if (!fs.existsSync(
+            "src/brain/fly-skill-v11-jump.js"
+          )) {
+            throw new Error(
+              "legacy research bundle unexpectedly removed"
+            );
           }
           console.log(
-            "V11F-JUMP-DEPLOYMENT=WITHHELD " +
-            "bundle=preserved controller=disabled arena=restored"
+            "V11F-LEGACY-ISOLATION=PASS " +
+            "oldBundle=preserved oldRuntime=disabled " +
+            "h2Runtime=allowed"
           );
           NODE
