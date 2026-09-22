@@ -939,8 +939,9 @@ async function main() {
   );
 
   if (
-    candidate.status !== "FROZEN_FAILED_SCREEN_NOT_DEPLOYABLE" ||
+    candidate.status !== "V14C_VALIDATED_CANDIDATE_NOT_DEPLOYED" ||
     candidate.source.runId !== 35798458282 ||
+    candidate.validation?.runId !== 35799237521 ||
     candidate.historyFrames !== 12 ||
     candidate.featureCount !== 96 ||
     candidate.policies.attack.weights.length !== 96 ||
