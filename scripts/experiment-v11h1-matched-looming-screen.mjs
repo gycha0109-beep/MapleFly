@@ -46,9 +46,6 @@ const ORDER_SEED = 2106000;
 const LABEL_SHUFFLE_SEED = 2116000;
 const REPRESENTATIONS = Object.freeze([
   "CURRENT",
-  "MEAN4",
-  "DELTA",
-  "CONCAT4",
 ]);
 
 function clamp(value, min, max) {
@@ -1348,7 +1345,7 @@ async function main() {
   const output = {
     meta: {
       schema:
-        "maplefly.experiment-v11h1.orthogonal-looming-composite-screen.1",
+        "maplefly.experiment-v11h1.matched-broad-orthogonal-looming-screen.1",
       brainRepository:
         SOURCE.repository,
       brainCommit:
