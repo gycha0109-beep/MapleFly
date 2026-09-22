@@ -60,7 +60,7 @@ const state = {
   schema: "maplefly.fly-jump-skill.v11h2.1",
   flyId: "Fly #001",
   version: source.version,
-  deploymentStatus: "WITHHELD",
+  deploymentStatus: "DEPLOYED",
   provenance: source.provenance,
   brainCommit: source.brain.commit,
   dnCount: source.brain.dnCount,
@@ -105,7 +105,7 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
       state &&
       state.schema === "maplefly.fly-jump-skill.v11h2.1" &&
       state.version === "v11h2-after-run-35748844599" &&
-      state.deploymentStatus === "WITHHELD" &&
+      state.deploymentStatus === "DEPLOYED" &&
       state.brainCommit ===
         "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e" &&
       state.dnCount === 1316 &&

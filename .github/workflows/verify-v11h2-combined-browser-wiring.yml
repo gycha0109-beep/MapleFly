@@ -1,0 +1,37 @@
+name: Verify v11H2 Combined Browser Wiring
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11h2-combined-browser-wiring.yml"
+      - "scripts/verify-v11h2-combined-browser-wiring.mjs"
+      - "src/brain/fly-skill-v11h2-jump.js"
+      - "src/brain/fly-controller.js"
+      - "src/brain/fly-worker.js"
+      - "src/game.js"
+      - "index.html"
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check combined runtime
+        run: |
+          node --check src/brain/fly-worker.js
+          node --check src/brain/fly-controller.js
+          node --check src/brain/fly-skill-v11h2-jump.js
+          node --check src/game.js
+          node --check scripts/verify-v11h2-combined-browser-wiring.mjs
+      - name: Verify combined wiring contract
+        run: node scripts/verify-v11h2-combined-browser-wiring.mjs

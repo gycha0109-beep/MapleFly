@@ -260,7 +260,16 @@ function buildInputGroups(meta) {
   const groups = new Map();
 
   for (const side of ["L", "R"]) {
-    for (const type of ["LPLC2", "LC4", "LPLC1", "LC10a"]) {
+    for (const type of [
+      "LPLC2",
+      "LC4",
+      "LPLC1",
+      "LC10a",
+      "LC6",
+      "LC16",
+      "LC22",
+      "LPLC4",
+    ]) {
       groups.set(`${type}_${side}`, cells(meta, [type], side));
     }
 
