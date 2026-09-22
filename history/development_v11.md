@@ -2311,3 +2311,149 @@ FAIL:
 짧은 시간축까지 포함해도 context 분리가 불충분하다.
 기존 v11F JUMP weights를 보정하거나 threshold를 조절하지 않고
 sensory architecture를 더 크게 재설계한다.
+
+
+# Phase G2B — short-history representation screen preregistration
+
+목적:
+
+G2에서 4-window CONCAT은 높은 separability를 보였지만
+window 순서 자체는 중요하지 않았다.
+
+새 unseen seed의 동일한 sample history에서 다음 4개 representation을 동시에 비교한다.
+
+~~~text
+CURRENT:
+  마지막 5-step window의 1316-DN feature
+
+MEAN4:
+  최근 4개 window의 DN별 평균
+  1316 dimensions
+
+DELTA:
+  마지막 window - 첫 window
+  1316 dimensions
+
+CONCAT4:
+  최근 4개 window concatenate
+  5264 dimensions
+~~~
+
+모든 representation은 동일 episode / 동일 brain seed / 동일 sample bin을 사용한다.
+
+## sensory
+
+G2와 완전히 동일한 shared-LC4 sensory:
+
+~~~text
+target:
+  LC10a + LPLC1 + LPLC2
+  target LC4 when target distance < 175 px
+
+obstacle:
+  same-side LC4
+
+LC4_side = max(target LC4, obstacle LC4)
+~~~
+
+## train / eval
+
+train seeds:
+
+~~~text
+1501000
+1501100
+1501200
+1501300
+~~~
+
+eval seeds:
+
+~~~text
+1511000
+1511100
+1511200
+~~~
+
+start distances:
+
+~~~text
+260 / 300 / 340 / 380 px
+~~~
+
+sample bins:
+
+~~~text
+150 / 120 / 90 / 60 px
+~~~
+
+settle 26 / baseline 26 / sample 5 / history 4 windows.
+
+## classifier
+
+각 representation마다 독립 linear logistic regression:
+
+~~~text
+epochs 120
+LR 0.02
+L2 0.0005
+threshold 0.5
+~~~
+
+각 representation control:
+
+~~~text
+LABEL_SHUFFLED
+DN_PERMUTED
+~~~
+
+## representation PASS gate
+
+각 후보는 모두 만족해야 PASS:
+
+~~~text
+mean FULL balanced accuracy      >= 85%
+every eval run FULL              >= 75%
+FULL - LABEL_SHUFFLED            >= 25pp
+FULL - DN_PERMUTED               >= 25pp
+~~~
+
+## history-value gate
+
+history representation(MEAN4 / DELTA / CONCAT4)을 선택하려면 추가로:
+
+~~~text
+selected mean FULL - CURRENT mean FULL >= 15pp
+~~~
+
+이어야 한다.
+
+## selection rule
+
+1. CURRENT가 단독 PASS여도 history-value gate가 없으므로 G3 근거로 사용하지 않는다.
+2. PASS한 history representation 중 mean FULL이 가장 높은 것을 선택한다.
+3. 최고 두 후보 차이가 <= 2pp이면 차원이 작은 후보를 선택한다:
+   DELTA 또는 MEAN4(1316) > CONCAT4(5264).
+4. history PASS 후보가 없거나 CURRENT 대비 +15pp가 없으면 G2B FAIL.
+
+이 rule은 결과 전에 고정한다.
+
+## anti-leak
+
+model input 금지:
+
+~~~text
+context label
+distance
+coordinates
+side
+seed
+obstacle flag
+target flag
+sample bin
+~~~
+
+## PASS 이후
+
+선택 representation으로 mixed-context reward-only JUMP learner Phase G3를 설계한다.
+기존 v11F LC4 JUMP weights는 재사용하지 않는다.
