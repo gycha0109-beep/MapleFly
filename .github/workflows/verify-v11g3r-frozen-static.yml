@@ -1,0 +1,102 @@
+name: Verify v11G3R Frozen Replication Static
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11g3r-frozen-static.yml"
+      - "scripts/experiment-v11g3r-frozen-replication.mjs"
+      - "src/brain/fly-skill-v11g3-jump-candidate.json"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/experiment-v11g3r-frozen-replication.mjs
+
+      - name: Verify frozen candidate and one-shot gate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+
+          const c = JSON.parse(
+            fs.readFileSync(
+              "src/brain/fly-skill-v11g3-jump-candidate.json",
+              "utf8"
+            )
+          );
+          const s = fs.readFileSync(
+            "scripts/experiment-v11g3r-frozen-replication.mjs",
+            "utf8"
+          );
+
+          if (c.provenance.runId !== 35726010847) {
+            throw new Error("candidate source run mismatch");
+          }
+          if (
+            c.candidate.selectedIndices.length !== 256 ||
+            c.candidate.threshold !== 0.5 ||
+            c.candidate.persistenceWindows !== 2 ||
+            c.policy.cooldownSteps !== 38
+          ) {
+            throw new Error("frozen candidate contract mismatch");
+          }
+
+          const required = [
+            "1751000",
+            "1761000",
+            "1771000",
+            "const originalTargetJumps = 15",
+            "const originalTargetEpisodes = 48",
+            "targetJump <= 0.30",
+            "pooledTargetJumpRate <= 0.30",
+            "meanFull >= 0.75",
+            "minFull >= 0.65",
+            "meanFull - meanOff >= 0.25",
+            "meanTimeout <= 0.20",
+            "meanJumps <= 1.75",
+            "targetReach >= 0.85",
+            "V11G3R-GATE="
+          ];
+
+          for (const token of required) {
+            if (!s.includes(token)) {
+              throw new Error("missing G3R contract: " + token);
+            }
+          }
+
+          const main = s.slice(
+            s.indexOf("async function main()")
+          );
+          for (const forbidden of [
+            "collectPractice({",
+            "trainActionModel({",
+            "varianceSelectedIndices("
+          ]) {
+            if (main.includes(forbidden)) {
+              throw new Error(
+                "replication main retrains candidate: " +
+                  forbidden
+              );
+            }
+          }
+
+          console.log(
+            "V11G3R-STATIC=PASS frozenRun=35726010847 seeds=1751000,1761000,1771000 pooledGate=0.30"
+          );
+          NODE
