@@ -1,0 +1,103 @@
+name: Verify v11G4 Reward Advantage Static
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11g4-reward-advantage-static.yml"
+      - "scripts/experiment-v11g4-reward-advantage.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/experiment-v11g4-reward-advantage.mjs
+
+      - name: Verify preregistered G4 contract
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+
+          const s = fs.readFileSync(
+            "scripts/experiment-v11g4-reward-advantage.mjs",
+            "utf8"
+          );
+
+          const required = [
+            "1801000",
+            "1811000",
+            "1821000",
+            "1851000",
+            "1861000",
+            "1871000",
+            "2 * row.action - 1",
+            "row.reward",
+            "TRAIN_EPOCHS = 400",
+            "TRAIN_LEARNING_RATE = 0.01",
+            "TRAIN_L2 = 0.001",
+            "SELECTED_FEATURE_COUNT = 256",
+            "TEMPORAL_WINDOWS = 4",
+            "PERSISTENCE_WINDOWS = 2",
+            "advantage > 0",
+            "support.sampled >= 270",
+            "support.WAIT >= 100",
+            "support.JUMP >= 100",
+            "support.positiveZ >= 24",
+            "support.negativeZ >= 24",
+            "meanFull >= 0.75",
+            "minFull >= 0.65",
+            "meanFull - meanOff >= 0.25",
+            "meanTimeout <= 0.20",
+            "meanJumps <= 1.75",
+            "targetReach >= 0.85",
+            "targetJump <= 0.30",
+            "V11G4-JUMP-GATE="
+          ];
+
+          for (const token of required) {
+            if (!s.includes(token)) {
+              throw new Error(
+                "missing G4 contract: " + token
+              );
+            }
+          }
+
+          const policyInputBlock = s.slice(
+            s.indexOf("class RewardAdvantagePolicy"),
+            s.indexOf("async function runPolicyEpisode")
+          );
+
+          for (const forbidden of [
+            "targetX",
+            "obstacle",
+            "startDistance",
+            "withObstacle",
+            "firstJumpFrontDistance",
+            "terminalStatus"
+          ]) {
+            if (policyInputBlock.includes(forbidden)) {
+              throw new Error(
+                "policy leak token: " + forbidden
+              );
+            }
+          }
+
+          console.log(
+            "V11G4-STATIC=PASS representation=CONCAT4 selected=256 objective=reward-advantage boundary=0 persistence=2"
+          );
+          NODE
