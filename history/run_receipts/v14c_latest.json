@@ -1,0 +1,43 @@
+{
+  "schema": "maplefly.v14c-validation-receipt.1",
+  "status": "PASS",
+  "scientificGate": true,
+  "preregistration": {
+    "path": "history/prereg_v14c.md",
+    "commit": "cd9122e1dddec2d24f3629799a7411fe91ca8247"
+  },
+  "sourceCandidate": {
+    "path": "src/brain/fly-interruption-v14b-candidate.json",
+    "sourceRunId": 35798458282,
+    "retrained": false,
+    "weightsChanged": false,
+    "thresholdChanged": false
+  },
+  "authoritativeRun": {
+    "runId": 35799237521,
+    "headSha": "a1ed6dffdc6a3398d1d233431ab8ba8a7a0fdf36"
+  },
+  "artifact": {
+    "id": 10725530980,
+    "name": "maplefly-v14c-frozen-validation-35799237521",
+    "digest": "sha256:8df6084c8f221c6a24320e1a08e81c39363c8a9f99a0d561946d0a0ded7251c6"
+  },
+  "final": {
+    "episodes": 24,
+    "courseCompletionRate": 0.9583333333333334,
+    "minSeedCompletionRate": 0.875,
+    "obstacleClearRate": 1,
+    "leftObstacleClearRate": 1,
+    "rightObstacleClearRate": 1,
+    "targetKillRate": 0.9583333333333334,
+    "timeoutRate": 0.041666666666666664,
+    "meanActualJumps": 1.4166666666666667,
+    "postClearJumpEpisodeRate": 0,
+    "preClearAttackEpisodeRate": 0.125,
+    "airborneAttackActionFraction": 0.127,
+    "maxSeedAirborneAttackActionFraction": 0.156,
+    "airborneAttackEpisodeRate": 0.625,
+    "attackHitPrecision": 0.602
+  },
+  "deploymentStatus": "VALIDATED_CANDIDATE_NOT_DEPLOYED"
+}
