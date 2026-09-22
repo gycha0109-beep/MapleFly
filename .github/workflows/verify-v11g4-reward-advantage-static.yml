@@ -38,6 +38,7 @@ jobs:
             "utf8"
           );
 
+          const compact = s.replace(/\s+/g, " ");
           const required = [
             "2101000", "2101100", "2101200", "2101300",
             "2111000", "2111100", "2111200",
@@ -51,14 +52,13 @@ jobs:
             "OBSTACLE_WIDTH +",
             "fullMean >= 0.85",
             "minRun >= 0.75",
-            "fullMean -",
-            "shuffledMean >= 0.25",
-            "permutedMean >= 0.25",
+            "fullMean - shuffledMean >= 0.25",
+            "fullMean - permutedMean >= 0.25",
             "V11H1-SCREEN="
           ];
 
           for (const token of required) {
-            if (!s.includes(token)) {
+            if (!compact.includes(token)) {
               throw new Error("missing H1 contract: " + token);
             }
           }
