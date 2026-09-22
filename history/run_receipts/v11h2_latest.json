@@ -1,0 +1,87 @@
+{
+  "schema": "maplefly.v11h2-run-receipt.1",
+  "runId": 35748844599,
+  "headSha": "253072a7165d367fc990e882cbcb90fe85eebf25",
+  "artifact": {
+    "id": 10704546925,
+    "name": "maplefly-v11h2-orthogonal-reward-jump-35748844599",
+    "digest": "sha256:de8cbd9f37704728605b1624e04c891bf47f329b81569553ab2e7be49b895495"
+  },
+  "sensory": {
+    "target": ["LC10a", "LPLC1", "LPLC2", "LC4"],
+    "obstacle": ["LC6", "LC16", "LC22", "LPLC4"],
+    "obstacleUsesLC4": false,
+    "geometryMatched": true
+  },
+  "representation": {
+    "type": "CONCAT4",
+    "rawFeatureCount": 5264,
+    "selectedFeatureCount": 256,
+    "selection": "top unlabeled variance"
+  },
+  "policy": {
+    "type": "two class-balanced logistic desirable-outcome models",
+    "threshold": 0.5,
+    "persistenceWindows": 2,
+    "cooldownSteps": 38,
+    "epochs": 300,
+    "learningRate": 0.03,
+    "l2": 0.001
+  },
+  "practice": {
+    "scheduledEpisodes": 288,
+    "sampledEpisodes": 287,
+    "support": {
+      "waitPositive": 68,
+      "waitNegative": 71,
+      "jumpPositive": 52,
+      "jumpNegative": 96,
+      "gate": true
+    }
+  },
+  "perRun": [
+    {
+      "baseSeed": 2251000,
+      "fullClear": 1.0,
+      "cueOffClear": 0.0,
+      "dnShuffledClear": 0.0,
+      "fullTimeout": 0.0,
+      "fullMeanActualJumps": 1.5,
+      "targetReach": 1.0,
+      "targetAnyJump": 0.0
+    },
+    {
+      "baseSeed": 2261000,
+      "fullClear": 1.0,
+      "cueOffClear": 0.0,
+      "dnShuffledClear": 0.0,
+      "fullTimeout": 0.0,
+      "fullMeanActualJumps": 1.46875,
+      "targetReach": 1.0,
+      "targetAnyJump": 0.0
+    },
+    {
+      "baseSeed": 2271000,
+      "fullClear": 1.0,
+      "cueOffClear": 0.0,
+      "dnShuffledClear": 0.0,
+      "fullTimeout": 0.0,
+      "fullMeanActualJumps": 1.375,
+      "targetReach": 1.0,
+      "targetAnyJump": 0.0
+    }
+  ],
+  "summary": {
+    "meanFullClear": 1.0,
+    "meanCueOffClear": 0.0,
+    "fullMinusCueOff": 1.0,
+    "meanDnShuffledClear": 0.0,
+    "fullMinusDnShuffled": 1.0,
+    "minFull": 1.0,
+    "meanFullTimeout": 0.0,
+    "meanFullActualJumps": 1.4479166666666667,
+    "targetReach": 1.0,
+    "targetAnyJump": 0.0,
+    "gate": true
+  }
+}
