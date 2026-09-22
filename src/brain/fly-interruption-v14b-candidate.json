@@ -1,6 +1,6 @@
 {
   "schema": "maplefly.v14b.failed-screen-candidate.1",
-  "status": "FROZEN_FAILED_SCREEN_NOT_DEPLOYABLE",
+  "status": "V14C_VALIDATED_CANDIDATE_NOT_DEPLOYED",
   "source": {
     "runId": 35798458282,
     "headSha": "378a6691298d71b0ff2d248f47f6833e233ab01a",
@@ -214,5 +214,13 @@
       ]
     }
   },
-  "deploymentAllowed": false
+  "deploymentAllowed": false,
+  "validation": {
+    "runId": 35799237521,
+    "artifactId": 10725530980,
+    "artifactDigest": "sha256:8df6084c8f221c6a24320e1a08e81c39363c8a9f99a0d561946d0a0ded7251c6",
+    "result": "PASS",
+    "weightsChanged": false,
+    "thresholdChanged": false
+  }
 }

@@ -84,6 +84,17 @@
         this.jumpSkillApi?.loadState?.() ?? null;
       this.jumpSkillRuntime =
         this.jumpSkillApi?.createRuntime?.() ?? null;
+      this.interruptionApi =
+        global.MapleFlyInterruptionV14B ?? null;
+      this.interruptionState = null;
+      this.interruptionHistory =
+        this.interruptionApi?.createHistory?.() ?? null;
+      this.interruptionLastDecisionStep = null;
+      this.interruptionDecisionStep = null;
+      this.interruptionAttackAccept = false;
+      this.interruptionJumpAccept = false;
+      this.interruptionPreviousDidJump = false;
+      this.interruptionPreviousDidAttack = false;
       this.skillConfigured =
         !(this.skillState ||
           this.attackSkillState ||
@@ -110,6 +121,7 @@
       this.attackSkillDecisionStep = null;
       this.jumpSkillAction = "WAIT";
       this.jumpSkillProbability = 0;
+      this.jumpSkillWaitProbability = 0;
       this.jumpSkillDecisionStep = null;
       this.nextJumpSkillStep = 0;
       this.playerGrounded = true;
@@ -165,13 +177,77 @@
       });
     }
 
-    load() {
+    async load() {
       if (this.ready || this.loading) {
         return;
       }
 
       this.loading = true;
       this.setStatus("LOADING");
+      this.setProgress("v14C interruption candidate 확인 중");
+      this.render();
+
+      if (
+        this.skillState &&
+        this.attackSkillState &&
+        this.jumpSkillState
+      ) {
+        if (!this.interruptionApi) {
+          this.fail("v14C interruption runtime bundle missing");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "./src/brain/fly-interruption-v14b-candidate.json",
+            { cache: "no-store" },
+          );
+          if (!response.ok) {
+            throw new Error(
+              "candidate HTTP " + response.status,
+            );
+          }
+          const candidate = await response.json();
+          if (
+            candidate.status !==
+              "V14C_VALIDATED_CANDIDATE_NOT_DEPLOYED" ||
+            candidate.source?.runId !== 35798458282 ||
+            candidate.validation?.runId !== 35799237521 ||
+            candidate.historyFrames !== 12 ||
+            candidate.featureCount !== 96 ||
+            candidate.policies?.attack?.weights?.length !== 96 ||
+            candidate.policies?.jump?.weights?.length !== 96
+          ) {
+            throw new Error(
+              "v14C candidate provenance mismatch",
+            );
+          }
+
+          this.interruptionState = {
+            attack: {
+              bias: candidate.policies.attack.bias,
+              weights: Float64Array.from(
+                candidate.policies.attack.weights,
+              ),
+            },
+            jump: {
+              bias: candidate.policies.jump.bias,
+              weights: Float64Array.from(
+                candidate.policies.jump.weights,
+              ),
+            },
+          };
+          this.interruptionHistory =
+            this.interruptionApi.createHistory();
+        } catch (error) {
+          this.fail(
+            "v14C candidate load failed: " +
+              (error?.message ?? error),
+          );
+          return;
+        }
+      }
+
       this.setProgress("Worker 시작 중 · 약 58MB 다운로드 예정");
       this.worker = new Worker("./src/brain/fly-worker.js");
 
@@ -382,8 +458,10 @@
           );
           this.jumpSkillAction = "WAIT";
           this.jumpSkillProbability = 0;
+          this.jumpSkillWaitProbability = 0;
           this.jumpSkillDecisionStep = null;
           this.nextJumpSkillStep = 0;
+          this.resetInterruptionRuntime();
           this.setStatus("FLY SKILL");
           this.setProgress(
             "Fly #001 LIVE · learned movement + v10F ATTACK + v11H2 JUMP",
@@ -804,13 +882,27 @@
       this.skillScore = 0;
       this.attackSkillAction = "WAIT";
       this.attackSkillProbability = 0;
+      this.attackSkillDecisionStep = null;
       this.jumpSkillApi?.resetRuntime?.(
         this.jumpSkillRuntime,
       );
       this.jumpSkillAction = "WAIT";
       this.jumpSkillProbability = 0;
+      this.jumpSkillWaitProbability = 0;
       this.jumpSkillDecisionStep = null;
       this.nextJumpSkillStep = 0;
+      this.resetInterruptionRuntime();
+    }
+
+    resetInterruptionRuntime() {
+      this.interruptionHistory =
+        this.interruptionApi?.createHistory?.() ?? null;
+      this.interruptionLastDecisionStep = null;
+      this.interruptionDecisionStep = null;
+      this.interruptionAttackAccept = false;
+      this.interruptionJumpAccept = false;
+      this.interruptionPreviousDidJump = false;
+      this.interruptionPreviousDidAttack = false;
     }
 
     startSkillCalibration() {
@@ -1115,8 +1207,72 @@
         this.jumpSkillAction = decision.action;
         this.jumpSkillProbability =
           decision.jumpProbability;
+        this.jumpSkillWaitProbability =
+          decision.waitProbability;
         this.jumpSkillDecisionStep = endStep;
       }
+    }
+
+    evaluateInterruption(decisionStep) {
+      if (
+        !this.interruptionApi ||
+        !this.interruptionState ||
+        !this.interruptionHistory ||
+        this.attackSkillDecisionStep !== decisionStep ||
+        this.jumpSkillDecisionStep !== decisionStep ||
+        this.interruptionLastDecisionStep === decisionStep
+      ) {
+        return false;
+      }
+
+      const frame = this.interruptionApi.makeFrame(
+        Math.abs(
+          Math.tanh(Number(this.skillScore) || 0),
+        ),
+        this.attackSkillProbability,
+        this.jumpSkillProbability,
+        this.jumpSkillWaitProbability,
+        this.interruptionPreviousDidJump,
+        this.interruptionPreviousDidAttack,
+      );
+      this.interruptionApi.pushFrame(
+        this.interruptionHistory,
+        frame,
+      );
+      const feature =
+        this.interruptionApi.concatHistory(
+          this.interruptionHistory,
+        );
+
+      const now =
+        decisionStep * DECODER.brainStepMs;
+      const jumpProposal =
+        this.jumpSkillAction === "JUMP" &&
+        this.playerGrounded &&
+        decisionStep >= this.nextJumpSkillStep;
+      const attackProposal =
+        this.attackSkillAction === "ATTACK" &&
+        now >= this.nextAttackAt;
+
+      this.interruptionJumpAccept = jumpProposal
+        ? this.interruptionApi.choose(
+            this.interruptionState.jump,
+            feature,
+            Math.random,
+            true,
+          ).accept
+        : false;
+      this.interruptionAttackAccept = attackProposal
+        ? this.interruptionApi.choose(
+            this.interruptionState.attack,
+            feature,
+            Math.random,
+            true,
+          ).accept
+        : false;
+      this.interruptionDecisionStep = decisionStep;
+      this.interruptionLastDecisionStep = decisionStep;
+      return true;
     }
 
     rate(name) {
@@ -1205,6 +1361,13 @@
       let jump = false;
       let attack = false;
       let potion = false;
+
+      if (
+        this.interruptionState &&
+        this.skillPhase === "LIVE"
+      ) {
+        this.evaluateInterruption(decisionStep);
+      }
       let up = false;
       let down = false;
 
@@ -1216,6 +1379,8 @@
         if (
           this.jumpSkillAction === "JUMP" &&
           decisionStep === this.jumpSkillDecisionStep &&
+          decisionStep === this.interruptionDecisionStep &&
+          this.interruptionJumpAccept &&
           this.playerGrounded &&
           decisionStep >= this.nextJumpSkillStep
         ) {
@@ -1246,6 +1411,8 @@
         if (
           this.attackSkillAction === "ATTACK" &&
           decisionStep === this.attackSkillDecisionStep &&
+          decisionStep === this.interruptionDecisionStep &&
+          this.interruptionAttackAccept &&
           now >= this.nextAttackAt
         ) {
           attack = true;
@@ -1281,6 +1448,13 @@
         flex - extend >= DECODER.climbMarginHz
       ) {
         down = true;
+      }
+
+      if (
+        this.interruptionDecisionStep === decisionStep
+      ) {
+        this.interruptionPreviousDidJump = jump;
+        this.interruptionPreviousDidAttack = attack;
       }
 
       let label = "IDLE";
@@ -1335,6 +1509,10 @@
             this.jumpSkillAction,
           jumpSkillProbability:
             this.jumpSkillProbability,
+          interruptionAttackAccept:
+            this.interruptionAttackAccept,
+          interruptionJumpAccept:
+            this.interruptionJumpAccept,
         },
       });
     }
