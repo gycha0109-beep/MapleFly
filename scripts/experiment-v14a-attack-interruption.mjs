@@ -9,7 +9,8 @@ import {
 } from "../src/headless/connectome-runtime.mjs";
 import "../src/brain/fly-skill-v7.js";
 import "../src/brain/fly-skill-v10-attack.js";
-import "../src/brain/fly-skill-v11h2-jump.js";\nimport "../src/brain/fly-interruption-v14.js";
+import "../src/brain/fly-skill-v11h2-jump.js";
+import "../src/brain/fly-interruption-v14.js";
 
 const STEP_SECONDS = 0.02;
 const SETTLE_STEPS = 26;
