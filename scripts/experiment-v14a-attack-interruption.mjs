@@ -62,7 +62,7 @@ const GATE = Object.freeze({
   attackHitPrecisionMin: 0.50,
 });
 
-const const movementApi = globalThis.MapleFlySkillV7;
+const movementApi = globalThis.MapleFlySkillV7;
 const movementSkill = movementApi.BUNDLED_STATE;
 const attackApi = globalThis.MapleFlyAttackSkillV10;
 const attackSkill = attackApi.BUNDLED_STATE;
