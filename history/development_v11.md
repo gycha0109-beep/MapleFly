@@ -2457,3 +2457,279 @@ sample bin
 
 선택 representation으로 mixed-context reward-only JUMP learner Phase G3를 설계한다.
 기존 v11F LC4 JUMP weights는 재사용하지 않는다.
+
+
+# Phase G3 — mixed-context reward-only JUMP learning preregistration
+
+G2B PASS에 따라 policy input representation은 CONCAT4로 고정한다.
+
+중요:
+
+G2/G2B의 context classifier weights는 절대 policy에 복사하지 않는다.
+G3는 action/outcome babbling으로 처음부터 새 policy를 학습한다.
+
+## frozen sensory and brain
+
+~~~text
+MaleCNS:
+  alexitonis/fly.ai
+  95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+movement:
+  frozen v7
+
+target sensory:
+  LC10a
+  LPLC1
+  LPLC2
+  target LC4 when distance < 175 px
+
+obstacle sensory:
+  same-side LC4
+  radius 280 px
+
+shared LC4:
+  max(target LC4, obstacle LC4)
+~~~
+
+## policy input
+
+최근 4개 연속 5-step DN window:
+
+~~~text
+window feature:
+  clamp((currentHz-baselineHz)/50,-1,1)
+
+policy feature:
+  CONCAT4
+  4 x 1316 = 5264 dimensions
+  history = 0.4 seconds
+~~~
+
+policy input 금지:
+
+~~~text
+context identity
+obstacle flag
+target flag
+distance
+coordinates
+collision state
+clearability
+correct timing
+side
+seed
+sample bin
+reward before action
+~~~
+
+## practice curriculum
+
+3 cohorts:
+
+~~~text
+1601000
+1611000
+1621000
+~~~
+
+각 cohort 96 episodes.
+
+각 cohort는:
+
+~~~text
+48 OBSTACLE
+48 TARGET_ONLY
+~~~
+
+를 포함하며 ordering은 fixed seeded shuffle로 섞는다.
+
+source start distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+각 episode의 intervention window:
+
+~~~text
+uniform integer 1..10
+~~~
+
+각 episode의 intervention action:
+
+~~~text
+WAIT or JUMP
+50/50 seeded random
+~~~
+
+intervention window와 action은 sensory state와 context를 읽지 않고 미리 결정한다.
+
+한 episode에는 intervention action을 한 번만 허용한다.
+JUMP intervention은 grounded/cooldown available일 때만 실제 actuation된다.
+그 뒤 추가 JUMP teacher action은 없다.
+
+## reward / desirable outcome
+
+trainer는 game outcome과 action cost만 사용한다.
+
+OBSTACLE:
+
+~~~text
+CLEAR   reward +1
+TIMEOUT reward -1
+~~~
+
+TARGET_ONLY:
+
+~~~text
+TARGET reached +1
+actual JUMP cost -1
+timeout -1
+~~~
+
+binary desirable label:
+
+~~~text
+reward > 0
+~~~
+
+즉:
+
+- obstacle에서 실제로 넘은 JUMP는 positive가 될 수 있다.
+- obstacle WAIT 또는 잘못된 JUMP는 실제 outcome에 따라 negative.
+- target-only WAIT + reach는 positive.
+- target-only unnecessary JUMP는 reward 0 이하이므로 negative.
+
+context identity는 reward 계산에만 사용하며 policy feature에는 들어가지 않는다.
+
+## feature reduction
+
+practice CONCAT4 5264 feature에서 label/action/reward를 보지 않고
+unlabeled variance 상위 256 feature만 선택한다.
+
+선택된 slot은 frozen한다.
+
+각 slot은:
+
+~~~text
+temporal window index
+DN relative index
+~~~
+
+만 의미한다.
+
+## action-value learners
+
+WAIT와 JUMP 각각 독립 class-balanced logistic model:
+
+~~~text
+P(desirable | feature, WAIT)
+P(desirable | feature, JUMP)
+~~~
+
+standardization은 practice data만 사용.
+
+~~~text
+epochs 300
+LR 0.03
+L2 0.001
+threshold 0.5
+~~~
+
+practice support gate:
+
+~~~text
+WAIT positive >= 24
+WAIT negative >= 24
+JUMP positive >= 12
+JUMP negative >= 24
+~~~
+
+support 미달이면 scientific FAIL이며 post-result resampling/tuning하지 않는다.
+
+## deployment decision rule
+
+available state에서:
+
+~~~text
+jumpCandidate =
+  P_JUMP >= 0.5
+  AND P_JUMP > P_WAIT
+~~~
+
+JUMP는 jumpCandidate가 2개 연속 5-step decision에서 유지될 때만 actuation.
+
+~~~text
+positive persistence = 2
+real cooldown = 38 brain steps ~= 750 ms
+airborne/cooldown unavailable:
+  probabilities may be observed
+  positive streak resets to 0
+after actual JUMP:
+  positive streak resets to 0
+~~~
+
+그 외 WAIT.
+
+## final unseen evaluation
+
+seeds:
+
+~~~text
+1651000
+1661000
+1671000
+~~~
+
+각 run:
+
+~~~text
+32 OBSTACLE FULL
+32 OBSTACLE_CUE_OFF
+32 DN_SHUFFLED
+16 TARGET_ONLY
+~~~
+
+distances:
+
+~~~text
+155 / 195 / 235 / 275 px
+~~~
+
+OBSTACLE_CUE_OFF:
+target sensory와 target LC4는 유지하고 obstacle LC4만 제거한다.
+
+DN_SHUFFLED:
+policy input의 selected temporal-DN identity를 fixed permutation한다.
+
+TARGET_ONLY:
+shared target sensory는 그대로이며 obstacle은 없다.
+
+## frozen final gate
+
+~~~text
+mean OBSTACLE FULL clear       >= 75%
+every FULL run                 >= 65%
+FULL - OBSTACLE_CUE_OFF        >= 25pp
+FULL - DN_SHUFFLED             >= 20pp
+FULL timeout                   <= 20%
+FULL mean actual jumps         <= 1.75
+
+TARGET_ONLY reach              >= 85%
+TARGET_ONLY any-jump episodes  <= 30%
+~~~
+
+gate는 결과 후 낮추지 않는다.
+
+## PASS 이후
+
+G3 PASS 후에만:
+
+1. learned mixed-context JUMP candidate를 freeze
+2. browser bundle equivalence
+3. v7 movement regression
+4. v10F ATTACK regression
+5. combined browser deployment
+
+순서로 진행한다.
