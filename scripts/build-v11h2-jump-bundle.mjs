@@ -31,6 +31,31 @@ if (
   throw new Error("v11H2 frozen candidate contract mismatch");
 }
 
+const runtimeDnIndices = [
+  ...new Set(
+    c.selectedTemporalSlots.map(
+      (slot) => slot.dnIndex,
+    ),
+  ),
+].sort((a, b) => a - b);
+const runtimeSlotByDn = new Map(
+  runtimeDnIndices.map((dnIndex, slot) => [
+    dnIndex,
+    slot,
+  ]),
+);
+const selectedSparseSlots =
+  c.selectedTemporalSlots.map((slot) => {
+    const sparseSlot =
+      runtimeSlotByDn.get(slot.dnIndex);
+    if (!Number.isInteger(sparseSlot)) {
+      throw new Error(
+        "v11H2 runtime sparse slot missing",
+      );
+    }
+    return sparseSlot;
+  });
+
 const state = {
   schema: "maplefly.fly-jump-skill.v11h2.1",
   flyId: "Fly #001",
@@ -42,6 +67,9 @@ const state = {
   temporalWindows: source.representation.historyWindows,
   rawFeatureCount: source.representation.rawFeatureCount,
   selectedFeatureCount: source.representation.selectedFeatureCount,
+  sparseFeatureCount: runtimeDnIndices.length,
+  runtimeDnIndices,
+  selectedSparseSlots,
   threshold: c.threshold,
   persistenceWindows: c.persistenceWindows,
   cooldownBrainSteps: source.policy.cooldownSteps,
@@ -84,6 +112,13 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
       state.temporalWindows === 4 &&
       state.rawFeatureCount === 5264 &&
       state.selectedFeatureCount === 256 &&
+      state.sparseFeatureCount === 96 &&
+      Array.isArray(state.runtimeDnIndices) &&
+      state.runtimeDnIndices.length ===
+        state.sparseFeatureCount &&
+      Array.isArray(state.selectedSparseSlots) &&
+      state.selectedSparseSlots.length ===
+        state.selectedFeatureCount &&
       state.threshold === 0.5 &&
       state.persistenceWindows === 2 &&
       state.cooldownBrainSteps === 38 &&
@@ -189,6 +224,43 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
     return selected;
   }
 
+  function selectedFromSparseHistory(
+    history,
+    state = BUNDLED_STATE,
+  ) {
+    if (
+      !Array.isArray(history) ||
+      history.length !== state.temporalWindows
+    ) {
+      throw new Error(
+        "v11H2 sparse history window count mismatch",
+      );
+    }
+    const selected = new Float64Array(
+      state.selectedFeatureCount,
+    );
+    for (
+      let slot = 0;
+      slot < state.selectedFeatureCount;
+      slot += 1
+    ) {
+      const temporal =
+        state.selectedTemporalSlots[slot];
+      const window = history[temporal.window];
+      if (
+        !window ||
+        window.length !== state.sparseFeatureCount
+      ) {
+        throw new Error(
+          "v11H2 sparse history length mismatch",
+        );
+      }
+      selected[slot] =
+        window[state.selectedSparseSlots[slot]];
+    }
+    return selected;
+  }
+
   function standardizeSelected(
     selected,
     state = BUNDLED_STATE,
@@ -270,6 +342,36 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
     };
   }
 
+  function evaluateSparseHistory(
+    history,
+    state = BUNDLED_STATE,
+  ) {
+    const selected =
+      selectedFromSparseHistory(history, state);
+    const standardized =
+      standardizeSelected(selected, state);
+    const waitScore =
+      scoreStandardized(
+        standardized,
+        state.waitWeights,
+        state.waitBias,
+      );
+    const jumpScore =
+      scoreStandardized(
+        standardized,
+        state.jumpWeights,
+        state.jumpBias,
+      );
+    return {
+      selected,
+      standardized,
+      waitScore,
+      jumpScore,
+      waitProbability: sigmoid(waitScore),
+      jumpProbability: sigmoid(jumpScore),
+    };
+  }
+
   function decideEvaluation(
     evaluation,
     available,
@@ -323,6 +425,58 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
     );
   }
 
+  function observeSparseWindow(
+    sparseFeature,
+    available,
+    state = BUNDLED_STATE,
+    runtime = createRuntime(),
+  ) {
+    if (
+      !sparseFeature ||
+      sparseFeature.length !==
+        state.sparseFeatureCount
+    ) {
+      throw new Error(
+        "v11H2 sparse window feature length mismatch",
+      );
+    }
+    runtime.history.push(
+      Float64Array.from(sparseFeature),
+    );
+    if (
+      runtime.history.length >
+      state.temporalWindows
+    ) {
+      runtime.history.shift();
+    }
+    if (
+      runtime.history.length <
+      state.temporalWindows
+    ) {
+      runtime.positiveStreak = 0;
+      return {
+        action: "WAIT",
+        ready: false,
+        waitProbability: null,
+        jumpProbability: null,
+        positive: false,
+        positiveStreak: 0,
+      };
+    }
+    return {
+      ready: true,
+      ...decideEvaluation(
+        evaluateSparseHistory(
+          runtime.history,
+          state,
+        ),
+        Boolean(available),
+        state,
+        runtime,
+      ),
+    };
+  }
+
   function observeWindow(
     windowFeature,
     available,
@@ -360,6 +514,9 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
   global.MapleFlyJumpSkillV11H2 =
     Object.freeze({
       BUNDLED_STATE,
+      loadState() {
+        return BUNDLED_STATE;
+      },
       validState,
       sigmoid,
       createRuntime,
@@ -367,10 +524,13 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
       onActuatedJump,
       pushWindow,
       selectedFromHistory,
+      selectedFromSparseHistory,
       standardizeSelected,
       evaluateHistory,
+      evaluateSparseHistory,
       decideEvaluation,
       chooseHistory,
+      observeSparseWindow,
       observeWindow,
     });
 })(globalThis);
@@ -379,5 +539,5 @@ const code = `(function attachMapleFlyJumpSkillV11H2(global) {
 fs.writeFileSync(OUT_PATH, code);
 console.log(
   "V11H2-JUMP-BUNDLE-BUILD=PASS " +
-    "selected=256 windows=4 obstacleLC4=false",
+    "selected=256 sparse=96 windows=4 obstacleLC4=false",
 );
