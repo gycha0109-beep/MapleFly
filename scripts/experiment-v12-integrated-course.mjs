@@ -390,12 +390,18 @@ async function initializeEpisode(connectome, dnSlot, episode) {
     nextAttackStep: 0,
     targetHp: TARGET_HP,
     actualJumps: 0,
+    preClearJumps: 0,
+    postClearJumps: 0,
     actualAttacks: 0,
     hits: 0,
     whiffs: 0,
     preClearAttacks: 0,
     airborneAttacks: 0,
     jumpBeforeClear: false,
+    firstPostClearJumpStep: null,
+    firstAirborneAttackStep: null,
+    jumpEvents: [],
+    attackEvents: [],
     firstClearStep: null,
     firstHitStep: null,
     killStep: null,
@@ -459,12 +465,22 @@ function updateAttackWindow(state, dnSlot, brainStep) {
   }
 
   const cleared = obstacleCleared(state);
+  const airborne = !state.grounded;
+  const targetDistance = Math.abs(
+    state.targetX - (state.playerX + PLAYER_WIDTH / 2),
+  );
   state.actualAttacks += 1;
   state.nextAttackStep = brainStep + ATTACK_COOLDOWN_STEPS;
   if (!cleared) state.preClearAttacks += 1;
-  if (!state.grounded) state.airborneAttacks += 1;
+  if (airborne) {
+    state.airborneAttacks += 1;
+    if (state.firstAirborneAttackStep === null) {
+      state.firstAirborneAttackStep = brainStep;
+    }
+  }
 
-  if (attackWouldHit(state)) {
+  const hit = attackWouldHit(state);
+  if (hit) {
     state.hits += 1;
     state.targetHp = Math.max(0, state.targetHp - ATTACK_DAMAGE);
     if (state.firstHitStep === null) state.firstHitStep = brainStep;
@@ -474,6 +490,17 @@ function updateAttackWindow(state, dnSlot, brainStep) {
   } else {
     state.whiffs += 1;
   }
+
+  state.attackEvents.push({
+    step: brainStep,
+    cleared,
+    airborne,
+    hit,
+    playerX: state.playerX,
+    playerY: state.playerY,
+    targetDistance,
+    targetHpAfter: state.targetHp,
+  });
 }
 
 function updateJumpWindow(state, dnSlot, brainStep) {
@@ -499,7 +526,25 @@ function updateJumpWindow(state, dnSlot, brainStep) {
 
   if (decision.action !== "JUMP" || !available) return;
 
-  if (!obstacleCleared(state)) state.jumpBeforeClear = true;
+  const cleared = obstacleCleared(state);
+  if (!cleared) {
+    state.jumpBeforeClear = true;
+    state.preClearJumps += 1;
+  } else {
+    state.postClearJumps += 1;
+    if (state.firstPostClearJumpStep === null) {
+      state.firstPostClearJumpStep = brainStep;
+    }
+  }
+  state.jumpEvents.push({
+    step: brainStep,
+    cleared,
+    playerX: state.playerX,
+    playerY: state.playerY,
+    targetDistance: Math.abs(
+      state.targetX - (state.playerX + PLAYER_WIDTH / 2),
+    ),
+  });
   state.vy = -JUMP_VELOCITY;
   state.grounded = false;
   state.nextJumpStep = brainStep + jumpSkill.cooldownBrainSteps;
@@ -545,9 +590,13 @@ function summarizeEpisode(state, episode, liveSteps, timeout) {
     clear,
     jumpBeforeClear: state.jumpBeforeClear,
     actualJumps: state.actualJumps,
+    preClearJumps: state.preClearJumps,
+    postClearJumps: state.postClearJumps,
+    firstPostClearJumpStep: state.firstPostClearJumpStep,
     actualAttacks: state.actualAttacks,
     preClearAttacks: state.preClearAttacks,
     airborneAttacks: state.airborneAttacks,
+    firstAirborneAttackStep: state.firstAirborneAttackStep,
     hits: state.hits,
     whiffs: state.whiffs,
     kill,
@@ -558,6 +607,8 @@ function summarizeEpisode(state, episode, liveSteps, timeout) {
     killStep: state.killStep,
     liveSteps,
     finalTargetHp: state.targetHp,
+    jumpEvents: state.jumpEvents,
+    attackEvents: state.attackEvents,
   };
 }
 
@@ -683,6 +734,11 @@ async function main() {
     targetKillRate: mean(allRows.map((row) => Number(row.kill))),
     timeoutRate: mean(allRows.map((row) => Number(row.timeout))),
     meanActualJumps: mean(allRows.map((row) => row.actualJumps)),
+    meanPreClearJumps: mean(allRows.map((row) => row.preClearJumps)),
+    meanPostClearJumps: mean(allRows.map((row) => row.postClearJumps)),
+    postClearJumpEpisodeRate: mean(
+      allRows.map((row) => Number(row.postClearJumps > 0)),
+    ),
     jumpBeforeClearEpisodeRate: mean(
       allRows.map((row) => Number(row.jumpBeforeClear)),
     ),
@@ -764,7 +820,10 @@ async function main() {
       (summary.airborneAttackEpisodeRate * 100).toFixed(1) +
       "% hitPrecision=" +
       (summary.attackHitPrecision * 100).toFixed(1) +
-      "%",
+      "% postClearJumpEp=" +
+      (summary.postClearJumpEpisodeRate * 100).toFixed(1) +
+      "% postClearJumps=" +
+      summary.meanPostClearJumps.toFixed(3),
   );
 
   if (!pass) process.exitCode = 1;
