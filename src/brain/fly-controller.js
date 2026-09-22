@@ -626,8 +626,6 @@
 
       const playerCenterX =
         observation.player.x + observation.player.width / 2;
-      const playerCenterY =
-        observation.player.y + observation.player.height / 2;
 
       const drive = {
         SNta_L: observation.player.grounded ? 0.05 : 0,
@@ -715,8 +713,7 @@
 
       for (const mushroom of living) {
         const dx = mushroom.x - playerCenterX;
-        const dy = mushroom.y - 32 - playerCenterY;
-        const distance = Math.hypot(dx, dy);
+        const distance = Math.abs(dx);
 
         if (distance < bestDistance) {
           bestDistance = distance;

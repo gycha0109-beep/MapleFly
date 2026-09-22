@@ -47,12 +47,14 @@ for (const token of [
   '"LC16"',
   '"LC22"',
   '"LPLC4"',
+  "const distance = Math.abs(dx);",
 ]) {
   if (!controller.includes(token)) {
     throw new Error("controller missing " + token);
   }
 }
 if (
+  controller.includes("Math.hypot(dx, dy)") ||
   controller.includes(
     "const key = `LC4_${obstacleSide}`",
   )
