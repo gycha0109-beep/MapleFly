@@ -1,0 +1,121 @@
+name: Freeze v11G3 Candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/freeze-v11g3-candidate.yml"
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download authoritative G3 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf /tmp/v11g3
+          mkdir -p /tmp/v11g3
+          gh run download 35726010847 \
+            --repo "${GITHUB_REPOSITORY}" \
+            --name "maplefly-v11g3-mixed-reward-35726010847" \
+            --dir /tmp/v11g3
+          test -f /tmp/v11g3/experiment_v11g3.json
+
+      - name: Freeze exact candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+
+          const source = JSON.parse(
+            fs.readFileSync(
+              "/tmp/v11g3/experiment_v11g3.json",
+              "utf8"
+            )
+          );
+
+          if (source.summary.gate !== false) {
+            throw new Error("expected authoritative G3 scientific FAIL");
+          }
+          if (
+            source.summary.meanFullClearRate !== 1 ||
+            source.summary.targetOnlyAnyJumpRate !== 0.3125
+          ) {
+            throw new Error("authoritative G3 summary mismatch");
+          }
+
+          const frozen = {
+            schema: "maplefly.fly-jump-candidate.v11g3.1",
+            version: "v11g3-after-run-35726010847",
+            status: "frozen-for-one-shot-replication-only",
+            provenance: {
+              runId: 35726010847,
+              headSha:
+                "72628f3a0d0ac8022598c1804c70bfe8ef2e21e8",
+              artifactId: 10694360455,
+              artifactDigest:
+                "cfe9a1efb444759dc4bb757e77384534ca919001b5bc647c217d57d242c17548",
+              receiptSha:
+                "5b157e9bf6d665967550e036086e863bd16b734a"
+            },
+            brain: {
+              repository: source.meta.brainRepository,
+              commit: source.meta.brainCommit
+            },
+            movementVersion: source.meta.movementVersion,
+            representation: source.meta.representation,
+            policy: source.meta.policy,
+            candidate: source.candidate
+          };
+
+          fs.mkdirSync("src/brain", { recursive: true });
+          fs.writeFileSync(
+            "src/brain/fly-skill-v11g3-jump-candidate.json",
+            JSON.stringify(frozen, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Verify frozen candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const x = JSON.parse(
+            fs.readFileSync(
+              "src/brain/fly-skill-v11g3-jump-candidate.json",
+              "utf8"
+            )
+          );
+          if (x.candidate.selectedIndices.length !== 256) {
+            throw new Error("selected feature count mismatch");
+          }
+          if (x.candidate.threshold !== 0.5) {
+            throw new Error("threshold mismatch");
+          }
+          if (x.candidate.persistenceWindows !== 2) {
+            throw new Error("persistence mismatch");
+          }
+          if (x.policy.cooldownSteps !== 38) {
+            throw new Error("cooldown mismatch");
+          }
+          console.log(
+            "V11G3-CANDIDATE-FREEZE=PASS selected=256 threshold=0.5 persistence=2 cooldown=38"
+          );
+          NODE
+
+      - name: Commit frozen candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/brain/fly-skill-v11g3-jump-candidate.json
+          git commit -m "ci(learning): freeze v11G3 candidate from run 35726010847" || exit 0
+          git push
