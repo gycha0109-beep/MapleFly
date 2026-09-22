@@ -25,6 +25,363 @@
   "temporalWindows": 4,
   "rawFeatureCount": 5264,
   "selectedFeatureCount": 256,
+  "sparseFeatureCount": 96,
+  "runtimeDnIndices": [
+    0,
+    1,
+    19,
+    20,
+    38,
+    42,
+    46,
+    48,
+    52,
+    54,
+    61,
+    64,
+    66,
+    73,
+    99,
+    105,
+    112,
+    131,
+    135,
+    136,
+    162,
+    174,
+    176,
+    179,
+    195,
+    202,
+    231,
+    246,
+    263,
+    265,
+    286,
+    291,
+    313,
+    391,
+    405,
+    417,
+    448,
+    455,
+    462,
+    464,
+    472,
+    491,
+    495,
+    511,
+    517,
+    534,
+    535,
+    548,
+    571,
+    599,
+    629,
+    638,
+    645,
+    654,
+    655,
+    657,
+    669,
+    711,
+    726,
+    787,
+    801,
+    871,
+    876,
+    877,
+    888,
+    890,
+    892,
+    893,
+    896,
+    897,
+    906,
+    913,
+    934,
+    940,
+    941,
+    947,
+    960,
+    1016,
+    1018,
+    1066,
+    1068,
+    1076,
+    1079,
+    1103,
+    1140,
+    1142,
+    1165,
+    1187,
+    1212,
+    1215,
+    1227,
+    1247,
+    1268,
+    1283,
+    1287,
+    1293
+  ],
+  "selectedSparseSlots": [
+    22,
+    22,
+    22,
+    22,
+    18,
+    40,
+    18,
+    18,
+    40,
+    40,
+    39,
+    87,
+    25,
+    39,
+    39,
+    14,
+    40,
+    18,
+    92,
+    28,
+    14,
+    30,
+    39,
+    87,
+    14,
+    95,
+    30,
+    23,
+    87,
+    95,
+    71,
+    57,
+    57,
+    82,
+    95,
+    23,
+    59,
+    57,
+    30,
+    30,
+    28,
+    59,
+    14,
+    43,
+    87,
+    71,
+    67,
+    25,
+    59,
+    82,
+    80,
+    91,
+    67,
+    28,
+    57,
+    43,
+    91,
+    68,
+    80,
+    91,
+    58,
+    28,
+    23,
+    59,
+    92,
+    58,
+    82,
+    75,
+    43,
+    93,
+    68,
+    71,
+    80,
+    68,
+    68,
+    67,
+    95,
+    74,
+    82,
+    32,
+    72,
+    55,
+    20,
+    58,
+    52,
+    32,
+    80,
+    91,
+    7,
+    85,
+    72,
+    75,
+    93,
+    93,
+    67,
+    58,
+    93,
+    81,
+    92,
+    74,
+    53,
+    71,
+    44,
+    86,
+    55,
+    7,
+    85,
+    74,
+    43,
+    75,
+    74,
+    86,
+    75,
+    86,
+    86,
+    35,
+    45,
+    25,
+    23,
+    35,
+    44,
+    20,
+    66,
+    3,
+    66,
+    0,
+    66,
+    51,
+    3,
+    89,
+    79,
+    72,
+    3,
+    7,
+    88,
+    41,
+    64,
+    11,
+    8,
+    51,
+    83,
+    20,
+    85,
+    44,
+    5,
+    78,
+    44,
+    11,
+    42,
+    17,
+    7,
+    66,
+    5,
+    42,
+    83,
+    77,
+    35,
+    4,
+    4,
+    63,
+    63,
+    72,
+    78,
+    25,
+    41,
+    20,
+    52,
+    51,
+    38,
+    79,
+    49,
+    1,
+    45,
+    54,
+    1,
+    27,
+    32,
+    37,
+    16,
+    70,
+    88,
+    10,
+    64,
+    76,
+    33,
+    50,
+    45,
+    92,
+    90,
+    65,
+    46,
+    88,
+    62,
+    11,
+    35,
+    29,
+    88,
+    12,
+    61,
+    26,
+    70,
+    52,
+    13,
+    17,
+    65,
+    9,
+    79,
+    17,
+    63,
+    90,
+    79,
+    41,
+    17,
+    51,
+    36,
+    5,
+    73,
+    45,
+    21,
+    52,
+    62,
+    16,
+    32,
+    64,
+    34,
+    84,
+    15,
+    63,
+    61,
+    47,
+    2,
+    90,
+    83,
+    31,
+    50,
+    6,
+    60,
+    61,
+    8,
+    19,
+    2,
+    29,
+    94,
+    56,
+    85,
+    6,
+    84,
+    69,
+    89,
+    36,
+    24,
+    65,
+    41,
+    48,
+    53,
+    10
+  ],
   "threshold": 0.5,
   "persistenceWindows": 2,
   "cooldownBrainSteps": 38,
@@ -2641,6 +2998,13 @@
       state.temporalWindows === 4 &&
       state.rawFeatureCount === 5264 &&
       state.selectedFeatureCount === 256 &&
+      state.sparseFeatureCount === 96 &&
+      Array.isArray(state.runtimeDnIndices) &&
+      state.runtimeDnIndices.length ===
+        state.sparseFeatureCount &&
+      Array.isArray(state.selectedSparseSlots) &&
+      state.selectedSparseSlots.length ===
+        state.selectedFeatureCount &&
       state.threshold === 0.5 &&
       state.persistenceWindows === 2 &&
       state.cooldownBrainSteps === 38 &&
@@ -2746,6 +3110,43 @@
     return selected;
   }
 
+  function selectedFromSparseHistory(
+    history,
+    state = BUNDLED_STATE,
+  ) {
+    if (
+      !Array.isArray(history) ||
+      history.length !== state.temporalWindows
+    ) {
+      throw new Error(
+        "v11H2 sparse history window count mismatch",
+      );
+    }
+    const selected = new Float64Array(
+      state.selectedFeatureCount,
+    );
+    for (
+      let slot = 0;
+      slot < state.selectedFeatureCount;
+      slot += 1
+    ) {
+      const temporal =
+        state.selectedTemporalSlots[slot];
+      const window = history[temporal.window];
+      if (
+        !window ||
+        window.length !== state.sparseFeatureCount
+      ) {
+        throw new Error(
+          "v11H2 sparse history length mismatch",
+        );
+      }
+      selected[slot] =
+        window[state.selectedSparseSlots[slot]];
+    }
+    return selected;
+  }
+
   function standardizeSelected(
     selected,
     state = BUNDLED_STATE,
@@ -2827,6 +3228,36 @@
     };
   }
 
+  function evaluateSparseHistory(
+    history,
+    state = BUNDLED_STATE,
+  ) {
+    const selected =
+      selectedFromSparseHistory(history, state);
+    const standardized =
+      standardizeSelected(selected, state);
+    const waitScore =
+      scoreStandardized(
+        standardized,
+        state.waitWeights,
+        state.waitBias,
+      );
+    const jumpScore =
+      scoreStandardized(
+        standardized,
+        state.jumpWeights,
+        state.jumpBias,
+      );
+    return {
+      selected,
+      standardized,
+      waitScore,
+      jumpScore,
+      waitProbability: sigmoid(waitScore),
+      jumpProbability: sigmoid(jumpScore),
+    };
+  }
+
   function decideEvaluation(
     evaluation,
     available,
@@ -2880,6 +3311,58 @@
     );
   }
 
+  function observeSparseWindow(
+    sparseFeature,
+    available,
+    state = BUNDLED_STATE,
+    runtime = createRuntime(),
+  ) {
+    if (
+      !sparseFeature ||
+      sparseFeature.length !==
+        state.sparseFeatureCount
+    ) {
+      throw new Error(
+        "v11H2 sparse window feature length mismatch",
+      );
+    }
+    runtime.history.push(
+      Float64Array.from(sparseFeature),
+    );
+    if (
+      runtime.history.length >
+      state.temporalWindows
+    ) {
+      runtime.history.shift();
+    }
+    if (
+      runtime.history.length <
+      state.temporalWindows
+    ) {
+      runtime.positiveStreak = 0;
+      return {
+        action: "WAIT",
+        ready: false,
+        waitProbability: null,
+        jumpProbability: null,
+        positive: false,
+        positiveStreak: 0,
+      };
+    }
+    return {
+      ready: true,
+      ...decideEvaluation(
+        evaluateSparseHistory(
+          runtime.history,
+          state,
+        ),
+        Boolean(available),
+        state,
+        runtime,
+      ),
+    };
+  }
+
   function observeWindow(
     windowFeature,
     available,
@@ -2917,6 +3400,9 @@
   global.MapleFlyJumpSkillV11H2 =
     Object.freeze({
       BUNDLED_STATE,
+      loadState() {
+        return BUNDLED_STATE;
+      },
       validState,
       sigmoid,
       createRuntime,
@@ -2924,10 +3410,13 @@
       onActuatedJump,
       pushWindow,
       selectedFromHistory,
+      selectedFromSparseHistory,
       standardizeSelected,
       evaluateHistory,
+      evaluateSparseHistory,
       decideEvaluation,
       chooseHistory,
+      observeSparseWindow,
       observeWindow,
     });
 })(globalThis);
