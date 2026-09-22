@@ -1,0 +1,41 @@
+{
+  "schema": "maplefly.v11h0-evidence-receipt.1",
+  "runId": 35745831597,
+  "headSha": "8758ae57935c83452f193d22be194cf367f9f36b",
+  "artifact": {
+    "id": 10701519484,
+    "name": "maplefly-v11h0-orthogonal-looming-35745831597",
+    "digest": "sha256:dd125f1051c7ec7808be45ad9a574eb5d38eb8d9f1439ce40f874a1021f8ae42"
+  },
+  "workflowConclusion": "failure",
+  "workflowFailureScope": "receipt git push only; experiment and artifact upload succeeded",
+  "representations": {
+    "CURRENT": {
+      "fullBalancedAccuracy": 0.917,
+      "labelShuffled": 0.464,
+      "dnPermuted": 0.505,
+      "representationGate": true
+    },
+    "MEAN4": {
+      "fullBalancedAccuracy": 0.917,
+      "labelShuffled": 0.526,
+      "dnPermuted": 0.5,
+      "representationGate": true
+    },
+    "DELTA": {
+      "fullBalancedAccuracy": 0.818,
+      "labelShuffled": 0.484,
+      "dnPermuted": 0.51,
+      "representationGate": false
+    },
+    "CONCAT4": {
+      "fullBalancedAccuracy": 0.958,
+      "labelShuffled": 0.521,
+      "dnPermuted": 0.5,
+      "representationGate": true
+    }
+  },
+  "selectedRepresentation": null,
+  "historyGainThreshold": 0.15,
+  "gate": false
+}
