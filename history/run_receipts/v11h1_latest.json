@@ -1,0 +1,50 @@
+{
+  "schema": "maplefly.v11h1-run-receipt.1",
+  "runId": 35748359986,
+  "headSha": "d5f2e2ae8c2cf1f353de2ba7bac231874eff1b4b",
+  "artifact": {
+    "id": 10704475534,
+    "name": "maplefly-v11h1-matched-looming-35748359986",
+    "digest": "sha256:06e5aa6c788ec79c45b135f6e0dce8d2a9c8a7938faa28e82165f7fbad097c7f"
+  },
+  "sensory": {
+    "target": "matched v10F target sensory",
+    "obstacle": [
+      "LC6",
+      "LC16",
+      "LC22",
+      "LPLC4"
+    ],
+    "obstacleUsesLC4": false
+  },
+  "representation": "CURRENT",
+  "perRun": [
+    {
+      "baseSeed": 2111000,
+      "full": 0.96875,
+      "labelShuffled": 0.53125,
+      "dnPermuted": 0.484375
+    },
+    {
+      "baseSeed": 2111100,
+      "full": 0.984375,
+      "labelShuffled": 0.484375,
+      "dnPermuted": 0.5
+    },
+    {
+      "baseSeed": 2111200,
+      "full": 0.984375,
+      "labelShuffled": 0.40625,
+      "dnPermuted": 0.515625
+    }
+  ],
+  "summary": {
+    "full": 0.9791666667,
+    "labelShuffled": 0.4739583333,
+    "dnPermuted": 0.5,
+    "minFull": 0.96875,
+    "fullMinusLabelShuffled": 0.5052083334,
+    "fullMinusDnPermuted": 0.4791666667,
+    "gate": true
+  }
+}
