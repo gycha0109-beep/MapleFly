@@ -1,0 +1,104 @@
+name: Run MapleFly v11G3R Frozen Replication
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v11g3r-frozen-replication.yml"
+      - "scripts/experiment-v11g3r-frozen-replication.mjs"
+      - "src/brain/fly-skill-v11g3-jump-candidate.json"
+      - "src/headless/connectome-runtime.mjs"
+      - "src/brain/fly-skill-v7.js"
+
+permissions:
+  contents: write
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/experiment-v11g3r-frozen-replication.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run one-shot frozen replication
+        run: node scripts/experiment-v11g3r-frozen-replication.mjs
+
+      - name: Upload replication evidence
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11g3r-frozen-replication-${{ github.run_id }}
+          path: results/experiment-v11g3r
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Build replication receipt
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const result = JSON.parse(
+            fs.readFileSync(
+              "results/experiment-v11g3r/experiment_v11g3r.json",
+              "utf8"
+            )
+          );
+          const receipt = {
+            schema: "maplefly.v11g3r-run-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            headSha: process.env.GITHUB_SHA,
+            artifact: {
+              id: process.env.ARTIFACT_ID
+                ? Number(process.env.ARTIFACT_ID)
+                : null,
+              name:
+                "maplefly-v11g3r-frozen-replication-" +
+                process.env.GITHUB_RUN_ID,
+              digest:
+                process.env.ARTIFACT_DIGEST || null
+            },
+            meta: result.meta,
+            summary: result.summary,
+            perRun: result.perRun
+          };
+          fs.mkdirSync(
+            "history/run_receipts",
+            { recursive: true }
+          );
+          fs.writeFileSync(
+            "history/run_receipts/v11g3r_latest.json",
+            JSON.stringify(receipt, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit replication receipt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/run_receipts/v11g3r_latest.json
+          git commit -m "ci(results): record v11G3R run ${GITHUB_RUN_ID}" || exit 0
+          git push
+
+      - name: Enforce technical workflow success
+        run: |
+          test -f results/experiment-v11g3r/experiment_v11g3r.json
+          echo "v11G3R artifact and receipt path verified"
