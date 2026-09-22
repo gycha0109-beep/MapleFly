@@ -1,0 +1,40 @@
+name: Verify v11H2 JUMP Real-Input Equivalence
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11h2-jump-real-input-equivalence.yml"
+      - "scripts/verify-v11h2-jump-real-input-equivalence.mjs"
+      - "src/brain/fly-skill-v11h2-jump.js"
+      - "src/brain/fly-skill-v11h2-jump-candidate.json"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  equivalence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/verify-v11h2-jump-real-input-equivalence.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Verify real MaleCNS input equivalence
+        run: node scripts/verify-v11h2-jump-real-input-equivalence.mjs
