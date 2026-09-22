@@ -1,0 +1,40 @@
+{
+  "schema": "maplefly.v14b-result-receipt.1",
+  "status": "FAIL",
+  "preregistration": {
+    "path": "history/prereg_v14b.md",
+    "commit": "d208c9ef3ab2c674aad8ed17db38b850f38ee4f3"
+  },
+  "authoritativeRun": {
+    "runId": 35798458282,
+    "headSha": "378a6691298d71b0ff2d248f47f6833e233ab01a"
+  },
+  "artifact": {
+    "id": 10725136545,
+    "name": "maplefly-v14b-dual-interruption-35798458282",
+    "digest": "sha256:dda70bdb7476aed75aa0d53535fd82ef4ebdfe7b1807d1775c7bda2ffbd7ee77"
+  },
+  "final": {
+    "episodes": 24,
+    "courseCompletionRate": 1,
+    "minSeedCompletionRate": 1,
+    "obstacleClearRate": 1,
+    "leftObstacleClearRate": 1,
+    "rightObstacleClearRate": 1,
+    "targetKillRate": 1,
+    "timeoutRate": 0,
+    "meanActualJumps": 1.4583333333333333,
+    "postClearJumpEpisodeRate": 0.041666666666666664,
+    "preClearAttackEpisodeRate": 0.08333333333333333,
+    "airborneAttackEpisodeRate": 0.6666666666666666,
+    "airborneAttackActions": 17,
+    "actualAttackActions": 124,
+    "airborneAttackActionFraction": 0.13709677419354838,
+    "attackHitPrecision": 0.5806451612903226
+  },
+  "failedChecks": [
+    "airborneAttackEpisode"
+  ],
+  "deployed": false,
+  "scientificParametersChanged": false
+}
