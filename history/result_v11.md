@@ -839,3 +839,67 @@ G2의 temporal-order shuffle 결과와 함께 보면,
 
 다음 G3는 이 결과를 policy input contract로 고정한다.
 진단용 OBSTACLE/TARGET_ONLY label classifier weights는 재사용하지 않는다.
+
+
+---
+
+## Phase G3 — mixed-context reward-only JUMP FAIL
+
+Workflow:
+
+~~~text
+run      35726010847
+head     72628f3a0d0ac8022598c1804c70bfe8ef2e21e8
+artifact 10694360455
+digest   sha256:cfe9a1efb444759dc4bb757e77384534ca919001b5bc647c217d57d242c17548
+receipt  5b157e9bf6d665967550e036086e863bd16b734a
+~~~
+
+Practice support:
+
+~~~text
+sampled episodes 285 / 288
+
+WAIT positive  72
+WAIT negative  74
+JUMP positive  55
+JUMP negative  84
+
+support gate PASS
+~~~
+
+Final aggregate:
+
+~~~text
+OBSTACLE FULL clear          100.00%
+OBSTACLE_CUE_OFF clear         0.00%
+DN_SHUFFLED clear              0.00%
+minimum FULL run             100.00%
+FULL timeout                   0.00%
+FULL mean actual jumps         1.2708
+
+TARGET_ONLY reach            100.00%
+TARGET_ONLY any-jump          31.25%
+
+GATE                           FAIL
+~~~
+
+Per-run TARGET_ONLY any-jump:
+
+~~~text
+1651000  37.50%  6 / 16
+1661000  18.75%  3 / 16
+1671000  37.50%  6 / 16
+~~~
+
+실패 원인은 사전등록된 TARGET_ONLY any-jump <= 30% gate 하나뿐이다.
+15 / 48 episode에서 jump하여 31.25%였고 gate를 1.25pp 초과했다.
+
+반대로 obstacle 측은 FULL 100%, cue-off 0%, DN-shuffled 0%로
+강한 obstacle-cue 및 DN-identity dependence를 보였다.
+
+TARGET_ONLY false jump의 first-jump step은 80 / 85 / 100 부근에 집중됐다.
+이는 target 접근 후반 shared target-LC4가 강해지는 구간과 일치하는 진단적 패턴이다.
+이 timing 정보는 후속 policy input이나 teacher threshold로 사용하지 않는다.
+
+사전 gate를 낮추거나 threshold/persistence/weights를 결과 후 조정하지 않는다.
