@@ -903,3 +903,58 @@ TARGET_ONLY false jump의 first-jump step은 80 / 85 / 100 부근에 집중됐�
 이 timing 정보는 후속 policy input이나 teacher threshold로 사용하지 않는다.
 
 사전 gate를 낮추거나 threshold/persistence/weights를 결과 후 조정하지 않는다.
+
+
+---
+
+## Phase G3R — frozen one-shot replication FAIL
+
+Workflow:
+
+~~~text
+run      35727937283
+head     eefc5479314f9633fbbf1051189fd3d038f113a5
+artifact 10693759334
+digest   sha256:3b7244e34a32606e6c6a5a7361380fead7b9cc9fa10f31f4032a03de56594ad9
+receipt  58b502e57a9c19e629180d50919c1edadf26589b
+~~~
+
+G3 candidate는 재학습 없이 그대로 사용했다.
+
+Replication aggregate:
+
+~~~text
+OBSTACLE FULL clear          100.00%
+OBSTACLE_CUE_OFF clear         0.00%
+DN_SHUFFLED clear              0.00%
+minimum FULL run             100.00%
+FULL timeout                   0.00%
+FULL mean actual jumps         1.3229
+
+TARGET_ONLY reach            100.00%
+TARGET_ONLY any-jump          31.25%  = 15 / 48
+
+replication gate               FAIL
+~~~
+
+원 G3도 TARGET_ONLY 15 / 48 = 31.25%였으므로:
+
+~~~text
+pooled TARGET_ONLY any-jump = 30 / 96 = 31.25%
+pooled gate                    FAIL
+~~~
+
+독립 seed에서도 동일한 31.25%가 재현됐으므로
+G3의 실패를 표본 변동으로 취급하지 않는다.
+
+false jump timing도 두 cohort에서 같은 후반 구간에 집중됐다.
+
+~~~text
+G3   : step 80 = 6, step 85 = 5, step 100 = 4
+G3R  : step 80 = 5, step 85 = 4, step 100 = 6
+~~~
+
+이는 shared target-LC4가 강해지는 접근 후반부와 일치하는
+진단적 패턴이지만 step/거리/target context는 후속 policy input으로 사용하지 않는다.
+
+G3 candidate는 배포하지 않는다.
