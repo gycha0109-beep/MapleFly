@@ -13,7 +13,7 @@ permissions:
 jobs:
   experiment:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -25,7 +25,7 @@ jobs:
           node-version: "24"
 
       - name: Syntax check
-        run: node --check scripts/experiment-v11g5-paired-counterfactual.mjs
+        run: node --check scripts/experiment-v11h0-orthogonal-looming-screen.mjs
 
       - name: Cache pinned MaleCNS assets
         uses: actions/cache@v6
@@ -33,15 +33,15 @@ jobs:
           path: .cache/maplefly-connectome
           key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
 
-      - name: Run v11G5 paired counterfactual evaluation
-        run: node scripts/experiment-v11g5-paired-counterfactual.mjs
+      - name: Run v11H0 orthogonal looming screen
+        run: node scripts/experiment-v11h0-orthogonal-looming-screen.mjs
 
       - name: Upload experiment result
         id: upload
         uses: actions/upload-artifact@v7
         with:
-          name: maplefly-v11g5-paired-counterfactual-${{ github.run_id }}
-          path: results/experiment-v11g5
+          name: maplefly-v11h0-orthogonal-looming-${{ github.run_id }}
+          path: results/experiment-v11h0
           if-no-files-found: error
           retention-days: 30
 
@@ -54,12 +54,12 @@ jobs:
           import fs from "node:fs";
           const result = JSON.parse(
             fs.readFileSync(
-              "results/experiment-v11g5/experiment_v11g5.json",
+              "results/experiment-v11h0/experiment_v11h0.json",
               "utf8"
             )
           );
           const receipt = {
-            schema: "maplefly.v11g5-run-receipt.1",
+            schema: "maplefly.v11h0-run-receipt.1",
             runId: Number(process.env.GITHUB_RUN_ID),
             headSha: process.env.GITHUB_SHA,
             artifact: {
@@ -67,23 +67,24 @@ jobs:
                 ? Number(process.env.ARTIFACT_ID)
                 : null,
               name:
-                "maplefly-v11g5-paired-counterfactual-" +
+                "maplefly-v11h0-orthogonal-looming-" +
                 process.env.GITHUB_RUN_ID,
               digest:
                 process.env.ARTIFACT_DIGEST || null
             },
             meta: result.meta,
-            practice: result.practice,
-            candidate: result.candidate || null,
-            summary: result.summary,
-            perRun: result.perRun
+            results: result.results,
+            selectedRepresentation: result.selectedRepresentation,
+            currentFullBalancedAccuracy: result.currentFullBalancedAccuracy,
+            selectedHistoryGain: result.selectedHistoryGain,
+            gate: result.gate
           };
           fs.mkdirSync(
             "history/run_receipts",
             { recursive: true }
           );
           fs.writeFileSync(
-            "history/run_receipts/v11g5_latest.json",
+            "history/run_receipts/v11h0_latest.json",
             JSON.stringify(receipt, null, 2) + "\n"
           );
           NODE
@@ -92,11 +93,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add history/run_receipts/v11g5_latest.json
-          git commit -m "ci(results): record v11G5 run ${GITHUB_RUN_ID}" || exit 0
+          git add history/run_receipts/v11h0_latest.json
+          git commit -m "ci(results): record v11H0 run ${GITHUB_RUN_ID}" || exit 0
           git push
 
       - name: Enforce technical workflow success
         run: |
-          test -f results/experiment-v11g5/experiment_v11g5.json
-          echo "v11G5 artifact and receipt path verified"
+          test -f results/experiment-v11h0/experiment_v11h0.json
+          echo "v11H0 artifact and receipt path verified"
