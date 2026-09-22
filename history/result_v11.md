@@ -777,3 +777,65 @@ gate를 낮추지 않는다.
 다음 진단은 새 unseen seed에서 동일 episode를 사용해
 CURRENT / MEAN4 / DELTA / CONCAT4 representation을 직접 비교하여,
 개선 원인이 temporal order가 아니라 short-history aggregation인지 검증한다.
+
+
+---
+
+## Phase G2B — short-history representation screen PASS
+
+Workflow:
+
+~~~text
+run      35725209122
+head     d48746cc2dc9dece76a1785caa2088959169d507
+artifact 10693177344
+digest   sha256:cdff14aded647b9c38a6626a618efd6704d505e9197a8664e1ce474f14667cd9
+~~~
+
+Same unseen episodes, same MaleCNS, four representations:
+
+~~~text
+CURRENT
+  FULL              60.42%
+  LABEL_SHUFFLED    52.08%
+  DN_PERMUTED       49.48%
+  gate              FAIL
+
+MEAN4
+  FULL              83.85%
+  LABEL_SHUFFLED    49.48%
+  DN_PERMUTED       51.56%
+  gate              FAIL
+
+DELTA
+  FULL              56.77%
+  LABEL_SHUFFLED    47.40%
+  DN_PERMUTED       50.00%
+  gate              FAIL
+
+CONCAT4
+  FULL              85.42%
+  LABEL_SHUFFLED    48.44%
+  DN_PERMUTED       49.48%
+  minimum run       84.38%
+  gate              PASS
+~~~
+
+Selection:
+
+~~~text
+selected representation = CONCAT4
+CURRENT mean FULL        = 60.42%
+CONCAT4 mean FULL        = 85.42%
+history gain             = +25.00pp
+overall screen gate      = PASS
+~~~
+
+따라서 short-history aggregation의 정보가 실제로 필요하다는 가설은
+새 unseen seed에서 확인됐다.
+
+G2의 temporal-order shuffle 결과와 함께 보면,
+엄격한 window 순서보다는 최근 0.4초의 여러 DN state를 함께 보존하는 것이 핵심이다.
+
+다음 G3는 이 결과를 policy input contract로 고정한다.
+진단용 OBSTACLE/TARGET_ONLY label classifier weights는 재사용하지 않는다.
