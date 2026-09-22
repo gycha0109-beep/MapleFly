@@ -1,4 +1,4 @@
-name: Recover v11H0 Evidence Receipt
+name: Run MapleFly v11 JUMP Learning Experiment
 
 on:
   workflow_dispatch:
@@ -8,86 +8,48 @@ on:
       - ".github/workflows/experiment-v11g4-reward-advantage.yml"
 
 permissions:
-  actions: read
-  contents: write
+  contents: read
 
 jobs:
-  recover:
+  experiment:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
         with:
-          fetch-depth: 0
+          node-version: "24"
 
-      - name: Download authoritative H0 artifact
+      - name: Syntax check
+        run: node --check scripts/experiment-v11h1-matched-looming-screen.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run v11H1 matched broad looming screen
+        run: node scripts/experiment-v11h1-matched-looming-screen.mjs
+
+      - name: Upload experiment result
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11h1-matched-looming-${{ github.run_id }}
+          path: results/experiment-v11h1
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Print artifact evidence
         env:
-          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
         run: |
-          rm -rf /tmp/v11h0
-          mkdir -p /tmp/v11h0
-          gh run download 35745831597 \
-            --repo "${GITHUB_REPOSITORY}" \
-            --name "maplefly-v11h0-orthogonal-looming-35745831597" \
-            --dir /tmp/v11h0
-          test -f /tmp/v11h0/experiment_v11h0.json
-
-      - name: Build authoritative receipt
-        run: |
-          node --input-type=module <<'NODE'
-          import fs from "node:fs";
-          const result = JSON.parse(
-            fs.readFileSync(
-              "/tmp/v11h0/experiment_v11h0.json",
-              "utf8"
-            )
-          );
-          const receipt = {
-            schema: "maplefly.v11h0-run-receipt.1",
-            runId: 35745831597,
-            headSha:
-              "8758ae57935c83452f193d22be194cf367f9f36b",
-            artifact: {
-              id: 10701519484,
-              name:
-                "maplefly-v11h0-orthogonal-looming-35745831597",
-              digest:
-                "sha256:dd125f1051c7ec7808be45ad9a574eb5d38eb8d9f1439ce40f874a1021f8ae42"
-            },
-            meta: result.meta,
-            results: result.results,
-            selectedRepresentation:
-              result.selectedRepresentation,
-            currentFullBalancedAccuracy:
-              result.currentFullBalancedAccuracy,
-            selectedHistoryGain:
-              result.selectedHistoryGain,
-            gate: result.gate,
-            technicalNote:
-              "authoritative experiment and artifact succeeded; original workflow failed only at receipt git push"
-          };
-          fs.mkdirSync(
-            "history/run_receipts",
-            { recursive: true }
-          );
-          fs.writeFileSync(
-            "history/run_receipts/v11h0_latest.json",
-            JSON.stringify(receipt, null, 2) + "\n"
-          );
-          NODE
-
-      - name: Commit recovered receipt
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add history/run_receipts/v11h0_latest.json
-          git commit -m "ci(results): recover v11H0 run 35745831597" || exit 0
-          git pull --rebase origin main
-          git push origin HEAD:main
-
-      - name: Verify recovery
-        run: |
-          test -f history/run_receipts/v11h0_latest.json
-          echo "V11H0-RECEIPT-RECOVERY=PASS"
+          echo "V11H1-ARTIFACT-ID=${ARTIFACT_ID}"
+          echo "V11H1-ARTIFACT-DIGEST=${ARTIFACT_DIGEST}"
+          test -f results/experiment-v11h1/experiment_v11h1.json
