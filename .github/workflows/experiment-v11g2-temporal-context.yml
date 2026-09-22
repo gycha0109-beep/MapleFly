@@ -1,0 +1,92 @@
+name: Run MapleFly v11G2 Temporal DN Context Assay
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/experiment-v11g2-temporal-context.yml"
+      - "scripts/experiment-v11g2-temporal-context.mjs"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: write
+
+jobs:
+  assay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/experiment-v11g2-temporal-context.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run temporal DN context assay
+        run: node scripts/experiment-v11g2-temporal-context.mjs
+
+      - name: Upload assay evidence
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11g2-temporal-context-${{ github.run_id }}
+          path: results/experiment-v11g2
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record assay receipt
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const source =
+            "results/experiment-v11g2/experiment_v11g2.json";
+          const result = JSON.parse(fs.readFileSync(source, "utf8"));
+
+          const receipt = {
+            schema: "maplefly.v11g2-run-receipt.1",
+            runId: Number(process.env.GITHUB_RUN_ID),
+            headSha: process.env.GITHUB_SHA,
+            artifact: {
+              id: process.env.ARTIFACT_ID
+                ? Number(process.env.ARTIFACT_ID)
+                : null,
+              name:
+                "maplefly-v11g2-temporal-context-" +
+                process.env.GITHUB_RUN_ID,
+              digest: process.env.ARTIFACT_DIGEST || null
+            },
+            meta: result.meta,
+            summary: result.summary,
+            perRun: result.perRun
+          };
+
+          fs.mkdirSync("history/run_receipts", { recursive: true });
+          fs.writeFileSync(
+            "history/run_receipts/v11g2_latest.json",
+            JSON.stringify(receipt, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit assay receipt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/run_receipts/v11g2_latest.json
+          git commit -m "ci(results): record v11G2 run ${GITHUB_RUN_ID}" || exit 0
+          git push
