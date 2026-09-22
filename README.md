@@ -5,16 +5,19 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 
 ## Current scope
 
-**Fly #001 — learned movement + learned ATTACK**
+**Fly #001 — learned movement + learned ATTACK + learned JUMP**
 
 - pinned real MaleCNS connectome remains frozen
 - Skill01 LEFT / RIGHT is the v7 reward-only learned motor readout
 - Skill02 ATTACK is the v10F learned sparse DN readout
-- browser runtime uses exact 26-step movement and 5-step ATTACK windows
-- v10F post-merge browser/headless equivalence passed at FULL 84.4%, whiff 15.6%
-- JUMP / UP / DOWN still use legacy connectome decoders
-- POTION still uses the engineered taste / head-motor proxy
-- Skill03 JUMP: learned policy research PASS in isolated obstacle task, but browser deployment WITHHELD after cross-skill LC4 interference; temporal context research in progress
+- Skill03 JUMP is the v11H2 learned orthogonal-sensory / CONCAT4 DN policy
+- browser runtime uses exact 26-step movement, 5-step ATTACK, and 5-step JUMP windows
+- v10F post-integration browser equivalence remains FULL 84.4%, whiff 15.6%
+- v11H2 browser deployment smoke passed: obstacle clear 100%, TARGET reach 100%, false JUMP 0%
+- obstacle sensory uses LC6 + LC16 + LC22 + LPLC4; target LC4 remains reserved for target looming
+- UP / DOWN still use legacy connectome decoders
+- POTION still uses the engineered taste / head-motor proxy and is not a learned skill
+- current integration track: v12 continuous MOVE -> JUMP -> ATTACK -> KILL course
 - no claim is made that the fly understands MapleStory
 
 ## Brain source
