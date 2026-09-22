@@ -1,0 +1,52 @@
+name: Verify v11H2 Browser Deployment Smoke
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/verify-v11h2-browser-deployment-smoke.yml"
+      - "scripts/verify-v11h2-browser-deployment-smoke.mjs"
+      - "src/brain/fly-controller.js"
+      - "src/brain/fly-worker.js"
+      - "src/brain/fly-skill-v7.js"
+      - "src/brain/fly-skill-v11h2-jump.js"
+      - "src/game.js"
+      - "src/headless/connectome-runtime.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/verify-v11h2-browser-deployment-smoke.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run browser-equivalent movement plus JUMP smoke
+        run: node scripts/verify-v11h2-browser-deployment-smoke.mjs
+
+      - name: Upload deployment smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v11h2-browser-deployment-smoke-${{ github.run_id }}
+          path: results/verify-v11h2-browser-deployment
+          if-no-files-found: warn
+          retention-days: 30
