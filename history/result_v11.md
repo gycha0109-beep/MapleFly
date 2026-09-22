@@ -1172,3 +1172,100 @@ target sensory/geometry가 완전히 matched된 배경에서도 frozen MaleCNS D
 OBSTACLE과 TARGET_ONLY를 강하게 구분한다.
 
 H2에서는 이 sensory architecture를 고정하고 reward-only JUMP policy를 처음부터 학습한다.
+
+
+---
+
+## Phase H2 — orthogonal sensory reward-only JUMP PASS
+
+Authoritative workflow:
+
+~~~text
+run      35748844599
+head     253072a7165d367fc990e882cbcb90fe85eebf25
+artifact 10704546925
+digest   sha256:de8cbd9f37704728605b1624e04c891bf47f329b81569553ab2e7be49b895495
+~~~
+
+H1에서 검증한 orthogonal obstacle sensory를 그대로 사용했다.
+
+~~~text
+target   LC10a + LPLC1 + LPLC2 + LC4
+obstacle LC6 + LC16 + LC22 + LPLC4
+obstacle LC4 disabled
+~~~
+
+OBSTACLE / TARGET_ONLY target geometry도 동일하게 유지했으며,
+policy input은 4개 연속 MaleCNS DN window의 selected temporal slots만 사용한다.
+
+Practice support:
+
+~~~text
+scheduled episodes 288
+sampled episodes   287
+
+WAIT positive       68
+WAIT negative       71
+JUMP positive       52
+JUMP negative       96
+
+support gate        PASS
+~~~
+
+Final unseen per-run:
+
+~~~text
+2251000 FULL 100.0% / CUE_OFF 0.0% / DN_SHUFFLED 0.0% / TARGET jump 0.0%
+2261000 FULL 100.0% / CUE_OFF 0.0% / DN_SHUFFLED 0.0% / TARGET jump 0.0%
+2271000 FULL 100.0% / CUE_OFF 0.0% / DN_SHUFFLED 0.0% / TARGET jump 0.0%
+~~~
+
+Aggregate:
+
+~~~text
+mean FULL clear          100.0%
+minimum FULL             100.0%
+mean CUE_OFF clear         0.0%
+FULL - CUE_OFF          +100.0pp
+mean DN_SHUFFLED clear     0.0%
+FULL - DN_SHUFFLED      +100.0pp
+FULL timeout               0.0%
+FULL mean actual jumps     1.448
+
+TARGET_ONLY reach         100.0%
+TARGET_ONLY any-jump        0.0%
+
+H2 JUMP GATE              PASS
+~~~
+
+Frozen prereg gate comparison:
+
+~~~text
+mean FULL clear >= 75%             PASS
+every FULL run >= 65%              PASS
+FULL - CUE_OFF >= 25pp             PASS
+FULL - DN_SHUFFLED >= 20pp         PASS
+FULL timeout <= 20%                PASS
+FULL mean jumps <= 1.75            PASS
+TARGET_ONLY reach >= 85%           PASS
+TARGET_ONLY any-jump <= 30%        PASS
+~~~
+
+결론:
+
+shared-LC4 구조에서 G3/G3R의 TARGET_ONLY false jump 31.25%가 반복되었지만,
+obstacle sensory를 LC6+LC16+LC22+LPLC4로 완전히 분리한 H2에서는
+TARGET_ONLY false jump가 0%로 내려갔다.
+
+동시에 obstacle FULL은 96/96 clear,
+CUE_OFF와 DN_SHUFFLED는 각각 0/96 clear였다.
+
+따라서 현재 증거가 지지하는 결론은
+**orthogonal obstacle sensory가 cross-skill LC4 collision을 제거하면서도
+reward-only learned JUMP policy의 obstacle-specific behavior를 보존했다**는 것이다.
+
+threshold / persistence / sensory amplitude / gate는 결과 후 변경하지 않았다.
+
+H2 candidate는 authoritative artifact에서 그대로 freeze하며,
+browser deployment 전 exact equivalence + v7 movement regression +
+v10F ATTACK regression을 통과해야 한다.
