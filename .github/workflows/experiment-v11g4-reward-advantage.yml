@@ -1,4 +1,5 @@
 name: Run MapleFly v11 JUMP Learning Experiment
+# authoritative H1 CURRENT-only rerun
 
 on:
   workflow_dispatch:
