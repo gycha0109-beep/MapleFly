@@ -2889,3 +2889,159 @@ G3의 31.25%는 frozen candidate의 경계 부근 표본 변동으로 취급할 
 FAIL:
 현재 mixed-context candidate는 TARGET_ONLY false jump 억제가 불충분하다.
 candidate를 배포하지 않고 새로운 학습 설계를 별도 phase에서 사전등록한다.
+
+
+# Phase G4 — randomized reward advantage JUMP preregistration
+
+G3/G3R의 반복된 TARGET_ONLY 31.25% false jump를
+threshold나 gate 보정으로 처리하지 않는다.
+
+G4에서는 sensory representation과 환경을 유지하고,
+학습 목적함수만 바꾼다.
+
+## hypothesis
+
+G3의 두 개 class-balanced desirable/not-desirable classifier는
+reward의 방향과 action 간 상대가치를 이진화했다.
+
+G4는 50:50 randomized intervention의 알려진 propensity를 이용해
+각 DN state에서 다음 action advantage를 직접 추정한다.
+
+~~~text
+A = 0 for WAIT
+A = 1 for JUMP
+R = 실제 episode reward
+
+Z = 2 * (2A - 1) * R
+~~~
+
+behavior propensity가 P(A=WAIT)=P(A=JUMP)=0.5이므로
+조건부 기대값은:
+
+~~~text
+E[Z | DN] = Q(JUMP | DN) - Q(WAIT | DN)
+~~~
+
+이다.
+
+따라서 policy는 직접 game context label을 보지 않고
+MaleCNS DN history만으로 reward advantage를 학습한다.
+
+## frozen environment / representation
+
+~~~text
+brain            alextitonis/fly.ai
+brain commit     95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+movement         v7-run2-top64
+representation   CONCAT4
+history          4 x 5 brain-step windows = 0.4 s
+raw features     5264 DN temporal slots
+selected         top 256 by unlabeled practice variance
+cooldown         38 brain steps
+persistence      2 consecutive positive-advantage windows
+~~~
+
+shared LC4 sensory semantics는 변경하지 않는다.
+
+## reward
+
+G3와 동일하다.
+
+OBSTACLE:
+
+~~~text
+CLEAR    +1
+TIMEOUT  -1
+~~~
+
+TARGET_ONLY:
+
+~~~text
+TARGET   +1
+TIMEOUT  -1
+actual JUMP가 있으면 -1 추가
+~~~
+
+따라서 TARGET_ONLY에서 성공하면서 JUMP한 episode의 reward는 0이다.
+
+reward, context flag, obstacle/target flag, distance, coordinates,
+collision state, correct timing, side, seed는 policy input에 들어가지 않는다.
+
+## practice
+
+~~~text
+practice seeds      1801000 / 1811000 / 1821000
+distances           155 / 195 / 235 / 275
+OBSTACLE/TARGET     50:50 mixed
+intervention action WAIT/JUMP 50:50 random
+intervention window 1..14 uniform random
+~~~
+
+practice support gate:
+
+~~~text
+sampled >= 270
+WAIT samples >= 100
+JUMP samples >= 100
+Z > 0 samples >= 24
+Z < 0 samples >= 24
+~~~
+
+## learner
+
+single ridge-linear reward-advantage readout:
+
+~~~text
+target       Z
+input        standardized selected CONCAT4 DN slots
+loss         mean squared error + L2
+epochs       400
+learningRate 0.01
+L2           0.001
+~~~
+
+초기 weights/bias는 0이다.
+
+action rule:
+
+~~~text
+predicted advantage > 0
+for 2 consecutive available windows
+=> JUMP
+otherwise WAIT
+~~~
+
+0은 Q(JUMP)-Q(WAIT)의 의미론적 decision boundary이며
+final 결과를 보고 조정하지 않는다.
+
+## unseen final
+
+~~~text
+seeds      1851000 / 1861000 / 1871000
+distances  155 / 195 / 235 / 275
+~~~
+
+각 seed에서:
+
+~~~text
+32 FULL obstacle
+32 OBSTACLE_CUE_OFF
+32 DN_SHUFFLED
+16 TARGET_ONLY
+~~~
+
+## gate
+
+~~~text
+mean FULL clear          >= 75%
+every FULL run           >= 65%
+FULL - CUE_OFF           >= 25pp
+FULL - DN_SHUFFLED       >= 20pp
+FULL timeout             <= 20%
+FULL mean actual jumps   <= 1.75
+TARGET_ONLY reach        >= 85%
+TARGET_ONLY any-jump     <= 30%
+~~~
+
+PASS 전에는 browser controller에 배포하지 않는다.
+FAIL이면 threshold/gate를 결과 후 조정하지 않고 별도 phase로 이동한다.
