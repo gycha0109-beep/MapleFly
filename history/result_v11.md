@@ -727,3 +727,53 @@ OBSTACLE과 TARGET_ONLY source context를 안정적으로 분리하지 못한다
 
 따라서 single-window context classifier를 action policy에 사용하지 않는다.
 다음 Phase G2에서 sensory encoder는 그대로 유지하고 short temporal DN trajectory만 진단한다.
+
+
+---
+
+## Phase G2 — temporal DN context separability FAIL
+
+Workflow:
+
+~~~text
+run      35724659573
+head     f12157c9d975866ad15e6b246ece91ade207102e
+artifact 10692831117
+digest   sha256:205902b472deb87afb2f31aba2d4e449f104e34f46e0bc03a9a80989e380ea66
+~~~
+
+4 x 5-step window, 5264-D temporal DN representation:
+
+~~~text
+mean FULL balanced accuracy          86.46%
+LABEL_SHUFFLED                       48.96%
+DN_PERMUTED                          47.92%
+TEMPORAL_ORDER_SHUFFLED              83.33%
+minimum eval-run FULL                78.13%
+
+FULL - LABEL_SHUFFLED                37.50pp
+FULL - DN_PERMUTED                   38.54pp
+FULL - TEMPORAL_ORDER_SHUFFLED        3.13pp
+
+GATE                                  FAIL
+~~~
+
+Per-run FULL:
+
+~~~text
+1411000  78.125%
+1411100  92.188%
+1411200  89.063%
+~~~
+
+해석:
+
+최근 4-window를 함께 사용하면 G1 single-window보다 context separability가 크게 증가했다.
+그러나 window 순서를 고정 permutation으로 뒤섞어도 성능이 거의 유지됐다.
+
+따라서 사전 정의한 'order-sensitive temporal trajectory' 가설은 FAIL이다.
+gate를 낮추지 않는다.
+
+다음 진단은 새 unseen seed에서 동일 episode를 사용해
+CURRENT / MEAN4 / DELTA / CONCAT4 representation을 직접 비교하여,
+개선 원인이 temporal order가 아니라 short-history aggregation인지 검증한다.
