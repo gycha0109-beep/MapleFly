@@ -1,0 +1,111 @@
+{
+  "schema": "maplefly.v11h2-deployment-receipt.1",
+  "authoritativeScientificRun": {
+    "runId": 35748844599,
+    "headSha": "253072a7165d367fc990e882cbcb90fe85eebf25",
+    "artifactId": 10704546925,
+    "artifactDigest": "sha256:de8cbd9f37704728605b1624e04c891bf47f329b81569553ab2e7be49b895495"
+  },
+  "runtime": {
+    "integrationCommit": "27575bf616b0302ff42b1ef144e97477f5c6affd",
+    "geometryFixCommit": "9af77cae3fccfa99dca56eb85d03e64c14e22721",
+    "targetDistanceFixCommit": "5e352d0735cc5d76026c83c3479e200025c4c8a2",
+    "frozenParametersChanged": false,
+    "targetDistance": "abs(dx)",
+    "obstacleUsesLC4": false,
+    "sparseFeatureCount": 96,
+    "temporalWindows": 4,
+    "threshold": 0.5,
+    "persistenceWindows": 2,
+    "cooldownBrainSteps": 38
+  },
+  "regressions": {
+    "movementV7": {
+      "runId": 35769768970,
+      "headSha": "5e352d0735cc5d76026c83c3479e200025c4c8a2",
+      "artifactId": 10713811205,
+      "artifactDigest": "sha256:609a8de2faaf447b890bc6c85dc79750d36f9f9d169cacc562d864911f45fc23",
+      "gate": true,
+      "minOn": 1,
+      "maxOff": 0.5
+    },
+    "attackV10F": {
+      "runId": 35769769022,
+      "headSha": "5e352d0735cc5d76026c83c3479e200025c4c8a2",
+      "artifactId": 10713498654,
+      "artifactDigest": "sha256:7ce46119d5406b851db9e8b9eed53f8b01225f4fae317e8d71f540676f3740cf",
+      "gate": true,
+      "fullHitRate": 0.84375,
+      "whiffRate": 0.15625
+    },
+    "combinedWiring": {
+      "runId": 35769769018,
+      "headSha": "5e352d0735cc5d76026c83c3479e200025c4c8a2",
+      "pass": true
+    },
+    "realInputEquivalence": {
+      "runId": 35759762986,
+      "headSha": "27575bf616b0302ff42b1ef144e97477f5c6affd",
+      "pass": true,
+      "cases": 3,
+      "decisions": 39
+    },
+    "legacyV11FIsolation": {
+      "runId": 35769769071,
+      "headSha": "5e352d0735cc5d76026c83c3479e200025c4c8a2",
+      "pass": true
+    }
+  },
+  "browserDeploymentSmoke": {
+    "runId": 35786678820,
+    "headSha": "b577ed6ffb12b91c7f5c4302f7cd08049ddfb1ab",
+    "artifactId": 10720237458,
+    "artifactDigest": "sha256:9d95a2474fc47910e4144ef4823403a668dbdf1044b45a826ecb17db61617d19",
+    "scientificGate": false,
+    "deterministicRegression": true,
+    "episodesPerSeed": {
+      "obstacle": 8,
+      "targetOnly": 8
+    },
+    "perSeed": [
+      {
+        "baseSeed": 2251000,
+        "fullClear": 1,
+        "timeout": 0,
+        "meanActualJumps": 1.375,
+        "targetReach": 1,
+        "targetAnyJump": 0
+      },
+      {
+        "baseSeed": 2261000,
+        "fullClear": 1,
+        "timeout": 0,
+        "meanActualJumps": 1.5,
+        "targetReach": 1,
+        "targetAnyJump": 0
+      },
+      {
+        "baseSeed": 2271000,
+        "fullClear": 1,
+        "timeout": 0,
+        "meanActualJumps": 1.25,
+        "targetReach": 1,
+        "targetAnyJump": 0
+      }
+    ],
+    "summary": {
+      "meanFullClear": 1,
+      "meanTimeout": 0,
+      "meanActualJumps": 1.375,
+      "targetReach": 1,
+      "targetAnyJump": 0,
+      "pass": true
+    }
+  },
+  "pagesDeployment": {
+    "runId": 35786678744,
+    "headSha": "b577ed6ffb12b91c7f5c4302f7cd08049ddfb1ab",
+    "success": true
+  },
+  "deploymentClosure": true
+}

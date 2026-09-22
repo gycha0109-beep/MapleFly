@@ -1269,3 +1269,104 @@ threshold / persistence / sensory amplitude / gate는 결과 후 변경하지 �
 H2 candidate는 authoritative artifact에서 그대로 freeze하며,
 browser deployment 전 exact equivalence + v7 movement regression +
 v10F ATTACK regression을 통과해야 한다.
+
+
+---
+
+## Phase H2 — browser deployment closure PASS
+
+H2 authoritative scientific result 자체는 run 35748844599에서 동결한다.
+아래 검증은 frozen candidate를 browser runtime에 배포한 뒤의 implementation-equivalence /
+regression evidence이며 새 scientific gate가 아니다.
+
+Runtime implementation fixes:
+
+~~~text
+27575bf616b0302ff42b1ef144e97477f5c6affd  deploy orthogonal v11H2 learned JUMP
+9af77cae3fccfa99dca56eb85d03e64c14e22721  match browser obstacle geometry to H2 prereg
+5e352d0735cc5d76026c83c3479e200025c4c8a2  match live target distance to frozen H2 encoder
+~~~
+
+두 보정은 learned weights / threshold / persistence / cooldown / sensory populations /
+scientific gate를 변경하지 않고 browser implementation을 frozen H2 contract에 맞춘 것이다.
+
+Post-fix regressions:
+
+~~~text
+v7 movement
+  run       35769768970
+  artifact  10713811205
+  digest    sha256:609a8de2faaf447b890bc6c85dc79750d36f9f9d169cacc562d864911f45fc23
+  ON        100.0% at 80 / 150 / 300 / 500
+  OFF        50.0%
+  gate      PASS
+
+v10F ATTACK browser equivalence
+  run       35769769022
+  artifact  10713498654
+  digest    sha256:7ce46119d5406b851db9e8b9eed53f8b01225f4fae317e8d71f540676f3740cf
+  FULL hit   84.4%
+  whiff      15.6%
+  gate       PASS
+
+v11H2 combined wiring
+  run       35769769018
+  result    PASS
+  contract  move=v7 attack=v10F jump=v11H2 sparse=96 CONCAT4 obstacleLC4=false
+
+v11H2 real MaleCNS input equivalence
+  run       35759762986
+  result    PASS
+  cases     3
+  decisions 39
+  cooldown  38
+  obstacle LC4=false
+
+legacy v11F isolation
+  run       35769769071
+  result    PASS
+  old research bundle preserved / old runtime disabled / H2 runtime allowed
+~~~
+
+Browser-equivalent deployment smoke:
+
+~~~text
+run       35786678820
+head      b577ed6ffb12b91c7f5c4302f7cd08049ddfb1ab
+artifact  10720237458
+digest    sha256:9d95a2474fc47910e4144ef4823403a668dbdf1044b45a826ecb17db61617d19
+
+2251000  FULL 100.0% / timeout 0.0% / mean jumps 1.375 / TARGET 100.0% / false jump 0.0%
+2261000  FULL 100.0% / timeout 0.0% / mean jumps 1.500 / TARGET 100.0% / false jump 0.0%
+2271000  FULL 100.0% / timeout 0.0% / mean jumps 1.250 / TARGET 100.0% / false jump 0.0%
+
+aggregate FULL       100.0%
+aggregate timeout      0.0%
+aggregate mean jumps   1.375
+TARGET_ONLY reach    100.0%
+TARGET_ONLY false jump 0.0%
+
+deployment smoke      PASS
+~~~
+
+이 smoke는 H2 final seed의 deterministic subset에서 실제 배포 bundle의 sparse 96-DN interface,
+CONCAT4 history, movement v7, matched obstacle geometry, horizontal target-distance encoder를 함께
+재생한 배포 회귀검증이다. authoritative H2 gate를 대체하거나 재계산하지 않는다.
+
+GitHub Pages deployment:
+
+~~~text
+run   35786678744
+head  b577ed6ffb12b91c7f5c4302f7cd08049ddfb1ab
+result SUCCESS
+~~~
+
+따라서 현재 browser runtime의 배포 상태는:
+
+~~~text
+movement  v7     DEPLOYED / regression PASS
+ATTACK    v10F   DEPLOYED / regression PASS
+JUMP      v11H2  DEPLOYED / browser deployment smoke PASS
+~~~
+
+H2 deployment closure = PASS.
