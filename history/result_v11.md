@@ -1123,3 +1123,52 @@ orthogonal obstacle code가 instantaneous DN state에서도 이미 높은 contex
 
 사전등록 규칙상 H0 PASS로 재해석하지 않으며,
 FAIL branch대로 더 넓은 orthogonal looming population을 별도 phase에서 검사한다.
+
+
+---
+
+## Phase H1 — matched-target broad orthogonal looming screen PASS
+
+Authoritative CURRENT-only rerun:
+
+~~~text
+run      35748359986
+head     d5f2e2ae8c2cf1f353de2ba7bac231874eff1b4b
+artifact 10704475534
+digest   sha256:06e5aa6c788ec79c45b135f6e0dce8d2a9c8a7938faa28e82165f7fbad097c7f
+~~~
+
+Pre-run amendment에서 target geometry를 OBSTACLE/TARGET_ONLY 사이에 matched하고
+obstacle sensory를 LC6+LC16+LC22+LPLC4 equal-drive composite로 고정했다.
+target LC4/LPLC1/LPLC2/LC10a는 양 class에서 동일하게 보존했다.
+
+Authoritative CURRENT results:
+
+~~~text
+2111000 FULL 96.875% / LABEL_SHUFFLED 53.125% / DN_PERMUTED 48.438%
+2111100 FULL 98.438% / LABEL_SHUFFLED 48.438% / DN_PERMUTED 50.000%
+2111200 FULL 98.438% / LABEL_SHUFFLED 40.625% / DN_PERMUTED 51.563%
+
+mean FULL              97.917%
+mean LABEL_SHUFFLED    47.396%
+mean DN_PERMUTED       50.000%
+min FULL               96.875%
+
+FULL - shuffled        50.521pp
+FULL - permuted        47.917pp
+
+H1 SCREEN              PASS
+selected               CURRENT
+~~~
+
+run 35747999687은 동일 sensory/data에서 CURRENT 외 representation도 실수로 계산한
+비권위 exploratory run이다. selection/gate에는 CURRENT만 사용했지만 prereg contract를
+엄격히 지키기 위해 코드와 static verifier를 수정한 뒤 run 35748359986을 다시 실행했고,
+위 결과만 authoritative H1 evidence로 사용한다.
+
+결론:
+shared target-LC4 없이 orthogonal LC6+LC16+LC22+LPLC4 obstacle code를 사용하면,
+target sensory/geometry가 완전히 matched된 배경에서도 frozen MaleCNS DN state가
+OBSTACLE과 TARGET_ONLY를 강하게 구분한다.
+
+H2에서는 이 sensory architecture를 고정하고 reward-only JUMP policy를 처음부터 학습한다.
