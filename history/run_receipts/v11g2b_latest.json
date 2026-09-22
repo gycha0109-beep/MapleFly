@@ -1,0 +1,210 @@
+{
+  "schema": "maplefly.v11g2b-run-receipt.1",
+  "runId": 35725209122,
+  "headSha": "d48746cc2dc9dece76a1785caa2088959169d507",
+  "artifact": {
+    "id": 10693177344,
+    "name": "maplefly-v11g2b-representation-35725209122",
+    "digest": "cdff14aded647b9c38a6626a618efd6704d505e9197a8664e1ce474f14667cd9"
+  },
+  "meta": {
+    "schema": "maplefly.experiment-v11g2b.short-history-representation-screen.1",
+    "brainRepository": "alextitonis/fly.ai",
+    "brainCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "dnCount": 1316,
+    "representations": [
+      "CURRENT",
+      "MEAN4",
+      "DELTA",
+      "CONCAT4"
+    ],
+    "trainBaseSeeds": [
+      1501000,
+      1501100,
+      1501200,
+      1501300
+    ],
+    "evalBaseSeeds": [
+      1511000,
+      1511100,
+      1511200
+    ],
+    "distances": [
+      260,
+      300,
+      340,
+      380
+    ],
+    "sampleBins": [
+      150,
+      120,
+      90,
+      60
+    ],
+    "windows": {
+      "settle": 26,
+      "baseline": 26,
+      "sample": 5,
+      "history": 4,
+      "historySeconds": 0.4
+    },
+    "classifier": {
+      "epochs": 120,
+      "learningRate": 0.02,
+      "l2": 0.0005,
+      "threshold": 0.5
+    },
+    "antiLeak": "model input is DN activity-derived representation only; context identity/distance/coordinates/side/seed/obstacle flag/target flag/bin are metadata only",
+    "selectionRule": "history candidate must pass representation gate and exceed CURRENT by >=15pp; highest mean FULL wins, <=2pp tie prefers lower dimensional candidate"
+  },
+  "results": [
+    {
+      "representation": "CURRENT",
+      "featureCount": 1316,
+      "summary": {
+        "fullBalancedAccuracy": 0.6041666666666666,
+        "labelShuffledBalancedAccuracy": 0.5208333333333334,
+        "fullMinusLabelShuffled": 0.08333333333333326,
+        "dnPermutedBalancedAccuracy": 0.4947916666666667,
+        "fullMinusDnPermuted": 0.10937499999999994,
+        "minRunFullBalancedAccuracy": 0.59375,
+        "gate": false
+      },
+      "perRun": [
+        {
+          "run": 1,
+          "baseSeed": 1511000,
+          "fullBalancedAccuracy": 0.609375,
+          "labelShuffledBalancedAccuracy": 0.484375,
+          "dnPermutedBalancedAccuracy": 0.40625
+        },
+        {
+          "run": 2,
+          "baseSeed": 1511100,
+          "fullBalancedAccuracy": 0.59375,
+          "labelShuffledBalancedAccuracy": 0.578125,
+          "dnPermutedBalancedAccuracy": 0.5625
+        },
+        {
+          "run": 3,
+          "baseSeed": 1511200,
+          "fullBalancedAccuracy": 0.609375,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.515625
+        }
+      ]
+    },
+    {
+      "representation": "MEAN4",
+      "featureCount": 1316,
+      "summary": {
+        "fullBalancedAccuracy": 0.8385416666666666,
+        "labelShuffledBalancedAccuracy": 0.4947916666666667,
+        "fullMinusLabelShuffled": 0.34374999999999994,
+        "dnPermutedBalancedAccuracy": 0.515625,
+        "fullMinusDnPermuted": 0.32291666666666663,
+        "minRunFullBalancedAccuracy": 0.796875,
+        "gate": false
+      },
+      "perRun": [
+        {
+          "run": 1,
+          "baseSeed": 1511000,
+          "fullBalancedAccuracy": 0.875,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.46875
+        },
+        {
+          "run": 2,
+          "baseSeed": 1511100,
+          "fullBalancedAccuracy": 0.796875,
+          "labelShuffledBalancedAccuracy": 0.484375,
+          "dnPermutedBalancedAccuracy": 0.546875
+        },
+        {
+          "run": 3,
+          "baseSeed": 1511200,
+          "fullBalancedAccuracy": 0.84375,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.53125
+        }
+      ]
+    },
+    {
+      "representation": "DELTA",
+      "featureCount": 1316,
+      "summary": {
+        "fullBalancedAccuracy": 0.5677083333333334,
+        "labelShuffledBalancedAccuracy": 0.4739583333333333,
+        "fullMinusLabelShuffled": 0.09375000000000006,
+        "dnPermutedBalancedAccuracy": 0.5,
+        "fullMinusDnPermuted": 0.06770833333333337,
+        "minRunFullBalancedAccuracy": 0.546875,
+        "gate": false
+      },
+      "perRun": [
+        {
+          "run": 1,
+          "baseSeed": 1511000,
+          "fullBalancedAccuracy": 0.578125,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.484375
+        },
+        {
+          "run": 2,
+          "baseSeed": 1511100,
+          "fullBalancedAccuracy": 0.578125,
+          "labelShuffledBalancedAccuracy": 0.421875,
+          "dnPermutedBalancedAccuracy": 0.484375
+        },
+        {
+          "run": 3,
+          "baseSeed": 1511200,
+          "fullBalancedAccuracy": 0.546875,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.53125
+        }
+      ]
+    },
+    {
+      "representation": "CONCAT4",
+      "featureCount": 5264,
+      "summary": {
+        "fullBalancedAccuracy": 0.8541666666666666,
+        "labelShuffledBalancedAccuracy": 0.484375,
+        "fullMinusLabelShuffled": 0.36979166666666663,
+        "dnPermutedBalancedAccuracy": 0.4947916666666667,
+        "fullMinusDnPermuted": 0.35937499999999994,
+        "minRunFullBalancedAccuracy": 0.84375,
+        "gate": true
+      },
+      "perRun": [
+        {
+          "run": 1,
+          "baseSeed": 1511000,
+          "fullBalancedAccuracy": 0.84375,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.5625
+        },
+        {
+          "run": 2,
+          "baseSeed": 1511100,
+          "fullBalancedAccuracy": 0.84375,
+          "labelShuffledBalancedAccuracy": 0.453125,
+          "dnPermutedBalancedAccuracy": 0.453125
+        },
+        {
+          "run": 3,
+          "baseSeed": 1511200,
+          "fullBalancedAccuracy": 0.875,
+          "labelShuffledBalancedAccuracy": 0.5,
+          "dnPermutedBalancedAccuracy": 0.46875
+        }
+      ]
+    }
+  ],
+  "selectedRepresentation": "CONCAT4",
+  "currentFullBalancedAccuracy": 0.6041666666666666,
+  "selectedHistoryGain": 0.25,
+  "gate": true
+}
