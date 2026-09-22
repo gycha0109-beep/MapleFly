@@ -6,8 +6,8 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/verify-v11g4-reward-advantage-static.yml"
-      - "scripts/experiment-v11h0-orthogonal-looming-screen.mjs"
-      - "history/prereg_v11h0.md"
+      - "scripts/experiment-v11h1-broad-obstacle-screen.mjs"
+      - "history/prereg_v11h1.md"
 
 permissions:
   contents: read
@@ -16,90 +16,50 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
-
       - name: Syntax check
-        run: node --check scripts/experiment-v11h0-orthogonal-looming-screen.mjs
-
-      - name: Verify preregistered H0 contract
+        run: node --check scripts/experiment-v11h1-broad-obstacle-screen.mjs
+      - name: Verify H1 contract
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
-
           const s = fs.readFileSync(
-            "scripts/experiment-v11h0-orthogonal-looming-screen.mjs",
+            "scripts/experiment-v11h1-broad-obstacle-screen.mjs",
             "utf8"
           );
-
           const required = [
-            "2001000",
-            "2001100",
-            "2001200",
-            "2001300",
-            "2011000",
-            "2011100",
-            "2011200",
-            "TEMPORAL_WINDOWS = 4",
-            "\"CURRENT\"",
-            "\"MEAN4\"",
-            "\"DELTA\"",
-            "\"CONCAT4\"",
-            "\"LC6_\" + obstacle.side",
-            "\"LC16_\" + obstacle.side",
+            "2101000","2101100","2101200","2101300",
+            "2111000","2111100","2111200",
+            "\"LC6\"","\"LC16\"","\"LC12\"","\"LC15\"",
             "fullMean >= 0.85",
             "minRun >= 0.75",
-            "shuffledMean >=",
-            "permutedMean >=",
-            "historyGain >= 0.15",
-            "V11H0-SCREEN="
+            "fullMean - shuffledMean >= 0.25",
+            "fullMean - permutedMean >= 0.25",
+            "V11H1-CONTEXT-GATE="
           ];
-
           for (const token of required) {
             if (!s.includes(token)) {
-              throw new Error(
-                "missing H0 contract: " + token
-              );
+              throw new Error("missing H1 contract: " + token);
             }
           }
-
           const encoder = s.slice(
-            s.indexOf("class OrthogonalLoomingEncoder"),
+            s.indexOf("class BroadObstacleEncoder"),
             s.indexOf("function makeContextEpisode")
           );
-
           const obstaclePart = encoder.slice(
             encoder.indexOf("if (obstacle)")
           );
-
-          if (
-            obstaclePart.includes(
-              "\"LC4_\" + obstacle.side"
-            )
-          ) {
-            throw new Error(
-              "obstacle still drives LC4"
-            );
+          if (obstaclePart.includes("\"LC4_\" + obstacle.side")) {
+            throw new Error("obstacle still drives LC4");
           }
-
-          if (
-            !encoder.includes(
-              "\"LC4_\" + side"
-            )
-          ) {
-            throw new Error(
-              "target LC4 was not preserved"
-            );
+          if (!encoder.includes("\"LC4_\" + side")) {
+            throw new Error("target LC4 not preserved");
           }
-
           console.log(
-            "V11H0-STATIC=PASS targetLC4=preserved obstacle=LC6+LC16 history=4"
+            "V11H1-STATIC=PASS input=CURRENT_DN obstacle=LC6+LC16+LC12+LC15 targetLC4=preserved"
           );
           NODE
