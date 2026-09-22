@@ -63,14 +63,14 @@ jobs:
             }
           }
 
-          const reps = s.slice(
-            s.indexOf("const REPRESENTATIONS"),
-            s.indexOf("const DISTANCES")
-          );
-          for (const forbidden of ["MEAN4", "DELTA", "CONCAT4"]) {
-            if (reps.includes(forbidden)) {
-              throw new Error("non-preregistered representation: " + forbidden);
-            }
+          if (
+            !compact.includes(
+              'const REPRESENTATIONS = Object.freeze([ "CURRENT", ]);'
+            )
+          ) {
+            throw new Error(
+              "H1 must evaluate CURRENT representation only"
+            );
           }
 
           const encoder = s.slice(
