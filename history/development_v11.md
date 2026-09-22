@@ -2733,3 +2733,53 @@ G3 PASS 후에만:
 5. combined browser deployment
 
 순서로 진행한다.
+
+
+## Phase G3 preregistration amendment — before implementation/run
+
+G3를 실제 실행하기 전 temporal-history warmup과 TARGET_ONLY terminal timing을 검토해
+geometry를 다음처럼 명시한다.
+
+이 amendment는 G3 결과를 보기 전에 고정한다.
+
+OBSTACLE:
+
+~~~text
+startDistance = obstacle front distance
+155 / 195 / 235 / 275 px
+target = obstacle far edge + 160 px
+~~~
+
+TARGET_ONLY:
+
+~~~text
+obstacle 없음
+target center start distance =
+  startDistance + obstacleWidth + 160
+= startDistance + 198 px
+~~~
+
+즉 TARGET_ONLY 실제 초기 target distance는:
+
+~~~text
+353 / 393 / 433 / 473 px
+~~~
+
+이다.
+
+이 geometry는 기존 v11F no-obstacle evaluation contract와 동일하며,
+CONCAT4 history 4 windows가 준비되기 전에 target terminal이 발생하는 문제를 피한다.
+
+random intervention window는 history가 준비된 첫 policy decision을 1로 세어:
+
+~~~text
+uniform integer 1..14
+~~~
+
+로 고정한다.
+
+intervention window/action은 여전히 episode context나 sensory state를 읽지 않고
+episode 시작 전에 seeded random으로 결정한다.
+
+나머지 G3 preregistration, reward, feature selection, support gate,
+policy rule, final seeds와 final gate는 변경하지 않는다.
