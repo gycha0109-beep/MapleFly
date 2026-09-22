@@ -2142,3 +2142,172 @@ shared LC4라도 target-vs-obstacle context가 DN 수준에서 충분히 분리 
 FAIL:
 현재 sensory representation 자체가 policy가 구분하기에 불충분하다고 본다.
 기존 JUMP weights를 억지 보정하지 않고 sensory architecture를 더 크게 재설계한다.
+
+
+# Phase G2 — temporal DN context separability preregistration
+
+G1에서 single-window 1316-DN state만으로는
+OBSTACLE과 TARGET_ONLY context 분리가 충분하지 않았다.
+
+G2는 sensory encoder를 바꾸지 않는다.
+v10F target sensory와 shared LC4 composition을 그대로 유지하고,
+classifier 입력 표현만 short temporal DN history로 확장한다.
+
+## sensory
+
+~~~text
+target:
+  LC10a
+  LPLC1
+  LPLC2
+  target LC4 when target distance < 175 px
+
+obstacle:
+  same-side LC4
+  LC4_side = max(target LC4, obstacle LC4)
+~~~
+
+obstacle geometry:
+
+~~~text
+width  38
+height 54
+visual radius 280 px
+~~~
+
+## temporal representation
+
+각 decision sample은 최근 4개 연속 5-step window를 사용한다.
+
+~~~text
+window 1: t-0.4 ~ t-0.3 s
+window 2: t-0.3 ~ t-0.2 s
+window 3: t-0.2 ~ t-0.1 s
+window 4: t-0.1 ~ t     s
+~~~
+
+각 window마다 1316-DN feature:
+
+~~~text
+clamp((currentHz-baselineHz)/50,-1,1)
+~~~
+
+classifier input은 4 x 1316 = 5264 차원 temporal feature를 단순 concatenate한다.
+
+정답 누설 금지:
+
+~~~text
+context label
+distance
+coordinates
+side
+seed
+obstacle flag
+target flag
+sample bin
+~~~
+
+은 model input에 넣지 않는다.
+
+## contexts
+
+Class A — OBSTACLE:
+
+~~~text
+38x54 obstacle 존재
+target은 obstacle 바깥 160 px
+target sensory + obstacle LC4 모두 존재
+~~~
+
+Class B — TARGET_ONLY:
+
+~~~text
+obstacle 없음
+target sensory만 존재
+target이 175 px 안으로 들어오면 target LC4 발생
+~~~
+
+## sampling
+
+source-distance bins:
+
+~~~text
+150 / 120 / 90 / 60 px
+~~~
+
+OBSTACLE은 obstacle front distance,
+TARGET_ONLY는 target center distance 기준이다.
+
+각 bin을 끝내는 현재 window와 직전 3개 window를 temporal sample로 묶는다.
+
+settle 26 / baseline 26 / sample window 5.
+
+train seeds:
+
+~~~text
+1401000
+1401100
+1401200
+1401300
+~~~
+
+eval seeds:
+
+~~~text
+1411000
+1411100
+1411200
+~~~
+
+start distances:
+
+~~~text
+260 / 300 / 340 / 380 px
+~~~
+
+## classifier
+
+~~~text
+linear logistic regression
+epochs 120
+LR 0.02
+L2 0.0005
+threshold 0.5
+~~~
+
+controls:
+
+~~~text
+LABEL_SHUFFLED
+DN_PERMUTED
+TEMPORAL_ORDER_SHUFFLED
+~~~
+
+DN_PERMUTED는 모든 4개 temporal window에 같은 DN permutation을 적용한다.
+TEMPORAL_ORDER_SHUFFLED는 각 sample의 4개 window 순서만 고정 permutation으로 뒤섞는다.
+
+## frozen gate
+
+~~~text
+mean FULL balanced accuracy       >= 85%
+every eval run FULL               >= 75%
+FULL - LABEL_SHUFFLED             >= 25pp
+FULL - DN_PERMUTED                >= 25pp
+FULL - TEMPORAL_ORDER_SHUFFLED    >= 15pp
+~~~
+
+결과 후 gate를 낮추지 않는다.
+
+## interpretation
+
+PASS:
+instantaneous DN state는 부족했지만 short temporal trajectory에는
+OBSTACLE과 TARGET_ONLY를 구분할 수 있는 정보가 존재한다.
+다음 Phase G3에서 이 temporal DN representation을 사용해
+mixed-context reward-only JUMP policy를 처음부터 새로 학습한다.
+
+FAIL:
+현재 shared LC4 sensory architecture에서는
+짧은 시간축까지 포함해도 context 분리가 불충분하다.
+기존 v11F JUMP weights를 보정하거나 threshold를 조절하지 않고
+sensory architecture를 더 크게 재설계한다.
