@@ -3045,3 +3045,164 @@ TARGET_ONLY any-jump     <= 30%
 
 PASS 전에는 browser controller에 배포하지 않는다.
 FAIL이면 threshold/gate를 결과 후 조정하지 않고 별도 phase로 이동한다.
+
+
+# Phase G5 — paired counterfactual reward-difference JUMP preregistration
+
+G4의 marginal reward-advantage learner는 서로 다른 episode에서 수집된
+WAIT/JUMP 결과를 회귀해 state-conditioned action difference를 추정했다.
+
+G5는 같은 deterministic pre-intervention trajectory를 공유하는
+WAIT/JUMP pair를 만들어 nuisance variation을 제거하고,
+실제 reward difference를 직접 학습한다.
+
+## hypothesis
+
+동일한:
+
+~~~text
+brain seed
+side
+start distance
+context mixture
+intervention window
+~~~
+
+에 대해 두 episode를 실행한다.
+
+~~~text
+episode A: WAIT intervention
+episode B: JUMP intervention
+~~~
+
+intervention 직전까지는 action이 없으므로 두 episode의 MaleCNS DN history는
+동일해야 한다.
+
+label target:
+
+~~~text
+deltaR = R(JUMP) - R(WAIT)
+~~~
+
+policy input은 해당 intervention 시점의 MaleCNS DN CONCAT4뿐이다.
+
+따라서 obstacle/target identity를 직접 가르치지 않고
+"이 DN 상태에서 실제로 JUMP한 결과가 WAIT보다 나았는가"만 학습한다.
+
+## frozen environment / representation
+
+~~~text
+brain            alextitonis/fly.ai
+brain commit     95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+movement         v7-run2-top64
+shared LC4       unchanged
+representation   CONCAT4
+history          4 x 5 brain-step windows = 0.4 s
+raw features     5264
+selected         top 256 by unlabeled paired-feature variance
+cooldown         38 brain steps
+persistence      2 consecutive positive-delta windows
+~~~
+
+## reward
+
+G3/G4와 동일하다.
+
+OBSTACLE:
+
+~~~text
+CLEAR    +1
+TIMEOUT  -1
+~~~
+
+TARGET_ONLY:
+
+~~~text
+TARGET   +1
+TIMEOUT  -1
+actual JUMP가 있으면 -1 추가
+~~~
+
+## practice pairs
+
+~~~text
+practice seeds      1901000 / 1911000 / 1921000
+distances           155 / 195 / 235 / 275
+OBSTACLE/TARGET     50:50 mixed schedule
+intervention window 1..14 uniform random
+actions             exact WAIT/JUMP pair for every scheduled state
+~~~
+
+각 pair에서 두 intervention feature의 numerical equality를 검증한다.
+
+~~~text
+max absolute feature difference <= 1e-9
+~~~
+
+다르면 experiment technical failure로 처리한다.
+
+support gate:
+
+~~~text
+valid pairs       >= 270
+deltaR > 0 pairs  >= 24
+deltaR < 0 pairs  >= 24
+~~~
+
+deltaR = 0 pair도 버리지 않고 회귀에 포함한다.
+
+## learner
+
+~~~text
+target       deltaR
+input        standardized selected CONCAT4 DN slots
+model        ridge-linear regression
+epochs       400
+learningRate 0.01
+L2           0.001
+initial      zero weights / zero bias
+~~~
+
+action rule:
+
+~~~text
+predicted deltaR > 0
+for 2 consecutive available windows
+=> JUMP
+otherwise WAIT
+~~~
+
+0은 실제 R(JUMP)-R(WAIT)의 의미론적 boundary이며
+final 결과를 보고 조정하지 않는다.
+
+## unseen final
+
+~~~text
+seeds      1951000 / 1961000 / 1971000
+distances  155 / 195 / 235 / 275
+~~~
+
+각 seed:
+
+~~~text
+32 FULL obstacle
+32 OBSTACLE_CUE_OFF
+32 DN_SHUFFLED
+16 TARGET_ONLY
+~~~
+
+## gate
+
+~~~text
+mean FULL clear          >= 75%
+every FULL run           >= 65%
+FULL - CUE_OFF           >= 25pp
+FULL - DN_SHUFFLED       >= 20pp
+FULL timeout             <= 20%
+FULL mean actual jumps   <= 1.75
+TARGET_ONLY reach        >= 85%
+TARGET_ONLY any-jump     <= 30%
+~~~
+
+PASS 전에는 browser controller에 배포하지 않는다.
+FAIL이면 boundary/gate를 결과 후 보정하지 않는다.
