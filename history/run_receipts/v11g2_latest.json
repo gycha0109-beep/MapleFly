@@ -1,0 +1,105 @@
+{
+  "schema": "maplefly.v11g2-run-receipt.1",
+  "runId": 35724659573,
+  "headSha": "f12157c9d975866ad15e6b246ece91ade207102e",
+  "artifact": {
+    "id": 10692831117,
+    "name": "maplefly-v11g2-temporal-context-35724659573",
+    "digest": "205902b472deb87afb2f31aba2d4e449f104e34f46e0bc03a9a80989e380ea66"
+  },
+  "meta": {
+    "schema": "maplefly.experiment-v11g2.temporal-dn-context-separability.1",
+    "brainRepository": "alextitonis/fly.ai",
+    "brainCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "dnCount": 1316,
+    "trainBaseSeeds": [
+      1401000,
+      1401100,
+      1401200,
+      1401300
+    ],
+    "evalBaseSeeds": [
+      1411000,
+      1411100,
+      1411200
+    ],
+    "distances": [
+      260,
+      300,
+      340,
+      380
+    ],
+    "sampleBins": [
+      150,
+      120,
+      90,
+      60
+    ],
+    "windows": {
+      "settle": 26,
+      "baseline": 26,
+      "sample": 5,
+      "temporalWindows": 4,
+      "temporalSeconds": 0.4
+    },
+    "featureCount": 5264,
+    "temporalOrderControl": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "classifier": {
+      "epochs": 120,
+      "learningRate": 0.02,
+      "l2": 0.0005,
+      "threshold": 0.5,
+      "orderSeed": 1406000,
+      "labelShuffleSeed": 1416000
+    },
+    "antiLeak": "classifier input is only 4 consecutive 1316-DN activity windows; context identity/distance/coordinates/side/seed/bin are metadata only"
+  },
+  "summary": {
+    "fullBalancedAccuracy": 0.8645833333333334,
+    "labelShuffledBalancedAccuracy": 0.4895833333333333,
+    "fullMinusLabelShuffled": 0.37500000000000006,
+    "dnPermutedBalancedAccuracy": 0.4791666666666667,
+    "fullMinusDnPermuted": 0.3854166666666667,
+    "temporalOrderShuffledBalancedAccuracy": 0.8333333333333334,
+    "fullMinusTemporalOrderShuffled": 0.03125,
+    "minRunFullBalancedAccuracy": 0.78125,
+    "pairedL2": {
+      "pairCount": 96,
+      "meanL2": 4.938823260784402,
+      "minL2": 3.2619012860600103,
+      "maxL2": 5.599999999999958
+    },
+    "gate": false
+  },
+  "perRun": [
+    {
+      "run": 1,
+      "baseSeed": 1411000,
+      "fullBalancedAccuracy": 0.78125,
+      "labelShuffledBalancedAccuracy": 0.453125,
+      "dnPermutedBalancedAccuracy": 0.546875,
+      "temporalOrderShuffledBalancedAccuracy": 0.828125
+    },
+    {
+      "run": 2,
+      "baseSeed": 1411100,
+      "fullBalancedAccuracy": 0.921875,
+      "labelShuffledBalancedAccuracy": 0.53125,
+      "dnPermutedBalancedAccuracy": 0.390625,
+      "temporalOrderShuffledBalancedAccuracy": 0.84375
+    },
+    {
+      "run": 3,
+      "baseSeed": 1411200,
+      "fullBalancedAccuracy": 0.890625,
+      "labelShuffledBalancedAccuracy": 0.484375,
+      "dnPermutedBalancedAccuracy": 0.5,
+      "temporalOrderShuffledBalancedAccuracy": 0.828125
+    }
+  ]
+}
