@@ -1,0 +1,69 @@
+{
+  "schema": "maplefly.run-receipt.v15b3.1",
+  "experiment": "v15B3",
+  "status": "SCIENTIFIC_PASS",
+  "decision": "V15B3_NORMALIZED_VALUE_LEARNING_PASS",
+  "v15C": "PREREGISTRATION_AUTHORIZED",
+  "browserPotionDeployment": "BLOCKED",
+  "workflow": {
+    "name": "Train MapleFly v15B3 Normalized Reward",
+    "runId": 35904611372,
+    "conclusion": "success"
+  },
+  "head": "6b82a15f2009779c945c19aa227a5d79a51a47b6",
+  "implementation": {
+    "scriptCommit": "43bb4a6a9ebf6cf6026445b1b8e48398bf962d66",
+    "workflowCommit": "6b82a15f2009779c945c19aa227a5d79a51a47b6"
+  },
+  "preregistration": {
+    "path": "history/prereg_v15b3.md",
+    "commit": "c75371458c35575af16045852e16d3403a0a88aa"
+  },
+  "artifact": {
+    "id": 10770299335,
+    "name": "maplefly-v15b3-normalized-reward-potion-35904611372",
+    "digest": "sha256:3f715ef7f4f62e854db02c4e0f05b8662d5dab2a46d1ea0675320bffbe3bc838"
+  },
+  "representationSha256": "33fc31f636e1cde215841dd33b0a93b24d4571cdabd32e9a1edc8fa2e696c847",
+  "frozenModelSha256": "47088bcb15ed2cd96f64d67a20169934bd7a866dcd56bacffea70b1f42537a59",
+  "training": {
+    "interactions": 7680,
+    "waitActions": 3778,
+    "drinkActions": 3902,
+    "optimizerDiagnostics": {
+      "featureNormSquared": {"min":170.620169634066,"mean":234.18590901223143,"max":357.34502051187417},
+      "effectiveStep": {"min":0.0013953033288582615,"mean":0.0021726016542535837,"max":0.0029134104753894365}
+    },
+    "finalHeadDiagnostics": {
+      "wait": {"bias":-0.0029142037748935957,"weightL2Norm":0.4328840558611968,"maxAbsWeight":0.156404090230642},
+      "drink": {"bias":0,"weightL2Norm":0,"maxAbsWeight":0}
+    }
+  },
+  "evaluation": {
+    "full": {
+      "balancedAccuracy": 0.9444444444444444,
+      "recall": [0.9444444444444444,0.9444444444444444],
+      "confusion": [[34,2],[2,34]],
+      "meanG": 29.72222222222222,
+      "meanRegret": 0.27777777777777857
+    },
+    "dnShuffled": {
+      "balancedAccuracy": 0.5,
+      "margin": 0.4444444444444444,
+      "meanG": 25
+    },
+    "neuralOff": {
+      "balancedAccuracy": 0.5,
+      "margin": 0.4444444444444444,
+      "meanG": 25
+    }
+  },
+  "gateChecks": {
+    "balancedAccuracy": true,
+    "everyClassRecall": true,
+    "dnShuffleMargin": true,
+    "neuralOffMargin": true,
+    "meanReturn": true,
+    "meanRegret": true
+  }
+}
