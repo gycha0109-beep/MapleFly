@@ -11,7 +11,7 @@ const candidate = JSON.parse(
 );
 
 if (
-  candidate.status !== "V14C_VALIDATED_CANDIDATE_NOT_DEPLOYED" ||
+  candidate.status !== "V14C_DEPLOYED" ||
   candidate.source.runId !== 35798458282 ||
   candidate.validation?.runId !== 35799237521 ||
   candidate.historyFrames !== 12 ||
