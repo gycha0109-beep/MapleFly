@@ -1,0 +1,98 @@
+{
+  "schema": "maplefly.run-receipt.v15d.1",
+  "experiment": "v15D",
+  "status": "DEPLOYED",
+  "decision": "V15D_DEPLOYMENT_CLOSURE_PASS",
+  "closed": true,
+  "scientificObjects": {
+    "connectomeCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "representationSha256": "33fc31f636e1cde215841dd33b0a93b24d4571cdabd32e9a1edc8fa2e696c847",
+    "policySha256": "47088bcb15ed2cd96f64d67a20169934bd7a866dcd56bacffea70b1f42537a59",
+    "validationRunId": 35905965237
+  },
+  "candidate": {
+    "head": "638f299a86110638ba3b4e3a8e707c196680da4d",
+    "verificationRunId": 35908151118,
+    "pagesRunId": 35908150993
+  },
+  "closurePreparation": {
+    "initialPrepHead": "b885364aa5c719f1a83fbdaf36b8051de6c9d40a",
+    "initialPrepRunId": 35920030966,
+    "invalidatedActivationAttempt": "37692d14fc57cd1f62d07d3e3c1fae9a868f645a",
+    "invalidatedActivationRunId": 35920517557,
+    "rollbackAndVerifierHead": "bae0f1263d257d24b1095f3d4b865f5b6f476600",
+    "finalPrepHead": "60c6d422a2dd513f2dadc255803f0f9a209f7552",
+    "finalPrepRunId": 35920807398,
+    "finalPrepConclusion": "success"
+  },
+  "activation": {
+    "head": "468334a93413b25cb4c4847a86ad01cdbef8a6ca",
+    "message": "deploy(v15d): activate frozen reward-only potion policy",
+    "changedFiles": 1,
+    "additions": 2,
+    "deletions": 2,
+    "status": "V15D_DEPLOYED",
+    "deploymentAllowed": true
+  },
+  "finalVerification": {
+    "workflow": "Verify v15D Potion Deployment",
+    "runId": 35921293931,
+    "head": "468334a93413b25cb4c4847a86ad01cdbef8a6ca",
+    "conclusion": "success",
+    "artifactEquivalence": {
+      "pass": true,
+      "slotMismatch": 0,
+      "meanMaxAbsError": 0,
+      "scaleMaxAbsError": 0,
+      "waitWeightMaxAbsError": 0,
+      "waitBiasAbsError": 0,
+      "drinkWeightMaxAbsError": 0,
+      "drinkBiasAbsError": 0
+    },
+    "realInputEquivalence": {
+      "pass": true,
+      "contexts": 16,
+      "frameError": 0,
+      "qWaitError": 0,
+      "qDrinkError": 0,
+      "actionMismatch": 0
+    },
+    "browserWiring": {
+      "pass": true,
+      "historyFrames": 48,
+      "frameSteps": 5,
+      "runtimeDnCount": 24,
+      "featureCount": 256,
+      "deployment": "deployed"
+    },
+    "deploymentClosure": {
+      "pass": true,
+      "status": "V15D_DEPLOYED",
+      "deploymentAllowed": true,
+      "hpPolicyLeak": 0,
+      "potionCue": 0,
+      "headMotorDecision": 0,
+      "fullHpDrinkLegal": true,
+      "wasteAccountingPreserved": true
+    },
+    "lowerSkillRegressions": {
+      "moveV7": {"pass": true, "training150": 1, "minOn": 1, "maxOff": 0.5},
+      "attackV10F": {"pass": true, "full": 0.844, "whiff": 0.156},
+      "jumpV11H2": {"pass": true, "full": 1, "timeout": 0, "meanJumps": 1.375, "target": 1, "falseJump": 0},
+      "v14C": {"pass": true, "completion": 0.958, "minSeed": 0.875, "clear": 1, "kill": 0.958, "timeout": 0.042, "meanJumps": 1.417, "postJump": 0, "preClearAttack": 0.125, "airAction": 0.127, "precision": 0.602}
+    }
+  },
+  "pages": {
+    "runId": 35921293900,
+    "head": "468334a93413b25cb4c4847a86ad01cdbef8a6ca",
+    "conclusion": "success",
+    "matchesActivationHead": true
+  },
+  "finalSkills": {
+    "MOVE_v7": "DEPLOYED_UNCHANGED",
+    "ATTACK_v10F": "DEPLOYED_UNCHANGED",
+    "JUMP_v11H2": "DEPLOYED_UNCHANGED",
+    "v14C": "DEPLOYED_UNCHANGED",
+    "POTION_v15": "DEPLOYED"
+  }
+}
