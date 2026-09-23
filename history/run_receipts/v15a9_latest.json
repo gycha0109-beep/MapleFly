@@ -1,0 +1,67 @@
+{
+  "schema": "maplefly.run-receipt.v15a9.1",
+  "experiment": "v15A9",
+  "status": "SCIENTIFIC_RESULT",
+  "decision": "SINGLE_HALF_SUFFICIENCY_PRESENT",
+  "v15B": "BLOCKED",
+  "workflow": {
+    "name": "Screen MapleFly v15A9 Half History Necessity",
+    "runId": 35889296818,
+    "conclusion": "success"
+  },
+  "head": "78a927ca0f09e4267403b994322db5ead32b9e24",
+  "implementation": {
+    "screenCommit": "a79ce0f4a91dfd973d93bc5636b97e1e6e204df7",
+    "workflowCommit": "78a927ca0f09e4267403b994322db5ead32b9e24"
+  },
+  "preregistration": {
+    "path": "history/prereg_v15a9.md",
+    "commit": "d3f8e17430378761df81e7bda27c2ca8c5d009dd"
+  },
+  "artifact": {
+    "id": 10763554064,
+    "name": "maplefly-v15a9-half-history-necessity-35889296818",
+    "digest": "sha256:c27cd945468fb16927d8d9ff2a8d31572edc1657abd3ce9e68374e687a6cee6e"
+  },
+  "representations": {
+    "FULL48": {
+      "sha256": "fb4f13253b90d34cc1657b5c161668f232c1ef8aef8863d34b56808cc2d9ebe9",
+      "selectedHalfCounts": {"early24": 134, "late24": 122},
+      "taskA": {"balancedAccuracy": 0.875, "recall": [0.8611111111111112, 0.8888888888888888], "dnShuffled": 0.5, "margin": 0.375, "gatePass": true},
+      "taskB": {"balancedAccuracy": 0.6388888888888888, "recall": [0.6666666666666666, 0.6111111111111112], "dnShuffled": 0.5, "margin": 0.13888888888888884, "gatePass": false}
+    },
+    "EARLY24": {
+      "sha256": "309d65268b84100ff654c52da452d6b3bedadf0413d15f6af092bedd040c69f8",
+      "taskA": {"balancedAccuracy": 0.8194444444444444, "recall": [0.8333333333333334, 0.8055555555555556], "dnShuffled": 0.5555555555555556, "margin": 0.26388888888888884, "gatePass": true},
+      "taskB": {"balancedAccuracy": 0.7222222222222222, "recall": [0.7777777777777778, 0.6666666666666666], "dnShuffled": 0.5, "margin": 0.2222222222222222, "gatePass": true}
+    },
+    "LATE24": {
+      "sha256": "635a26c909d969adae8598244dc6be2d8549fab7acc2bc3ed42a2cc363f83bd8",
+      "taskA": {"balancedAccuracy": 0.6388888888888888, "recall": [0.6666666666666666, 0.6111111111111112], "dnShuffled": 0.5138888888888888, "margin": 0.125, "gatePass": false},
+      "taskB": {"balancedAccuracy": 0.4166666666666667, "recall": [0.5555555555555556, 0.2777777777777778], "dnShuffled": 0.5, "margin": -0.08333333333333331, "gatePass": false}
+    }
+  },
+  "ablations": {
+    "MASK_EARLY24": {
+      "balancedAccuracy": 0.6944444444444444,
+      "pointDelta": 0.18055555555555558,
+      "bootstrap95": [0.08333333333333337, 0.26388888888888884],
+      "materialDecoderContribution": true
+    },
+    "MASK_LATE24": {
+      "balancedAccuracy": 0.8194444444444444,
+      "pointDelta": 0.05555555555555558,
+      "bootstrap95": [0.0, 0.11111111111111116],
+      "materialDecoderContribution": false
+    }
+  },
+  "findings": [
+    "EARLY24_SUFFICIENT",
+    "EARLY24_DECODER_CONTRIBUTES"
+  ],
+  "interpretation": {
+    "coarseBurdenCarrier": "primarily_EARLY24_at_current_resolution",
+    "crossHalfDistributedCriterion": false,
+    "nearestBoundary": "EARLY24_diagnostic_pass_only"
+  }
+}
