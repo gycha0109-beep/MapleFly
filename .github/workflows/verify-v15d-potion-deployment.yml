@@ -1,0 +1,165 @@
+name: Verify v15D Potion Deployment Candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/brain/fly-skill-v15-potion.js"
+      - "src/brain/fly-controller.js"
+      - "src/brain/fly-worker.js"
+      - "src/game.js"
+      - "index.html"
+      - "scripts/verify-v15d-artifact-equivalence.mjs"
+      - "scripts/verify-v15d-browser-wiring.mjs"
+      - "scripts/verify-v15d-real-input-equivalence.mjs"
+      - ".github/workflows/verify-v15d-potion-deployment.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  artifact-equivalence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Fetch frozen v15 artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15a12-artifact .cache/v15b3-artifact
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10768761312" --jq '.digest')" = "sha256:8aa759b04643d618e69aaa647d7251eb237816ee3b84bcc97a0f451d20cbba78"
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10770299335" --jq '.digest')" = "sha256:3f715ef7f4f62e854db02c4e0f05b8662d5dab2a46d1ea0675320bffbe3bc838"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10768761312/zip" > /tmp/v15a12.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10770299335/zip" > /tmp/v15b3.zip
+          unzip -q /tmp/v15a12.zip -d .cache/v15a12-artifact
+          unzip -q /tmp/v15b3.zip -d .cache/v15b3-artifact
+          test -f .cache/v15a12-artifact/v15a12_screen.json
+          test -f .cache/v15b3-artifact/v15b3_training.json
+      - run: |
+          node --check src/brain/fly-skill-v15-potion.js
+          node --check scripts/verify-v15d-artifact-equivalence.mjs
+          V15A12_REPRESENTATION_FILE=.cache/v15a12-artifact/v15a12_screen.json V15B3_MODEL_FILE=.cache/v15b3-artifact/v15b3_training.json node scripts/verify-v15d-artifact-equivalence.mjs
+
+  browser-wiring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: |
+          node --check src/brain/fly-controller.js
+          node --check src/brain/fly-worker.js
+          node --check src/game.js
+          node scripts/verify-v15d-browser-wiring.mjs
+
+  real-input-equivalence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Fetch frozen v15 artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15a12-artifact .cache/v15b3-artifact
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10768761312" --jq '.digest')" = "sha256:8aa759b04643d618e69aaa647d7251eb237816ee3b84bcc97a0f451d20cbba78"
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10770299335" --jq '.digest')" = "sha256:3f715ef7f4f62e854db02c4e0f05b8662d5dab2a46d1ea0675320bffbe3bc838"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10768761312/zip" > /tmp/v15a12.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10770299335/zip" > /tmp/v15b3.zip
+          unzip -q /tmp/v15a12.zip -d .cache/v15a12-artifact
+          unzip -q /tmp/v15b3.zip -d .cache/v15b3-artifact
+          test -f .cache/v15a12-artifact/v15a12_screen.json
+          test -f .cache/v15b3-artifact/v15b3_training.json
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run real MaleCNS browser/reference equivalence
+        env:
+          V15A12_REPRESENTATION_FILE: .cache/v15a12-artifact/v15a12_screen.json
+          V15B3_MODEL_FILE: .cache/v15b3-artifact/v15b3_training.json
+        run: node scripts/verify-v15d-real-input-equivalence.mjs
+
+  movement-v7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - run: >
+          node scripts/experiment-v7-deploy-check.mjs
+          --episodes 40
+          --seed 9000
+          --out results/experiment-v7-deploy
+          --cache .cache/maplefly-connectome
+
+  attack-v10f:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - run: node scripts/verify-v10f-browser-equivalence.mjs
+
+  jump-v11h2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - run: node scripts/verify-v11h2-browser-deployment-smoke.mjs
+
+  v14c-wiring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: node scripts/verify-v14c-browser-wiring.mjs
+
+  v14c-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - run: node scripts/verify-v14c-deployment-smoke.mjs
