@@ -313,10 +313,13 @@ async function main() {
 
   const lglgL = connectome.inputGroups.get("LgLG_L");
   const lglgR = connectome.inputGroups.get("LgLG_R");
-  if (!lglgL?.length || !lglgR?.length) {
-    throw new Error("LgLG input group missing");
-  }
-  const sourceSet = new Set([...lglgL, ...lglgR]);
+  console.log(
+    "[v15A-diag] LgLG groups L=" +
+      (lglgL?.length ?? 0) +
+      " R=" +
+      (lglgR?.length ?? 0),
+  );
+  const sourceSet = new Set([...(lglgL ?? []), ...(lglgR ?? [])]);
   const reachability = structuralReachability(
     connectome,
     Array.from(sourceSet),
