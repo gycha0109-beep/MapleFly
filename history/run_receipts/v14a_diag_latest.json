@@ -1,0 +1,45 @@
+{
+  "schema": "maplefly.v14a.attack-interruption-diagnostic.receipt.1",
+  "status": "DIAGNOSTIC_PASS",
+  "chronology": "retrospective-after-v14c",
+  "preregistration": {
+    "path": "history/prereg_v14a_diag.md",
+    "commit": "a9fe19a59d6a4c59a46c2ad22ce07c37f01c9a8f"
+  },
+  "implementation": {
+    "commit": "22d76db49ac8c31cf7d86101803ef0b323c97971",
+    "syntaxOnlyPredecessor": "eab21631fbd9734cb08a5852e41241cd9d63e23b"
+  },
+  "run": 35802645781,
+  "artifact": {
+    "id": 10726632460,
+    "name": "maplefly-v14a-attack-diagnostic-35802645781",
+    "digest": "sha256:1cb13e656453cbf919a4f99f5937ad82ee30fb427d5358927c81194243ac86de"
+  },
+  "sourceV14A": {
+    "run": 35797391192,
+    "artifact": 10724443147,
+    "digest": "sha256:344cfbdd694e0b29a070c423d75111a89a5a76cb97e8c136865cdd09a25ac10d"
+  },
+  "replayExact": true,
+  "proposalCount": 187,
+  "gateAgainstWouldHit": {
+    "auroc": 0.6074895977808599,
+    "balancedAccuracy": 0.5417822468793343
+  },
+  "probes": {
+    "air": {
+      "band": "STRONGLY_SEPARABLE",
+      "macroAuroc": 0.99285833425998,
+      "macroBalancedAccuracy": 0.9560618297662313,
+      "minSeedAuroc": 0.9829867674858223
+    },
+    "wouldHit": {
+      "band": "STRONGLY_SEPARABLE",
+      "macroAuroc": 0.8728411337392893,
+      "macroBalancedAccuracy": 0.7898122380159269,
+      "minSeedAuroc": 0.8364532019704434
+    }
+  },
+  "classification": "LEARNER_CREDIT"
+}
