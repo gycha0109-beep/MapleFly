@@ -1,0 +1,63 @@
+{
+  "schema": "maplefly.run-receipt.v15a8.1",
+  "experiment": "v15A8",
+  "status": "SCIENTIFIC_RESULT",
+  "decision": "DISTRIBUTED_MULTIWINDOW_SIGNAL",
+  "v15B": "BLOCKED",
+  "workflow": {
+    "name": "Screen MapleFly v15A8 Temporal Localization",
+    "runId": 35885839874,
+    "conclusion": "success"
+  },
+  "head": "15543928d390335df723c24a4c1107c0d05deeaa",
+  "implementation": {
+    "screenCommit": "61452d191f6465917d8cbbf08055e7f6e66ddcce",
+    "workflowCommit": "15543928d390335df723c24a4c1107c0d05deeaa"
+  },
+  "preregistration": {
+    "path": "history/prereg_v15a8.md",
+    "commit": "14640bce0d43f61ffdac010a4241da597056d1ec"
+  },
+  "artifact": {
+    "id": 10763071635,
+    "name": "maplefly-v15a8-temporal-localization-35885839874",
+    "digest": "sha256:e41b4bf5b31f5ad674d0d2fa5961c63fa622a078e292421b1ee4b5d38482022e"
+  },
+  "full48": {
+    "representationSha256": "8f3627eeebe609ed8798be196d44f33ae8247b9c620d69472c609563219f3987",
+    "taskA": {
+      "balancedAccuracy": 0.8333333333333333,
+      "recall": [0.8888888888888888, 0.7777777777777778],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.33333333333333326,
+      "gatePass": true
+    },
+    "taskB": {
+      "balancedAccuracy": 0.6944444444444444,
+      "recall": [0.7222222222222222, 0.6666666666666666],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.19444444444444442,
+      "gatePass": false
+    }
+  },
+  "windows": [
+    {"name":"W0","sha256":"37b126462b97b5cbe0466e03c24017421a3ffab652637489a1dc5fe23491c6d9","taskABalancedAccuracy":0.7222222222222222,"recall":[0.9722222222222222,0.4722222222222222],"dnShuffled":0.5277777777777778,"margin":0.19444444444444442,"gatePass":false},
+    {"name":"W1","sha256":"0afafe3d75f44f13f57356a3903bd725d9878fd89a546c78a27a9279cde2b230","taskABalancedAccuracy":0.625,"recall":[0.6388888888888888,0.6111111111111112],"dnShuffled":0.5,"margin":0.125,"gatePass":false},
+    {"name":"W2","sha256":"7be4f24e73c524abcd935a74d371a24c579e328f85731fb08fa16e59862832ce","taskABalancedAccuracy":0.6666666666666667,"recall":[0.75,0.5833333333333334],"dnShuffled":0.5416666666666667,"margin":0.125,"gatePass":false},
+    {"name":"W3","sha256":"9e73ede08a7a19539761f44ab965d12eb3a898456136793fcc65311991736c3f","taskABalancedAccuracy":0.6666666666666666,"recall":[0.5277777777777778,0.8055555555555556],"dnShuffled":0.5694444444444444,"margin":0.09722222222222221,"gatePass":false},
+    {"name":"W4","sha256":"5803ed15ed73ff14f5c87bc537ce4a901be46b209125c5f55eae6690dfcb0a36","taskABalancedAccuracy":0.5555555555555556,"recall":[0.5555555555555556,0.5555555555555556],"dnShuffled":0.5,"margin":0.05555555555555558,"gatePass":false},
+    {"name":"W5","sha256":"c2d19a1ce55c0572b355348f389b10be74293da44cef83ef6db4cec381eb2698","taskABalancedAccuracy":0.5277777777777778,"recall":[0.5,0.5555555555555556],"dnShuffled":0.4861111111111111,"margin":0.041666666666666685,"gatePass":false},
+    {"name":"W6","sha256":"00c04a580f49c9ed2a9cf8f2c9b65294d3d50f6134e3b4c882d0a9eae473bb4c","taskABalancedAccuracy":0.4861111111111111,"recall":[0.4444444444444444,0.5277777777777778],"dnShuffled":0.5,"margin":-0.013888888888888895,"gatePass":false},
+    {"name":"W7","sha256":"3d87ad003cf84fbc641663a13990c9da38e06fbc54069d9713cba1eba8f77451","taskABalancedAccuracy":0.4305555555555556,"recall":[0.5,0.3611111111111111],"dnShuffled":0.4583333333333333,"margin":-0.027777777777777735,"gatePass":false}
+  ],
+  "localizedWindows": [],
+  "persistentAdjacentPairs": [],
+  "w7ImpactFreeByFrozenSchedule": true,
+  "w7LocalizedPass": false,
+  "interpretation": {
+    "full48CoarseSignal": "replicated",
+    "single600msSufficiency": "not_demonstrated",
+    "coarseSignalAtFrozenResolution": "distributed_multiwindow",
+    "nearestEconomicBoundary": "insufficient"
+  }
+}
