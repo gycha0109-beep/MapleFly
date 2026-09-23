@@ -1,0 +1,42 @@
+name: Screen MapleFly v15A11 Final 600ms Localization
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/screen-v15a11-early12-600ms-localization.mjs"
+      - ".github/workflows/screen-v15a11-early12-600ms-localization.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  final-600ms-localization:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/screen-v15a11-early12-600ms-localization.mjs
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15A11 final 600ms localization
+        run: node scripts/screen-v15a11-early12-600ms-localization.mjs
+      - name: Upload v15A11 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15a11-early12-600ms-localization-${{ github.run_id }}
+          path: results/screen-v15a11-early12-600ms-localization
+          if-no-files-found: warn
+          retention-days: 30
