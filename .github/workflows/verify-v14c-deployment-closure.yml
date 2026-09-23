@@ -1,0 +1,120 @@
+name: Verify v14C Deployment Closure
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/verify-v14c-evaluator-equivalence.mjs"
+      - "scripts/verify-v14c-deployment-smoke.mjs"
+      - "scripts/verify-v11f-legacy-isolation.mjs"
+      - ".github/workflows/verify-v14c-deployment-closure.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  evaluator-equivalence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: |
+          node --check scripts/verify-v14c-evaluator-equivalence.mjs
+          node scripts/verify-v14c-evaluator-equivalence.mjs
+
+  browser-wiring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: node scripts/verify-v14c-browser-wiring.mjs
+
+  legacy-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: |
+          node --check scripts/verify-v11f-legacy-isolation.mjs
+          node scripts/verify-v11f-legacy-isolation.mjs
+
+  deployment-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: node --check scripts/verify-v14c-deployment-smoke.mjs
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run real MaleCNS integrated deployment smoke
+        run: node scripts/verify-v14c-deployment-smoke.mjs
+      - name: Upload v14C deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v14c-deployment-smoke-${{ github.run_id }}
+          path: results/verify-v14c-deployment
+          if-no-files-found: warn
+          retention-days: 30
+
+  movement-v7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - run: >
+          node scripts/experiment-v7-deploy-check.mjs
+          --episodes 40
+          --seed 9000
+          --out results/experiment-v7-deploy
+          --cache .cache/maplefly-connectome
+
+  attack-v10f:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - run: node scripts/verify-v10f-browser-equivalence.mjs
+
+  jump-v11h2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - run: node scripts/verify-v11h2-browser-deployment-smoke.mjs
