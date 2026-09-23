@@ -23,6 +23,8 @@ const requiredController = [
   "global.MapleFlyInterruptionV14B",
   "candidate.source?.runId !== 35798458282",
   "candidate.validation?.runId !== 35799237521",
+  "candidate.deploymentAllowed !== true",
+  "candidate.deployment?.closureRunId !== 35803350811",
   "candidate.historyFrames !== 12",
   "candidate.featureCount !== 96",
   "this.interruptionApi.makeFrame(",
@@ -62,7 +64,9 @@ if (
 
 if (
   candidate.status !==
-    "V14C_VALIDATED_CANDIDATE_NOT_DEPLOYED" ||
+    "V14C_DEPLOYED" ||
+  candidate.deploymentAllowed !== true ||
+  candidate.deployment?.closureRunId !== 35803350811 ||
   candidate.source.runId !== 35798458282 ||
   candidate.validation.runId !== 35799237521 ||
   candidate.historyFrames !== 12 ||
@@ -76,5 +80,5 @@ if (
 console.log(
   "V14C-BROWSER-WIRING=PASS history=12 features=96 " +
     "move=ungated attack=dual-head jump=dual-head " +
-    "source=35798458282 validation=35799237521",
+    "source=35798458282 validation=35799237521 deployment=35803350811",
 );

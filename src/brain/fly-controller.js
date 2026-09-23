@@ -184,7 +184,7 @@
 
       this.loading = true;
       this.setStatus("LOADING");
-      this.setProgress("v14C interruption candidate 확인 중");
+      this.setProgress("v14C deployed interruption 확인 중");
       this.render();
 
       if (
@@ -210,7 +210,8 @@
           const candidate = await response.json();
           if (
             candidate.status !==
-              "V14C_VALIDATED_CANDIDATE_NOT_DEPLOYED" ||
+              "V14C_DEPLOYED" ||
+            candidate.deploymentAllowed !== true ||
             candidate.source?.runId !== 35798458282 ||
             candidate.validation?.runId !== 35799237521 ||
             candidate.historyFrames !== 12 ||
@@ -219,7 +220,7 @@
             candidate.policies?.jump?.weights?.length !== 96
           ) {
             throw new Error(
-              "v14C candidate provenance mismatch",
+              "v14C deployed interruption provenance mismatch",
             );
           }
 
@@ -241,7 +242,7 @@
             this.interruptionApi.createHistory();
         } catch (error) {
           this.fail(
-            "v14C candidate load failed: " +
+            "v14C deployed interruption load failed: " +
               (error?.message ?? error),
           );
           return;

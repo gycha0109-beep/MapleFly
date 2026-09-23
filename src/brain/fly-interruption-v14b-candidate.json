@@ -1,6 +1,6 @@
 {
   "schema": "maplefly.v14b.failed-screen-candidate.1",
-  "status": "V14C_VALIDATED_CANDIDATE_NOT_DEPLOYED",
+  "status": "V14C_DEPLOYED",
   "source": {
     "runId": 35798458282,
     "headSha": "378a6691298d71b0ff2d248f47f6833e233ab01a",
@@ -214,7 +214,7 @@
       ]
     }
   },
-  "deploymentAllowed": false,
+  "deploymentAllowed": true,
   "validation": {
     "runId": 35799237521,
     "artifactId": 10725530980,
@@ -222,5 +222,16 @@
     "result": "PASS",
     "weightsChanged": false,
     "thresholdChanged": false
+  },
+  "deployment": {
+    "preregistration": "history/prereg_v14c_deployment.md@ee57facc8ddfaeab173598a0d2c7ea98c2d021de",
+    "closureRunId": 35803350811,
+    "closureHeadSha": "cca594668b8ce15d31b866dc71256011f9d6b85e",
+    "smokeArtifactId": 10727010181,
+    "smokeArtifactDigest": "sha256:af0116a0f4b052a4d91eab80da15a86fa15745f1d8a52a75e9d432d16ae29163",
+    "result": "PASS",
+    "weightsChanged": false,
+    "thresholdChanged": false,
+    "historyChanged": false
   }
 }
