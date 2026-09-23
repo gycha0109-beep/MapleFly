@@ -8,6 +8,10 @@ on:
       - "scripts/verify-v14c-evaluator-equivalence.mjs"
       - "scripts/verify-v14c-deployment-smoke.mjs"
       - "scripts/verify-v11f-legacy-isolation.mjs"
+      - "src/brain/fly-controller.js"
+      - "src/brain/fly-interruption-v14b.js"
+      - "src/brain/fly-interruption-v14b-candidate.json"
+      - "scripts/verify-v14c-browser-wiring.mjs"
       - ".github/workflows/verify-v14c-deployment-closure.yml"
 
 permissions:
