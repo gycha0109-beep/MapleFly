@@ -212,6 +212,7 @@
             candidate.status !==
               "V14C_DEPLOYED" ||
             candidate.deploymentAllowed !== true ||
+            candidate.deployment?.closureRunId !== 35803350811 ||
             candidate.source?.runId !== 35798458282 ||
             candidate.validation?.runId !== 35799237521 ||
             candidate.historyFrames !== 12 ||
