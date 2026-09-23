@@ -1,0 +1,112 @@
+{
+  "schema": "maplefly.run-receipt.v15a7.1",
+  "experiment": "v15A7",
+  "status": "SCIENTIFIC_RESULT",
+  "decision": "BASELINE_REPLICATED",
+  "carrierFindings": [
+    "ABSOLUTE_ALIGNMENT_CONTRIBUTES",
+    "CROSS_DN_PHASE_CONTRIBUTES"
+  ],
+  "v15B": "BLOCKED",
+  "workflow": {
+    "name": "Screen MapleFly v15A7 Temporal Carrier",
+    "runId": 35881365299,
+    "conclusion": "success"
+  },
+  "head": "9f7b78a4be629c4babf95ac46670b93d1ff86d7e",
+  "implementation": {
+    "screenCommit": "5524c5e3571ac1d1f70619061edf11a476cd0b25",
+    "workflowCommit": "9f7b78a4be629c4babf95ac46670b93d1ff86d7e"
+  },
+  "preregistration": {
+    "path": "history/prereg_v15a7.md",
+    "commit": "41010853e9eba8124bee34b23fb88bb08bebde4f"
+  },
+  "artifact": {
+    "id": 10761068053,
+    "name": "maplefly-v15a7-temporal-carrier-35881365299",
+    "digest": "sha256:970347d114a6dd579e5554ee3d2782c8098b490de6aafcb6ba7fe73bc666b497"
+  },
+  "representations": {
+    "R0_FULL_CONCAT48": {
+      "sha256": "70b2742b14cf8999b52ba03d4efe807f153a44f23875ec3918beddb49f2e2f41",
+      "taskA": {
+        "balancedAccuracy": 0.8472222222222223,
+        "recall": [0.8611111111111112, 0.8333333333333334],
+        "dnShuffled": 0.5,
+        "dnShuffleMargin": 0.3472222222222223,
+        "gatePass": true
+      },
+      "taskB": {
+        "balancedAccuracy": 0.6666666666666667,
+        "recall": [0.6111111111111112, 0.7222222222222222],
+        "dnShuffled": 0.5,
+        "dnShuffleMargin": 0.16666666666666674,
+        "gatePass": false
+      },
+      "taskC": {
+        "balancedAccuracy": 0.9444444444444444,
+        "recall": [0.9444444444444444, 0.9444444444444444],
+        "dnShuffled": 0.5,
+        "dnShuffleMargin": 0.4444444444444444,
+        "gatePass": true
+      }
+    },
+    "R1_WHOLE_FRAME_CIRCULAR_SHIFT": {
+      "sha256": "c63c2ab6952f8b19544bb338cd5c2615171591dea4865ad42c624011750f0891",
+      "taskA": {
+        "balancedAccuracy": 0.625,
+        "recall": [0.5555555555555556, 0.6944444444444444],
+        "dnShuffled": 0.5555555555555556,
+        "dnShuffleMargin": 0.06944444444444442,
+        "gatePass": false
+      }
+    },
+    "R2_WHOLE_FRAME_PERMUTATION": {
+      "sha256": "6b3514f4558697bd5e98bf8dee418357aa30cc842d8e94f63e0e1930816a0f09",
+      "taskA": {
+        "balancedAccuracy": 0.4722222222222222,
+        "recall": [0.3888888888888889, 0.5555555555555556],
+        "dnShuffled": 0.5833333333333334,
+        "dnShuffleMargin": -0.11111111111111116,
+        "gatePass": false
+      }
+    },
+    "R3_INDEPENDENT_DN_CIRCULAR_SHIFT": {
+      "sha256": "06c000422229a60783293a1ee561659af437ad6c26da5b9cf6d05a66517152d4",
+      "taskA": {
+        "balancedAccuracy": 0.5138888888888888,
+        "recall": [0.3611111111111111, 0.6666666666666666],
+        "dnShuffled": 0.4861111111111111,
+        "dnShuffleMargin": 0.027777777777777735,
+        "gatePass": false
+      }
+    }
+  },
+  "pairedBootstrapTaskA": {
+    "iterations": 2000,
+    "seed": 2849000,
+    "R1": {
+      "pointDelta": 0.22222222222222232,
+      "ci95": [0.09722222222222221, 0.33333333333333337],
+      "materialCarrierLoss": true
+    },
+    "R2": {
+      "pointDelta": 0.3750000000000001,
+      "ci95": [0.2777777777777778, 0.48611111111111116],
+      "materialCarrierLoss": true
+    },
+    "R3": {
+      "pointDelta": 0.3333333333333335,
+      "ci95": [0.2222222222222222, 0.45833333333333337],
+      "materialCarrierLoss": true
+    }
+  },
+  "interpretation": {
+    "concat48FreshCohortCoarseSignal": "replicated",
+    "absoluteTemporalAlignment": "material_contribution_demonstrated",
+    "crossDnTemporalPhase": "material_contribution_demonstrated",
+    "temporalOrderBeyondAlignment": "not_isolated",
+    "nearestEconomicBoundary": "insufficient"
+  }
+}
