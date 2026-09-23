@@ -1,0 +1,42 @@
+name: Screen MapleFly v15A7 Temporal Carrier
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/screen-v15a7-temporal-carrier.mjs"
+      - ".github/workflows/screen-v15a7-temporal-carrier.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  temporal-carrier-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/screen-v15a7-temporal-carrier.mjs
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15A7 temporal-carrier screen
+        run: node scripts/screen-v15a7-temporal-carrier.mjs
+      - name: Upload v15A7 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15a7-temporal-carrier-${{ github.run_id }}
+          path: results/screen-v15a7-temporal-carrier
+          if-no-files-found: warn
+          retention-days: 30
