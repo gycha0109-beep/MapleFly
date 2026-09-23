@@ -430,8 +430,7 @@
   function tryPotion() {
     if (
       player.dead ||
-      player.potions <= 0 ||
-      player.hp >= player.maxHp
+      player.potions <= 0
     ) {
       return false;
     }
@@ -642,11 +641,6 @@
           player.impactPulseMs > 0
             ? PLAYER_STATUS.impactDrive
             : 0,
-        potions: player.potions,
-        potionCue:
-          !player.dead &&
-          player.potions > 0 &&
-          player.hp < player.maxHp,
       },
       mushrooms: [
         {
