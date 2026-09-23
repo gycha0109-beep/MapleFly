@@ -1,0 +1,60 @@
+{
+  "schema": "maplefly.v15a3.corrected-injury-history-screen.receipt.1",
+  "status": "FAIL",
+  "preregistration": {
+    "path": "history/prereg_v15a3.md",
+    "commit": "3fca025a106799c9a364cbad7516ce834d9dde6a"
+  },
+  "run": {
+    "id": 35807433646,
+    "headSha": "977e1774fc524d0a517c788ee61bf31159503aa4",
+    "conclusion": "failure",
+    "scientificFailure": true
+  },
+  "artifact": {
+    "id": 10728068829,
+    "name": "maplefly-v15a3-injury-history-35807433646",
+    "digest": "sha256:d32c84e061efd6df81044388a6c5522168c83d8d8eb5facfc5bab65f7fb2aefe"
+  },
+  "representations": [
+    {
+      "name": "CURRENT",
+      "full": 0.264,
+      "minRecall": 0.111,
+      "dnShuffled": 0.25,
+      "margin": 0.014,
+      "labelShuffled": 0.236,
+      "pass": false
+    },
+    {
+      "name": "CONCAT12",
+      "full": 0.25,
+      "minRecall": 0.167,
+      "dnShuffled": 0.208,
+      "margin": 0.042,
+      "labelShuffled": 0.333,
+      "pass": false
+    },
+    {
+      "name": "CONCAT24",
+      "full": 0.375,
+      "minRecall": 0.222,
+      "dnShuffled": 0.222,
+      "margin": 0.153,
+      "labelShuffled": 0.319,
+      "pass": false
+    },
+    {
+      "name": "CONCAT48",
+      "full": 0.556,
+      "minRecall": 0.278,
+      "dnShuffled": 0.292,
+      "margin": 0.264,
+      "labelShuffled": 0.306,
+      "pass": false
+    }
+  ],
+  "selectedRepresentation": null,
+  "v15BBlocked": true,
+  "scientificParametersChanged": false
+}
