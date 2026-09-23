@@ -1,0 +1,64 @@
+{
+  "schema": "maplefly.run-receipt.v15b.1",
+  "experiment": "v15B",
+  "status": "SCIENTIFIC_FAIL",
+  "decision": "V15B_REWARD_ONLY_LEARNING_FAIL",
+  "v15C": "BLOCKED",
+  "browserPotionDeployment": "BLOCKED",
+  "workflow": {
+    "name": "Train MapleFly v15B Reward Only Potion",
+    "runId": 35900146037,
+    "conclusion": "failure"
+  },
+  "head": "551f461b7c96541a6df3fda8f6cf8db6060c753c",
+  "implementation": {
+    "scriptCommit": "376916a13f6069192d41798e78a710e1bb90693a",
+    "workflowCommit": "551f461b7c96541a6df3fda8f6cf8db6060c753c"
+  },
+  "preregistration": {
+    "path": "history/prereg_v15b.md",
+    "commit": "7d48968b71304cf3190e8c808414455af08b0895"
+  },
+  "artifact": {
+    "id": 10769675269,
+    "name": "maplefly-v15b-reward-only-potion-35900146037",
+    "digest": "sha256:e30da6d744588784beebeed4b9fa9d8bcd4dde75d97bc7d4110c080f4bffef39"
+  },
+  "representationSha256": "33fc31f636e1cde215841dd33b0a93b24d4571cdabd32e9a1edc8fa2e696c847",
+  "frozenModelSha256": "42d5967dbb5851f5bfd16211d9dacafdf8e1b3c60a5a8834090d2751cb748299",
+  "training": {
+    "interactions": 7680,
+    "waitActions": 1939,
+    "drinkActions": 5741,
+    "explorationEvents": 1600,
+    "firstEpochMeanG": 25.46875,
+    "lastEpochMeanG": 25.104166666666668
+  },
+  "evaluation": {
+    "full": {
+      "balancedAccuracy": 0.5416666666666667,
+      "recall": [0.3055555555555556,0.7777777777777778],
+      "confusion": [[11,25],[8,28]],
+      "meanG": 25.76388888888889,
+      "meanRegret": 4.236111111111111
+    },
+    "dnShuffled": {
+      "balancedAccuracy": 0.41666666666666663,
+      "margin": 0.125,
+      "meanG": 24.166666666666668
+    },
+    "neuralOff": {
+      "balancedAccuracy": 0.5,
+      "margin": 0.04166666666666674,
+      "meanG": 25
+    }
+  },
+  "gateChecks": {
+    "balancedAccuracy": false,
+    "everyClassRecall": false,
+    "dnShuffleMargin": false,
+    "neuralOffMargin": false,
+    "meanReturn": false,
+    "meanRegret": false
+  }
+}
