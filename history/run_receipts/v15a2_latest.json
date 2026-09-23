@@ -1,0 +1,29 @@
+{
+  "schema": "maplefly.v15a2.lglg-family-propagation.receipt.1",
+  "status": "PASS",
+  "preregistration": {
+    "path": "history/prereg_v15a2.md",
+    "commit": "df7e47271e4d9ca96786f55eb5d3995d25350325"
+  },
+  "run": {
+    "id": 35807276548,
+    "headSha": "5fd654b972163162bffc4162a92bb6e4e4702268",
+    "conclusion": "success"
+  },
+  "artifact": {
+    "id": 10728048281,
+    "name": "maplefly-v15a2-lglg-family-propagation-35807276548",
+    "digest": "sha256:fc6a4bf70902c8bdcaa3d62dd7c09ac1b2eee703a4bf8996a94384df948b4467"
+  },
+  "mapping": {
+    "method": "cellsWithPrefix(meta, 'LgLG', side)",
+    "left": 331,
+    "right": 338
+  },
+  "reach3Dn": 1316,
+  "minPairInputFireDiff": 1011,
+  "minPairWholeFireDiff": 409245,
+  "minPairDnSpikeMismatch": 4213,
+  "pass": true,
+  "scientificParametersChanged": false
+}
