@@ -1,0 +1,69 @@
+{
+  "schema": "maplefly.run-receipt.v15a4.1",
+  "experiment": "v15A4",
+  "status": "SCIENTIFIC_FAIL",
+  "decision": "V15A4-INJURY-BURDEN-SCREEN=FAIL",
+  "v15B": "BLOCKED",
+  "workflow": {
+    "name": "Screen MapleFly v15A4 Injury Burden",
+    "runId": 35808078481,
+    "conclusion": "failure"
+  },
+  "head": "65d4a402224b495f1aa340befa897828bfc96f37",
+  "preregistration": {
+    "path": "history/prereg_v15a4.md",
+    "commit": "0e815c65b8cc3ea269fd9d784cc41c677afb6704"
+  },
+  "artifact": {
+    "id": 10728751928,
+    "digest": "sha256:a65c007102f9f56ed30edb4cc43806d0d29e9892f39ebe98fde7493bf55a464b"
+  },
+  "representation": {
+    "name": "CONCAT48",
+    "selectedFeatureCount": 256,
+    "objectSha256": "dca322283c5e4f6ff106e17f882350408de1953856b0f47cdfa293edb24f0a91"
+  },
+  "tasks": {
+    "A_PRESENCE_0v1": {
+      "required": true,
+      "balancedAccuracy": 0.6388888888888888,
+      "recall": [
+        0.8333333333333334,
+        0.4444444444444444
+      ],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.13888888888888884,
+      "labelShuffled": 0.4722222222222222,
+      "pass": false
+    },
+    "B_BURDEN_1v3": {
+      "required": true,
+      "balancedAccuracy": 0.7777777777777777,
+      "recall": [
+        0.6666666666666666,
+        0.8888888888888888
+      ],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.2777777777777777,
+      "labelShuffled": 0.5277777777777778,
+      "pass": true
+    },
+    "C_WIDE_0v3": {
+      "required": false,
+      "balancedAccuracy": 1,
+      "recall": [
+        1,
+        1
+      ],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.5,
+      "labelShuffled": 0.5277777777777778,
+      "pass": true
+    }
+  },
+  "interpretation": {
+    "burdenEscalationSignal": "demonstrated",
+    "wideBurdenSeparation": "strong",
+    "firstInjuryPresence": "insufficient"
+  }
+}
