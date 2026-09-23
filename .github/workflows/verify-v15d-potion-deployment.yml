@@ -1,4 +1,4 @@
-name: Verify v15D Potion Deployment Candidate
+name: Verify v15D Potion Deployment
 
 on:
   workflow_dispatch:
@@ -12,6 +12,7 @@ on:
       - "index.html"
       - "scripts/verify-v15d-artifact-equivalence.mjs"
       - "scripts/verify-v15d-browser-wiring.mjs"
+      - "scripts/verify-v15d-deployment-closure.mjs"
       - "scripts/verify-v15d-real-input-equivalence.mjs"
       - ".github/workflows/verify-v15d-potion-deployment.yml"
 
@@ -60,6 +61,18 @@ jobs:
           node --check src/brain/fly-worker.js
           node --check src/game.js
           node scripts/verify-v15d-browser-wiring.mjs
+
+  deployment-closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: |
+          node --check scripts/verify-v15d-deployment-closure.mjs
+          node scripts/verify-v15d-deployment-closure.mjs
 
   real-input-equivalence:
     runs-on: ubuntu-latest

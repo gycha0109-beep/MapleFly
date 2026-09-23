@@ -97,19 +97,37 @@ if (jumpGate < 0 || attackGate < 0 || jumpGate >= attackGate) {
   throw new Error("v14C JUMP-before-ATTACK order regressed");
 }
 
+const deploymentState =
+  potion.status === "V15D_VALIDATED_CANDIDATE_NOT_DEPLOYED" &&
+  potion.deploymentAllowed === false
+    ? "CANDIDATE"
+    : potion.status === "V15D_DEPLOYED" &&
+        potion.deploymentAllowed === true
+      ? "DEPLOYED"
+      : null;
+
+if (!deploymentState) {
+  throw new Error(
+    "v15D deployment state mismatch: status=" +
+      potion.status +
+      " deploymentAllowed=" +
+      potion.deploymentAllowed,
+  );
+}
+
 if (
   potion.historyFrames !== 48 ||
   potion.frameSteps !== 5 ||
   potion.runtimeDnIndices.length !== 24 ||
-  potion.featureCount !== 256 ||
-  potion.deploymentAllowed !== false
+  potion.featureCount !== 256
 ) {
-  throw new Error("v15D candidate static contract mismatch");
+  throw new Error("v15D browser static contract mismatch");
 }
 
 console.log(
   "V15D-BROWSER-WIRING=PASS " +
     "history=48 frameSteps=5 runtimeDN=24 features=256 " +
-    "LgLG=prefix taste=final-frame deployment=blocked-candidate " +
-    "move=unchanged jump-before-attack=preserved",
+    "LgLG=prefix taste=final-frame deployment=" +
+    deploymentState.toLowerCase() +
+    " move=unchanged jump-before-attack=preserved",
 );
