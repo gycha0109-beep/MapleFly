@@ -1,0 +1,64 @@
+{
+  "schema": "maplefly.run-receipt.v15a10.1",
+  "experiment": "v15A10",
+  "status": "SCIENTIFIC_RESULT",
+  "decision": "SINGLE_1P2S_HALF_SUFFICIENCY_PRESENT",
+  "v15B": "BLOCKED",
+  "workflow": {
+    "name": "Screen MapleFly v15A10 Recursive Early Half",
+    "runId": 35890609334,
+    "conclusion": "success"
+  },
+  "head": "477ee111fab04ab487235b669f232dec8bf997d6",
+  "implementation": {
+    "screenCommit": "e79c32d167b2fb85e7f343ef6ca95694af134827",
+    "workflowCommit": "477ee111fab04ab487235b669f232dec8bf997d6"
+  },
+  "preregistration": {
+    "path": "history/prereg_v15a10.md",
+    "commit": "3a6ec0367a53e203bfcc073ab10b2f15630bfdf9"
+  },
+  "artifact": {
+    "id": 10765321154,
+    "name": "maplefly-v15a10-early24-localization-35890609334",
+    "digest": "sha256:460ab9ee9dd4c18bf044be03480d323b79118cab6a4060ba0b76d7e7905fe9b1"
+  },
+  "representations": {
+    "EARLY24": {
+      "sha256": "9a25b1259e54616897972bb05c77d12c5a94cdcbb809520e1c48cfa63bd8a42c",
+      "selectedHalfCounts": {"early12A": 129, "early12B": 127},
+      "taskA": {"balancedAccuracy": 0.7916666666666667, "recall": [0.8055555555555556, 0.7777777777777778], "dnShuffled": 0.5, "margin": 0.29166666666666674, "gatePass": true},
+      "taskB": {"balancedAccuracy": 0.6388888888888888, "recall": [0.7222222222222222, 0.5555555555555556], "dnShuffled": 0.5, "margin": 0.13888888888888884, "gatePass": false}
+    },
+    "EARLY12_A": {
+      "sha256": "db0c29469e4c79c303b46a1853e96968888824abda8096794b2a047df82c6e92",
+      "taskA": {"balancedAccuracy": 0.7777777777777778, "recall": [0.8333333333333334, 0.7222222222222222], "dnShuffled": 0.5138888888888888, "margin": 0.26388888888888895, "gatePass": true},
+      "taskB": {"balancedAccuracy": 0.5555555555555556, "recall": [0.5555555555555556, 0.5555555555555556], "dnShuffled": 0.5, "margin": 0.05555555555555558, "gatePass": false}
+    },
+    "EARLY12_B": {
+      "sha256": "29e8e49827cf25d764cd06acd0ecdea46e6eeb8d2e22a3639ca21bd50c5f7d7f",
+      "taskA": {"balancedAccuracy": 0.6527777777777778, "recall": [0.6944444444444444, 0.6111111111111112], "dnShuffled": 0.4861111111111111, "margin": 0.16666666666666669, "gatePass": false},
+      "taskB": {"balancedAccuracy": 0.6388888888888888, "recall": [0.7222222222222222, 0.5555555555555556], "dnShuffled": 0.4722222222222222, "margin": 0.16666666666666663, "gatePass": false}
+    }
+  },
+  "ablations": {
+    "MASK_EARLY12_A": {
+      "balancedAccuracy": 0.6944444444444444,
+      "pointDelta": 0.09722222222222232,
+      "bootstrap95": [0.02777777777777779, 0.16666666666666674],
+      "materialDecoderContribution": false
+    },
+    "MASK_EARLY12_B": {
+      "balancedAccuracy": 0.6944444444444444,
+      "pointDelta": 0.09722222222222232,
+      "bootstrap95": [-0.01388888888888884, 0.20833333333333337],
+      "materialDecoderContribution": false
+    }
+  },
+  "findings": ["EARLY12_A_SUFFICIENT"],
+  "interpretation": {
+    "independentSufficiency": "EARLY12_A_only",
+    "materialDecoderContribution": "neither_subhalf_met_frozen_rule",
+    "distributedCriterion": false
+  }
+}
