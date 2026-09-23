@@ -1,0 +1,58 @@
+name: Screen MapleFly v15A5 Potion Economic State
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/screen-v15a5-potion-economic-state.mjs"
+      - ".github/workflows/screen-v15a5-potion-economic-state.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  potion-economic-state-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/screen-v15a5-potion-economic-state.mjs
+      - name: Fetch frozen v15A4 representation evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15a4-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10728751928" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10728751928" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a65c007102f9f56ed30edb4cc43806d0d29e9892f39ebe98fde7493bf55a464b"
+          test "$head_sha" = "65d4a402224b495f1aa340befa897828bfc96f37"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10728751928/zip" > /tmp/v15a4.zip
+          unzip -q /tmp/v15a4.zip -d .cache/v15a4-artifact
+          test -f .cache/v15a4-artifact/v15a4_screen.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15A5 potion economic-state screen
+        env:
+          V15A4_REPRESENTATION_FILE: .cache/v15a4-artifact/v15a4_screen.json
+        run: node scripts/screen-v15a5-potion-economic-state.mjs
+      - name: Upload v15A5 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15a5-potion-economic-state-${{ github.run_id }}
+          path: results/screen-v15a5-potion-economic-state
+          if-no-files-found: warn
+          retention-days: 30
