@@ -20,8 +20,6 @@
     climbMarginHz: 0.8,
     jumpCooldownMs: 750,
     attackCooldownMs: 420,
-    drinkHz: 1.6,
-    drinkCooldownMs: 800,
     potionTasteDrive: 0.8,
     sensoryUpdateSteps: 2,
     brainStepMs: 20,
@@ -34,6 +32,7 @@
     movementWindowSteps: 26,
     attackWindowSteps: 5,
     jumpWindowSteps: 5,
+    potionFrameSteps: 5,
     jumpCooldownSteps: 38,
   });
 
@@ -58,8 +57,6 @@
       this.intent = this.emptyIntent();
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
-      this.nextPotionAt = 0;
-      this.potionAvailable = false;
       this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
@@ -84,6 +81,17 @@
         this.jumpSkillApi?.loadState?.() ?? null;
       this.jumpSkillRuntime =
         this.jumpSkillApi?.createRuntime?.() ?? null;
+      this.potionSkillApi =
+        global.MapleFlyPotionSkillV15 ?? null;
+      this.potionSkillState =
+        this.potionSkillApi?.loadState?.() ?? null;
+      this.potionSkillRuntime =
+        this.potionSkillApi?.createRuntime?.() ?? null;
+      this.potionSkillAction = "WAIT";
+      this.potionSkillQWait = 0;
+      this.potionSkillQDrink = 0;
+      this.potionSkillDecisionStep = null;
+      this.potionTasteActive = false;
       this.interruptionApi =
         global.MapleFlyInterruptionV14B ?? null;
       this.interruptionState = null;
@@ -98,11 +106,13 @@
       this.skillConfigured =
         !(this.skillState ||
           this.attackSkillState ||
-          this.jumpSkillState);
+          this.jumpSkillState ||
+          this.potionSkillState);
       this.skillPhase =
         this.skillState ||
         this.attackSkillState ||
-        this.jumpSkillState
+        this.jumpSkillState ||
+        this.potionSkillState
           ? "WAITING"
           : "DISABLED";
       this.skillCalibrationStartStep = null;
@@ -110,6 +120,7 @@
         movement: false,
         attack: false,
         jump: false,
+        potion: false,
       };
       this.skillBaselineHz = null;
       this.attackBaselineHz = null;
@@ -298,10 +309,11 @@
         if (
           this.skillState &&
           this.attackSkillState &&
-          this.jumpSkillState
+          this.jumpSkillState &&
+          this.potionSkillState
         ) {
           this.setProgress(
-            "MaleCNS 준비 완료 · Fly #001 movement + ATTACK + JUMP skill 연결 중",
+            "MaleCNS 준비 완료 · Fly #001 movement + ATTACK + JUMP + POTION skill 연결 중",
           );
           this.worker.postMessage({
             type: "configure-skills",
@@ -343,15 +355,30 @@
                 windowSteps:
                   SKILL_RUNTIME.jumpWindowSteps,
               },
+              {
+                id: "potion-baseline",
+                featureIndices:
+                  this.potionSkillState.runtimeDnIndices,
+                windowSteps:
+                  SKILL_RUNTIME.baselineSteps,
+              },
+              {
+                id: "potion-frame",
+                featureIndices:
+                  this.potionSkillState.runtimeDnIndices,
+                windowSteps:
+                  SKILL_RUNTIME.potionFrameSteps,
+              },
             ],
           });
         } else if (
           this.skillState ||
           this.attackSkillState ||
-          this.jumpSkillState
+          this.jumpSkillState ||
+          this.potionSkillState
         ) {
           this.fail(
-            "Fly #001 movement/ATTACK/JUMP skill bundle mismatch",
+            "Fly #001 movement/ATTACK/JUMP/POTION skill bundle mismatch",
           );
           return;
         } else {
@@ -370,7 +397,8 @@
         if (
           !this.skillState ||
           !this.attackSkillState ||
-          !this.jumpSkillState
+          !this.jumpSkillState ||
+          !this.potionSkillState
         ) {
           return;
         }
@@ -388,6 +416,10 @@
         const jumpBaseline =
           specs.get("jump-baseline");
         const jump = specs.get("jump");
+        const potionBaseline =
+          specs.get("potion-baseline");
+        const potionFrame =
+          specs.get("potion-frame");
 
         if (
           message.dnCount !==
@@ -411,10 +443,18 @@
           jump?.selectedCount !==
             this.jumpSkillState.sparseFeatureCount ||
           jump?.windowSteps !==
-            SKILL_RUNTIME.jumpWindowSteps
+            SKILL_RUNTIME.jumpWindowSteps ||
+          potionBaseline?.selectedCount !==
+            this.potionSkillState.runtimeDnIndices.length ||
+          potionBaseline?.windowSteps !==
+            SKILL_RUNTIME.baselineSteps ||
+          potionFrame?.selectedCount !==
+            this.potionSkillState.runtimeDnIndices.length ||
+          potionFrame?.windowSteps !==
+            SKILL_RUNTIME.potionFrameSteps
         ) {
           this.fail(
-            "Fly #001 exact-window skill contract mismatch",
+            "Fly #001 exact-window skill/POTION contract mismatch",
           );
           return;
         }
@@ -429,7 +469,7 @@
         this.skillPhase = "WAITING";
 
         this.setProgress(
-          "Fly #001 v7 movement + v10F ATTACK + v11H2 JUMP 준비 완료",
+          "Fly #001 v7 movement + v10F ATTACK + v11H2 JUMP + v15 POTION 준비 완료",
         );
         this.render();
         return;
@@ -463,10 +503,18 @@
           this.jumpSkillWaitProbability = 0;
           this.jumpSkillDecisionStep = null;
           this.nextJumpSkillStep = 0;
+          this.potionSkillApi?.resetRuntime?.(
+            this.potionSkillRuntime,
+          );
+          this.potionSkillAction = "WAIT";
+          this.potionSkillQWait = 0;
+          this.potionSkillQDrink = 0;
+          this.potionSkillDecisionStep = null;
+          this.potionTasteActive = false;
           this.resetInterruptionRuntime();
           this.setStatus("FLY SKILL");
           this.setProgress(
-            "Fly #001 LIVE · learned movement + v10F ATTACK + v11H2 JUMP",
+            "Fly #001 LIVE · learned movement + v10F ATTACK + v11H2 JUMP + v15 POTION candidate",
           );
         }
         this.renderTelemetry();
@@ -511,8 +559,6 @@
         this.intent = this.emptyIntent();
         this.nextJumpAt = 0;
         this.nextAttackAt = 0;
-        this.nextPotionAt = 0;
-        this.potionAvailable = false;
         this.lastObservationStep = -Infinity;
         this.lastTargetId = null;
         this.lastTargetDistance = null;
@@ -616,8 +662,6 @@
     async reset(seed = 64) {
       this.nextJumpAt = 0;
       this.nextAttackAt = 0;
-      this.nextPotionAt = 0;
-      this.potionAvailable = false;
       this.lastObservationStep = -Infinity;
       this.lastTargetId = null;
       this.lastTargetDistance = null;
@@ -666,9 +710,6 @@
       }
 
       this.lastObservationStep = step;
-      this.potionAvailable = Boolean(
-        observation?.player?.potionCue,
-      );
       this.playerGrounded = Boolean(
         observation?.player?.grounded,
       );
@@ -726,7 +767,7 @@
         );
       }
 
-      if (observation.player.potionCue) {
+      if (this.potionTasteActive) {
         drive.taste_L = DECODER.potionTasteDrive;
         drive.taste_R = DECODER.potionTasteDrive;
       }
@@ -876,6 +917,7 @@
         movement: false,
         attack: false,
         jump: false,
+        potion: false,
       };
       this.skillBaselineHz?.fill(0);
       this.attackBaselineHz?.fill(0);
@@ -893,6 +935,14 @@
       this.jumpSkillWaitProbability = 0;
       this.jumpSkillDecisionStep = null;
       this.nextJumpSkillStep = 0;
+      this.potionSkillApi?.resetRuntime?.(
+        this.potionSkillRuntime,
+      );
+      this.potionSkillAction = "WAIT";
+      this.potionSkillQWait = 0;
+      this.potionSkillQDrink = 0;
+      this.potionSkillDecisionStep = null;
+      this.potionTasteActive = false;
       this.resetInterruptionRuntime();
     }
 
@@ -924,6 +974,8 @@
         !this.skillState ||
         !this.attackSkillState ||
         !this.jumpSkillState ||
+        !this.potionSkillState ||
+        !this.potionSkillRuntime ||
         !this.skillConfigured ||
         !Array.isArray(message.spikes)
       ) {
@@ -1043,9 +1095,35 @@
         }
 
         if (
+          skillId === "potion-baseline" &&
+          windowSteps ===
+            SKILL_RUNTIME.baselineSteps &&
+          message.spikes.length ===
+            this.potionSkillState.runtimeDnIndices.length
+        ) {
+          const baseline =
+            new Float64Array(message.spikes.length);
+          for (
+            let index = 0;
+            index < baseline.length;
+            index += 1
+          ) {
+            baseline[index] =
+              (message.spikes[index] ?? 0) /
+              seconds;
+          }
+          this.potionSkillApi.setBaseline(
+            this.potionSkillRuntime,
+            baseline,
+          );
+          this.skillBaselineReady.potion = true;
+        }
+
+        if (
           this.skillBaselineReady.movement &&
           this.skillBaselineReady.attack &&
-          this.skillBaselineReady.jump
+          this.skillBaselineReady.jump &&
+          this.skillBaselineReady.potion
         ) {
           this.skillPhase = "LIVE_PENDING";
           this.worker?.postMessage({
@@ -1212,6 +1290,46 @@
         this.jumpSkillWaitProbability =
           decision.waitProbability;
         this.jumpSkillDecisionStep = endStep;
+        return;
+      }
+
+      if (
+        skillId === "potion-frame" &&
+        windowSteps ===
+          SKILL_RUNTIME.potionFrameSteps &&
+        message.spikes.length ===
+          this.potionSkillState.runtimeDnIndices.length
+      ) {
+        const frame = this.potionSkillApi.makeFrame(
+          this.potionSkillRuntime,
+          message.spikes,
+          windowSteps,
+        );
+        const frames = this.potionSkillApi.pushFrame(
+          this.potionSkillRuntime,
+          frame,
+        );
+
+        if (
+          frames === this.potionSkillState.historyFrames
+        ) {
+          const decision = this.potionSkillApi.choose(
+            this.potionSkillRuntime,
+            this.potionSkillState,
+          );
+          this.potionSkillAction = decision.action;
+          this.potionSkillQWait = decision.qWait;
+          this.potionSkillQDrink = decision.qDrink;
+          this.potionSkillDecisionStep = endStep;
+          this.potionSkillApi.finishCycle(
+            this.potionSkillRuntime,
+          );
+        }
+
+        this.potionTasteActive =
+          this.potionSkillApi.tasteForNextFrame(
+            this.potionSkillRuntime,
+          );
       }
     }
 
@@ -1432,12 +1550,14 @@
       }
 
       if (
-        this.potionAvailable &&
-        headMotor >= DECODER.drinkHz &&
-        now >= this.nextPotionAt
+        this.potionSkillState &&
+        this.potionSkillState.deploymentAllowed === true &&
+        this.skillConfigured &&
+        this.skillPhase === "LIVE" &&
+        this.potionSkillAction === "DRINK" &&
+        decisionStep === this.potionSkillDecisionStep
       ) {
         potion = true;
-        this.nextPotionAt = now + DECODER.drinkCooldownMs;
       }
 
       if (
@@ -1515,6 +1635,14 @@
             this.interruptionAttackAccept,
           interruptionJumpAccept:
             this.interruptionJumpAccept,
+          potionSkillAction:
+            this.potionSkillAction,
+          potionSkillQWait:
+            this.potionSkillQWait,
+          potionSkillQDrink:
+            this.potionSkillQDrink,
+          potionTasteActive:
+            this.potionTasteActive,
         },
       });
     }
