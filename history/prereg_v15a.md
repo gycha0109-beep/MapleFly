@@ -200,17 +200,22 @@ classes                      4
 rows                         72
 ~~~
 
-TRAIN/EVAL brain seed는 다음 deterministic formula로 만든다.
+TRAIN/EVAL은 replicate 안에서 네 class가 **같은 brain seed**를 공유하는
+paired-noise design을 사용한다.
 
 ~~~text
 brainSeed =
   baseSeed
-  + classIndex * 100
   + replicate * 7
   + 1
 ~~~
 
+따라서 class 차이를 brain RNG seed 차이로 설명할 수 없다.
+
 episode schedule RNG seed는 `brainSeed + 500000`이다.
+같은 RNG shuffle의 앞 0/1/2/3개 impact slot을 사용하므로,
+같은 replicate의 class 1 schedule은 class 2의 subset이고
+class 2는 class 3의 subset이다. shared impact의 side도 동일하다.
 
 ## Controls
 
