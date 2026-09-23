@@ -1,0 +1,30 @@
+{
+  "schema": "maplefly.v15a.lglg-propagation-diagnostic.receipt.1",
+  "status": "ROUTE_A_EMPTY_INPUT_GROUP",
+  "preregistration": {
+    "path": "history/prereg_v15a_diag.md",
+    "commit": "c1434d2c2303b0224925039f8b5ed7b60b648537"
+  },
+  "abortedImplementationRun": {
+    "id": 35806840564,
+    "reason": "diagnostic assumed non-empty LgLG groups and aborted before evidence"
+  },
+  "implementationFixCommit": "1fe1e98392978f219dbbc4d534ee533ac2d66a69",
+  "authoritativeRun": {
+    "id": 35806938566,
+    "conclusion": "success"
+  },
+  "artifact": {
+    "id": 10727194680,
+    "name": "maplefly-v15a-lglg-propagation-35806938566",
+    "digest": "sha256:4d3889b1dc87eb471c2cffd16aa039d968d56d3794b93eb2ba3051c14e464611"
+  },
+  "groups": {
+    "LgLG_L": 0,
+    "LgLG_R": 0
+  },
+  "route": "A_INPUT_NOT_ACTIVATED",
+  "structuralDisconnect": true,
+  "reach3Dn": 0,
+  "v15BBlocked": true
+}

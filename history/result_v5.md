@@ -223,3 +223,24 @@ absolute threshold 대신 **cue-induced delta / sustained response** 기준을 �
 
 run 완료 후 이 bookkeeping 오류를 수정했고,
 브라우저에서도 HP가 가득 찬 상태에서는 POTION action 자체가 나오지 않도록 정리했다.
+
+
+## 2026-09-23 erratum — impact channel
+
+v15A propagation diagnostic run `35806938566`에서
+runtime `LgLG_L` / `LgLG_R` exact-name groups가 모두 0 neurons였음이 확인됐다.
+
+따라서 v5의 다음 요소 중:
+
+~~~text
+game contact damage   정상
+LB3 + claw_tpGRN taste cue   정상
+cb_motor head decoder         정상
+LgLG impact cue               no-op
+~~~
+
+였다.
+
+이 erratum은 potion use / healing / waste / survival raw metric을 바꾸지 않는다.
+다만 `POTION_CUE_ON/OFF` 조건 설명에 포함된 "LgLG impact ON"은
+실제 neural stimulation이 아니었으므로 그 부분의 biological interpretation은 철회한다.

@@ -148,3 +148,26 @@ v4는 실패한 실험이 아니라,
 
 다음 단계에서는 LgLG 세기를 임의로 올리기 전에,
 접촉 전후의 connectome output을 직접 probe해서 어떤 출력이 반응하는지부터 찾는 것이 맞다.
+
+
+## 2026-09-23 erratum — LgLG interface
+
+v15 injury-sensory 재검증에서 pinned MaleCNS runtime의
+`LgLG_L` / `LgLG_R` exact-name group이 각각 **0 neurons**였음이 확인됐다.
+
+Evidence:
+
+~~~text
+v15A propagation diagnostic
+run 35806938566
+LgLG_L = 0
+LgLG_R = 0
+whole-network ON/OFF difference = 0
+~~~
+
+따라서 이 문서의 `IMPACT_ON`은 game damage는 정상 적용됐지만
+실제 MaleCNS LgLG neuron stimulation은 발생하지 않았다.
+
+기존 raw metric은 그대로 유효하지만,
+"실제 LgLG knock pulse를 넣어도 행동 변화가 없었다"는 biological 해석은 철회한다.
+정확한 해석은 **configured LgLG interface가 empty여서 ON/OFF neural input이 동일했다**이다.
