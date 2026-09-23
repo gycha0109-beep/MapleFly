@@ -1,0 +1,48 @@
+name: Diagnose MapleFly v14A ATTACK Representation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "history/run_receipts/v14a_authoritative_policy.json"
+      - "scripts/diagnose-v14a-attack-interruption.mjs"
+      - ".github/workflows/diagnose-v14a-attack-interruption.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  v14a-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v14a-attack-interruption.mjs
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run frozen v14A representation diagnostic
+        run: node scripts/diagnose-v14a-attack-interruption.mjs
+
+      - name: Upload v14A diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v14a-attack-diagnostic-${{ github.run_id }}
+          path: results/v14a-attack-interruption-diagnostic
+          if-no-files-found: warn
+          retention-days: 30
