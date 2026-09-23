@@ -274,7 +274,7 @@ function buildInputGroups(meta) {
     }
 
     groups.set(`SNta_${side}`, cellsWithPrefix(meta, "SNta", side));
-    groups.set(`LgLG_${side}`, cells(meta, ["LgLG"], side));
+    groups.set(`LgLG_${side}`, cellsWithPrefix(meta, "LgLG", side));
     groups.set(`taste_${side}`, cells(meta, ["LB3", "claw_tpGRN"], side));
   }
 
