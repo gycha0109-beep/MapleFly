@@ -8,8 +8,8 @@
   const FEATURE_COUNT = 256;
 
   const SOURCE = Object.freeze({
-    status: "V15D_VALIDATED_CANDIDATE_NOT_DEPLOYED",
-    deploymentAllowed: false,
+    status: "V15D_DEPLOYED",
+    deploymentAllowed: true,
     representationRunId: 35898698946,
     representationArtifactId: 10768761312,
     representationArtifactDigest:
