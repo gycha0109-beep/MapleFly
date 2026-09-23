@@ -54,10 +54,17 @@ const drinkBiasError = Math.abs(
   policyJson.frozenModel.drink.bias - browser.drink.bias,
 );
 
+const deploymentState =
+  browser.status === "V15D_VALIDATED_CANDIDATE_NOT_DEPLOYED" &&
+  browser.deploymentAllowed === false
+    ? "CANDIDATE"
+    : browser.status === "V15D_DEPLOYED" &&
+        browser.deploymentAllowed === true
+      ? "DEPLOYED"
+      : null;
+
 const checks = {
-  status:
-    browser.status === "V15D_VALIDATED_CANDIDATE_NOT_DEPLOYED",
-  deploymentBlocked: browser.deploymentAllowed === false,
+  deploymentState: deploymentState !== null,
   representationHash:
     browser.representationSha256 === repEntry.representationSha256,
   policyHash:
@@ -84,7 +91,7 @@ console.log(
     " waitBiasErr=" + waitBiasError +
     " drinkErr=" + drinkError +
     " drinkBiasErr=" + drinkBiasError +
-    " runtimeDN=" + browser.runtimeDnIndices.length,
+    " runtimeDN=" + browser.runtimeDnIndices.length +\n    " deployment=" + String(deploymentState).toLowerCase(),
 );
 
 if (!Object.values(checks).every(Boolean)) {
