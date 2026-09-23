@@ -91,7 +91,8 @@ console.log(
     " waitBiasErr=" + waitBiasError +
     " drinkErr=" + drinkError +
     " drinkBiasErr=" + drinkBiasError +
-    " runtimeDN=" + browser.runtimeDnIndices.length +\n    " deployment=" + String(deploymentState).toLowerCase(),
+    " runtimeDN=" + browser.runtimeDnIndices.length +
+    " deployment=" + String(deploymentState).toLowerCase(),
 );
 
 if (!Object.values(checks).every(Boolean)) {
