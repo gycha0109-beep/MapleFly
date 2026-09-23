@@ -1,0 +1,97 @@
+{
+  "schema": "maplefly.run-receipt.v15a5.1",
+  "experiment": "v15A5",
+  "status": "SCIENTIFIC_FAIL",
+  "decision": "V15A5-POTION-ECONOMIC-STATE-SCREEN=FAIL",
+  "v15B": "BLOCKED",
+  "workflow": {
+    "name": "Screen MapleFly v15A5 Potion Economic State",
+    "runId": 35811139924,
+    "conclusion": "failure"
+  },
+  "head": "580dec6a2f4919f1fc3e8dbd806eb6da600cd005",
+  "preregistration": {
+    "path": "history/prereg_v15a5.md",
+    "commit": "bb069dcbd51bb30a55f8e4cac18ec93f91358276"
+  },
+  "artifact": {
+    "id": 10729524422,
+    "digest": "sha256:6553a4b2212386a859feb939ea99b563ea3bf7a42f2ce5af9ada19057ff4dffd"
+  },
+  "frozenRepresentation": {
+    "sourceRunId": 35808078481,
+    "sourceArtifactId": 10728751928,
+    "sourceArtifactDigest": "sha256:a65c007102f9f56ed30edb4cc43806d0d29e9892f39ebe98fde7493bf55a464b",
+    "sha256": "dca322283c5e4f6ff106e17f882350408de1953856b0f47cdfa293edb24f0a91",
+    "name": "CONCAT48",
+    "selectedFeatureCount": 256
+  },
+  "tasks": {
+    "A_ECONOMIC_STATE_01v23": {
+      "required": true,
+      "balancedAccuracy": 0.8055555555555556,
+      "recall": [
+        0.8055555555555556,
+        0.8055555555555556
+      ],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.3055555555555556,
+      "labelShuffled": 0.4444444444444444,
+      "pass": true
+    },
+    "B_ECONOMIC_BOUNDARY_1v2": {
+      "required": true,
+      "balancedAccuracy": 0.6388888888888888,
+      "recall": [
+        0.6111111111111112,
+        0.6666666666666666
+      ],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.13888888888888884,
+      "labelShuffled": 0.4444444444444444,
+      "pass": false
+    },
+    "C_WIDE_ANCHOR_0v3": {
+      "required": false,
+      "balancedAccuracy": 0.9444444444444444,
+      "recall": [
+        1,
+        0.8888888888888888
+      ],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.4444444444444444,
+      "labelShuffled": 0.38888888888888884,
+      "pass": true
+    },
+    "D_WITHIN_LOW_0v1": {
+      "required": false,
+      "balancedAccuracy": 0.6111111111111112,
+      "recall": [
+        0.6111111111111112,
+        0.6111111111111112
+      ],
+      "dnShuffled": 0.4444444444444444,
+      "dnShuffleMargin": 0.16666666666666674,
+      "labelShuffled": 0.41666666666666663,
+      "pass": false
+    },
+    "E_WITHIN_HIGH_2v3": {
+      "required": false,
+      "balancedAccuracy": 0.5555555555555556,
+      "recall": [
+        0.4444444444444444,
+        0.6666666666666666
+      ],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.05555555555555558,
+      "labelShuffled": 0.5555555555555556,
+      "pass": false
+    }
+  },
+  "interpretation": {
+    "coarseEconomicStateSignal": "demonstrated",
+    "nearestEconomicBoundary": "insufficient",
+    "firstInjuryResolution": "weak",
+    "highBurdenLocalResolution": "weak"
+  }
+}
