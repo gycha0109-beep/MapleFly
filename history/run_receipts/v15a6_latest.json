@@ -1,0 +1,85 @@
+{
+  "schema": "maplefly.run-receipt.v15a6.1",
+  "experiment": "v15A6",
+  "status": "SCIENTIFIC_FAIL",
+  "decision": "V15A6-TEMPORAL-INTEGRATION-SCREEN=FAIL",
+  "v15B": "BLOCKED",
+  "workflow": {
+    "name": "Screen MapleFly v15A6 Temporal Integration",
+    "runId": 35878025169,
+    "conclusion": "failure"
+  },
+  "head": "fb59e70d1010bb9be961cb8126671cc186c426b3",
+  "implementation": {
+    "screenCommit": "3779bbc7fa84964ee95f57d07d68f3f980d5ae56",
+    "workflowCommit": "fb59e70d1010bb9be961cb8126671cc186c426b3"
+  },
+  "preregistration": {
+    "path": "history/prereg_v15a6.md",
+    "commit": "06e1cdcf09f0475f69491fb7243c254f917e1473"
+  },
+  "artifact": {
+    "id": 10760325252,
+    "name": "maplefly-v15a6-temporal-integration-35878025169",
+    "digest": "sha256:c3dbdf547bce825dd4f8573dc77f31ef06ee3c9a6e7c9f2bdcbb90099eceb4ab"
+  },
+  "representation": {
+    "name": "POOL48",
+    "historyFrames": 48,
+    "selectedFeatureCount": 256,
+    "sha256": "ff8a3c82240a618922118a5ec10cec57f03637a9608898434ff928ad9791e880"
+  },
+  "tasks": {
+    "A_ECONOMIC_STATE_01v23": {
+      "required": true,
+      "balancedAccuracy": 0.5277777777777778,
+      "recall": [0.4166666666666667, 0.6388888888888888],
+      "dnShuffled": 0.4861111111111111,
+      "dnShuffleMargin": 0.0416666666666667,
+      "labelShuffled": 0.5,
+      "pass": false
+    },
+    "B_ECONOMIC_BOUNDARY_1v2": {
+      "required": true,
+      "balancedAccuracy": 0.4722222222222222,
+      "recall": [0.3333333333333333, 0.6111111111111112],
+      "dnShuffled": 0.4444444444444444,
+      "dnShuffleMargin": 0.0277777777777778,
+      "labelShuffled": 0.5,
+      "pass": false
+    },
+    "C_WIDE_ANCHOR_0v3": {
+      "required": false,
+      "balancedAccuracy": 0.5277777777777778,
+      "recall": [0.3888888888888889, 0.6666666666666666],
+      "dnShuffled": 0.5277777777777778,
+      "dnShuffleMargin": 0.0,
+      "labelShuffled": 0.4722222222222222,
+      "pass": false
+    },
+    "D_WITHIN_LOW_0v1": {
+      "required": false,
+      "balancedAccuracy": 0.5,
+      "recall": [0.4444444444444444, 0.5555555555555556],
+      "dnShuffled": 0.5277777777777778,
+      "dnShuffleMargin": -0.0277777777777778,
+      "labelShuffled": 0.5277777777777778,
+      "pass": false
+    },
+    "E_WITHIN_HIGH_2v3": {
+      "required": false,
+      "balancedAccuracy": 0.5,
+      "recall": [0.3888888888888889, 0.6111111111111112],
+      "dnShuffled": 0.5,
+      "dnShuffleMargin": 0.0,
+      "labelShuffled": 0.4722222222222222,
+      "pass": false
+    }
+  },
+  "interpretation": {
+    "pool48EconomicStateSignal": "insufficient",
+    "pool48NearestEconomicBoundary": "insufficient",
+    "pool48WideAnchor": "insufficient",
+    "temporalStructureLossHypothesis": "consistent_with_result_but_not_proven_causal"
+  }
+}
