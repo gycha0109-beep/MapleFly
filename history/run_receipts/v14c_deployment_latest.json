@@ -1,0 +1,82 @@
+{
+  "schema": "maplefly.v14c-deployment-receipt.1",
+  "status": "DEPLOYED",
+  "preregistration": {
+    "path": "history/prereg_v14c_deployment.md",
+    "commit": "ee57facc8ddfaeab173598a0d2c7ea98c2d021de"
+  },
+  "source": {
+    "v14BRun": 35798458282,
+    "v14BArtifact": 10725136545,
+    "v14CValidationRun": 35799237521,
+    "v14CValidationArtifact": 10725530980
+  },
+  "promotion": {
+    "commit": "77cf4c57358eea9c62b3899cd140eff25f52e466",
+    "status": "V14C_DEPLOYED",
+    "deploymentAllowed": true,
+    "authorizationRun": 35803350811
+  },
+  "finalClosure": {
+    "runId": 35803839466,
+    "headSha": "85978145309590b73b15e2e750bea9db6d552d14",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10726869276,
+      "name": "maplefly-v14c-deployment-smoke-35803839466",
+      "digest": "sha256:c2d8c0cf91c001338e0e63be495ba57892f2475bd8a00d5b3d3f6567f128489a"
+    }
+  },
+  "evaluatorEquivalence": {
+    "comparisons": 96,
+    "maxHistoryError": 0,
+    "maxAttackProbabilityError": 0,
+    "maxJumpProbabilityError": 0,
+    "attackDecisionMismatch": 0,
+    "jumpDecisionMismatch": 0,
+    "pass": true
+  },
+  "deploymentSmoke": {
+    "courseCompletionRate": 0.9583333333333334,
+    "minSeedCompletionRate": 0.875,
+    "obstacleClearRate": 1,
+    "leftObstacleClearRate": 1,
+    "rightObstacleClearRate": 1,
+    "targetKillRate": 0.9583333333333334,
+    "timeoutRate": 0.041666666666666664,
+    "meanActualJumps": 1.4166666666666667,
+    "postClearJumpEpisodeRate": 0,
+    "preClearAttackEpisodeRate": 0.125,
+    "airborneAttackActionFraction": 0.127,
+    "maxSeedAirborneAttackActionFraction": 0.156,
+    "attackHitPrecision": 0.602,
+    "pass": true
+  },
+  "regressions": {
+    "movementV7": {
+      "minOnRate": 1,
+      "maxOffRate": 0.5,
+      "pass": true
+    },
+    "attackV10F": {
+      "fullHitRate": 0.844,
+      "whiffRate": 0.156,
+      "pass": true
+    },
+    "jumpV11H2": {
+      "fullClearRate": 1,
+      "timeoutRate": 0,
+      "meanJumps": 1.375,
+      "targetReachRate": 1,
+      "falseJumpRate": 0,
+      "pass": true
+    },
+    "v11FLegacyIsolation": {
+      "pass": true
+    },
+    "browserWiring": {
+      "pass": true
+    }
+  },
+  "scientificParametersChanged": false
+}

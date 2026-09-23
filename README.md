@@ -5,7 +5,7 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 
 ## Current scope
 
-**Fly #001 — learned movement + learned ATTACK + learned JUMP**
+**Fly #001 — learned movement + learned ATTACK + learned JUMP + learned cross-skill interruption**
 
 - pinned real MaleCNS connectome remains frozen
 - Skill01 LEFT / RIGHT is the v7 reward-only learned motor readout
@@ -17,7 +17,7 @@ to a deliberately simplified, MapleStory-inspired 2D environment.
 - obstacle sensory uses LC6 + LC16 + LC22 + LPLC4; target LC4 remains reserved for target looming
 - UP / DOWN still use legacy connectome decoders
 - POTION still uses the engineered taste / head-motor proxy and is not a learned skill
-- current integration track: v14 cross-skill interference learning after v12/v13 integration failures
+- v14C cross-skill interruption is DEPLOYED: CONCAT12 dual heads gate JUMP / ATTACK proposals while MOVE remains ungated\n- final v14C deployment smoke: completion 95.8%, obstacle clear 100%, mean JUMPs 1.417, ATTACK precision 60.2%, airborne ATTACK action 12.7%\n- next learned-skill track: replace the engineered Skill04 POTION proxy
 - no claim is made that the fly understands MapleStory
 
 ## Brain source
