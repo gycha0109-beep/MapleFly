@@ -68,7 +68,8 @@ const attackApi = globalThis.MapleFlyAttackSkillV10;
 const attackSkill = attackApi.BUNDLED_STATE;
 const jumpApi = globalThis.MapleFlyJumpSkillV11H2;
 const jumpSkill = jumpApi.BUNDLED_STATE;
-const interruptionApi = globalThis.MapleFlyInterruptionV14;\nconst DIAG_SOURCE_RUN = 35797391192;
+const interruptionApi = globalThis.MapleFlyInterruptionV14;
+const DIAG_SOURCE_RUN = 35797391192;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
