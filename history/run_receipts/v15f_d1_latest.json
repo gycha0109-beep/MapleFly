@@ -1,0 +1,25 @@
+{
+  "schema": "maplefly.run-receipt.v15f-d1.1",
+  "experiment": "v15F-D1",
+  "status": "CLOSED",
+  "outcome": "V15F_D1_ORIGINAL_VALUE_GATE_JOINTLY_INFEASIBLE",
+  "preregistration": {"commit": "3553056c308a03d0ab55fe768a68cbca630ec7e6"},
+  "implementation": {"commit": "812057ae70d6c3e4bee434e07e88e7d2a1ac027d"},
+  "authoritativeRun": {
+    "runId": 35968591996,
+    "head": "7882398da6be873541058232eb13df0f76f8ee0a",
+    "conclusion": "success",
+    "artifactId": 10795430860,
+    "artifactDigest": "sha256:d7e11f36ac449fac393359a44af34c72e4355ff8c92d5fa352ddf900b9f4eaac"
+  },
+  "sourceJsonSha256": "4887a56bf09453faaa86ebda73b7b674d40b7cf3c256d971c80bbb62d6b02c77",
+  "allSurviveMeanBestValue": -38.958333333333336,
+  "relaxedMinimumSurvivors": 18,
+  "relaxedMaximumMeanValue": -25.416666666666668,
+  "originalValueGate": 5,
+  "unconstrainedMeanBestValue": 0,
+  "unconstrainedSurvivors": 0,
+  "v15fOutcomeUnchanged": true,
+  "next": "V15G_SEQUENTIAL_POTION_ECONOMY_PREREGISTRATION_AUTHORIZED",
+  "deployment": "BLOCKED"
+}
