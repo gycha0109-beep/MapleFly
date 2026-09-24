@@ -1,0 +1,51 @@
+{
+  "schema": "maplefly.run-receipt.v15k.1",
+  "phase": "v15K",
+  "outcome": "V15K_REWARD_ONLY_TERMINAL_HEALTH_FAIL",
+  "authoritativeRun": {
+    "id": 36051119095,
+    "headSha": "ec8b4d5cbba42d4a04a1bb11f283535f457519ce",
+    "conclusion": "failure",
+    "scientificExitCode": 1,
+    "artifact": {
+      "id": 10830808850,
+      "name": "maplefly-v15k-terminal-health-36051119095",
+      "digest": "sha256:08845680304db9527522486b0c8d6d5b6bc4c3f4f06fdcbff0bd1ec676811e70",
+      "sizeInBytes": 26961
+    }
+  },
+  "preregistration": "0fa6e399d12f6025a1df031c0299b79d3b2872e4",
+  "implementation": {
+    "script": "0d618f83449df422bc82ee17daf8cecd44f1e8b9",
+    "workflow": "da5e1ada38573fb3b5842e8548d913e2dee5adee",
+    "evidencePathFix": "ec8b4d5cbba42d4a04a1bb11f283535f457519ce",
+    "preScientificGuardRun": 36051051491
+  },
+  "headline": {
+    "full": {
+      "survivalRate": 0.833,
+      "minSeedSurvivalRate": 0.75,
+      "meanExcessUses": 2.55,
+      "wastedHealingPerDrink": 1.011
+    },
+    "longNeuralHistoryOff": {
+      "survivalRate": 0.875,
+      "meanExcessUses": 2.476,
+      "contributes": false
+    },
+    "allNeuralOff": {
+      "survivalRate": 0
+    },
+    "episodeShift1": {
+      "survivalRate": 0.792,
+      "contributes": false
+    },
+    "decisionMeanNeural": {
+      "survivalRate": 0.917,
+      "contributes": false
+    }
+  },
+  "deployment": "BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "V15K_D1_EPISODE_SPECIFIC_NEURAL_RESIDUAL_AUDIT_AUTHORIZED"
+}
