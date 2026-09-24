@@ -317,9 +317,6 @@ Both probe families:
 loss
   class-balanced binary cross entropy on strict oracle labels
 
-epochs
-  2000
-
 full-batch
   yes
 
@@ -339,6 +336,9 @@ EVAL model selection
 LINEAR:
 
 ```text
+epochs
+  2000
+
 learning rate
   0.05
 
@@ -349,6 +349,9 @@ initialization
 MLP16:
 
 ```text
+epochs
+  300
+
 learning rate
   0.03
 
@@ -369,6 +372,10 @@ bias initialization
 ```
 
 No hyperparameter sweep and no early stopping.
+
+The MLP epoch count is frozen at 300 before implementation to keep the complete fresh MaleCNS tape
+generation + eight diagnostic probe fits inside the user-requested 25-minute CI timeout. This is a
+compute-budget preregistration amendment made before any D2 outcome exists.
 
 ---
 
