@@ -1,0 +1,56 @@
+{
+  "schema": "maplefly.run-receipt.v15j.1",
+  "phase": "v15J",
+  "outcome": "V15J_REWARD_ONLY_LONG_NEURAL_HISTORY_FAIL",
+  "authoritativeRun": {
+    "id": 35983240290,
+    "headSha": "7d75dba57f9ba0aa169b319246bca110cc3be75a",
+    "conclusion": "failure",
+    "scientificExitCode": 1,
+    "artifact": {
+      "id": 10801234805,
+      "name": "maplefly-v15j-reward-only-long-neural-history-35983240290",
+      "digest": "sha256:25b31e63ff7789f0c9493a41d7b48c9452562f707509ddb496843b3f9803f818",
+      "sizeInBytes": 26967
+    }
+  },
+  "preregistration": "b6c64235cff6d1c01ed5cd53662b7bd9852825df",
+  "implementation": {
+    "script": "3279c59b9fd073f4c1c394186ec2ba99ae302218",
+    "workflow": "e3983c131d91d2e5eed0db4e6072671614567351",
+    "syntaxFix": "7d75dba57f9ba0aa169b319246bca110cc3be75a",
+    "invalidSyntaxRun": 35983170268
+  },
+  "headline": {
+    "full": {
+      "survivalRate": 0.625,
+      "minSeedSurvivalRate": 0.5,
+      "meanUses": 5.958,
+      "meanExcessUses": 1.333,
+      "wastedHealingPerDrink": 3.147
+    },
+    "longNeuralHistoryOff": {
+      "survivalRate": 0.833,
+      "meanExcessUses": 3.6
+    },
+    "allNeuralOff": {
+      "survivalRate": 0,
+      "meanExcessUses": "Infinity"
+    },
+    "episodeShift1": {
+      "survivalRate": 0.667,
+      "meanExcessUses": 1.188,
+      "contributes": false
+    },
+    "decisionMeanNeural": {
+      "survivalRate": 0.958,
+      "meanExcessUses": 1.826,
+      "contributes": false
+    },
+    "paramsSha256": "310023a3c29600afdd4182a4e36c1795017198625df7694776923917e6e08cfe"
+  },
+  "deployment": "BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "EPISODE_SPECIFIC_NEURAL_RESIDUAL_DIAGNOSTIC_AUTHORIZED",
+  "explicitShortCiTimeout": "REMOVED_AFTER_AUTHORITATIVE_RUN"
+}

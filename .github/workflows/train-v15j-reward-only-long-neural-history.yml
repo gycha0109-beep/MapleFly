@@ -7,7 +7,6 @@ on:
     paths:
       - "scripts/train-v15j-reward-only-long-neural-history.mjs"
       - "history/prereg_v15j.md"
-      - ".github/workflows/train-v15j-reward-only-long-neural-history.yml"
 
 permissions:
   contents: read
@@ -16,7 +15,6 @@ permissions:
 jobs:
   reward-only-long-neural-history:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v7
