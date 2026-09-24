@@ -1,0 +1,44 @@
+{
+  "schema": "maplefly.run-receipt.v15f.1",
+  "experiment": "v15F",
+  "status": "CLOSED",
+  "outcome": "V15F_KNOWN_ECOLOGY_REMEDIATION_FAIL",
+  "preregistration": {"commit": "2d916ac4797d4175bb0f497d6c1050551fcedadf"},
+  "implementation": {
+    "initial": "34b28f492b131f2d67c46e1755eba82e888e59ab",
+    "loaderFix": "3b80740d11fb721ea5e9042fd995b35c4d17cc7f"
+  },
+  "invalidFirstRun": {
+    "runId": 35967026149,
+    "reason": "serialized typed DN identity map loader mismatch",
+    "scientificOutcome": false
+  },
+  "authoritativeRun": {
+    "runId": 35967181358,
+    "head": "3b80740d11fb721ea5e9042fd995b35c4d17cc7f",
+    "conclusion": "failure",
+    "artifactId": 10794886720,
+    "artifactDigest": "sha256:4b0ebfc818cdc150ccea1fc86cef7f7aac5b2df587394233c233b8eacc926073"
+  },
+  "summary": {
+    "survivalRate": 1.0,
+    "minSeedSurvivalRate": 1.0,
+    "threeKillEpisodeRate": 1.0,
+    "meanKills": 9.25,
+    "encounterObstacleClearRate": 0.9713114754098361,
+    "encounterTargetKillRate": 0.9098360655737705,
+    "attackHitPrecision": 0.6545801526717557,
+    "offDeathRate": 1.0,
+    "survivalBenefit": 1.0,
+    "meanKillBenefit": 6.083333333333334,
+    "meanValueImprovement": -53.958333333333336,
+    "meanPotionUses": 9.541666666666666,
+    "totalPotionUses": 229,
+    "wastedHealingPerDrink": 3.3624454148471616
+  },
+  "failedGates": ["meanValueImprovement"],
+  "next": "V15F_D1_VALUE_GATE_FEASIBILITY_AUDIT_AUTHORIZED",
+  "freshSeedValidation": "BLOCKED",
+  "deployment": "BLOCKED",
+  "v16c180SecondEndurance": "BLOCKED"
+}
