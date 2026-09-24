@@ -1,0 +1,66 @@
+name: Train MapleFly v15K Terminal-Health Reward
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/train-v15k-reward-only-terminal-health.mjs"
+      - "history/prereg_v15k.md"
+      - ".github/workflows/train-v15k-reward-only-terminal-health.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  terminal-health-reward:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/train-v15k-reward-only-terminal-health.mjs
+      - name: Reject prior learned-policy dependencies
+        run: |
+          set -euo pipefail
+          ! grep -q "b2a3d2e47ff9be3f1721638a75b779c37b3a8a0fb49c32fabdb0e0d8aa2af5f4" scripts/train-v15k-reward-only-terminal-health.mjs
+          ! grep -q "2cd005ebe7587aac363938dbb9bce9f7dbfc5ba8400a363470478859b6ca8d1e" scripts/train-v15k-reward-only-terminal-health.mjs
+          ! grep -q "310023a3c29600afdd4182a4e36c1795017198625df7694776923917e6e08cfe" scripts/train-v15k-reward-only-terminal-health.mjs
+          ! grep -q "v15g_d2.json" scripts/train-v15k-reward-only-terminal-health.mjs
+          ! grep -q "v15i_training.json" scripts/train-v15k-reward-only-terminal-health.mjs
+          ! grep -q "v15j_training.json" scripts/train-v15k-reward-only-terminal-health.mjs
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15K terminal-health training
+        env:
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/train-v15k-reward-only-terminal-health.mjs
+      - name: Upload v15K evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15k-terminal-health-${{ github.run_id }}
+          path: results/v15k-reward-only-terminal-health
+          if-no-files-found: warn
+          retention-days: 30
