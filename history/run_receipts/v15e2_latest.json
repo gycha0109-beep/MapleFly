@@ -1,0 +1,35 @@
+{
+  "schema": "maplefly.run-receipt.v15e2.1",
+  "experiment": "v15E2",
+  "status": "CLOSED",
+  "outcome": "V15E2_PHASE_INVARIANT_POOLED_DN_PASS",
+  "preregistration": {"commit": "749dbe369248277033aee6fdc9a334dfc6c3b081"},
+  "implementation": {"commit": "ac287b8406cced096f6c3d4229583a7f93396a48"},
+  "authoritativeRun": {
+    "runId": 35961707942,
+    "head": "a04fc64f159079a3e51d6e7ed3663fce25cb83bc",
+    "conclusion": "success",
+    "artifactId": 10793265453,
+    "artifactDigest": "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+  },
+  "representationSha256": "244464c8b5e9c7f5871f35cb3acc4ac1e2e0c9b61860c1dd3c267de79d4758db",
+  "candidateModelSha256": "18be00b46303f46d62f8f63f26ca1a280b66f50f0004be6f469c637123077c96",
+  "evaluation": {
+    "balancedAccuracy": 0.875,
+    "waitRecall": 0.90,
+    "drinkRecall": 0.85,
+    "meanG": 29.208,
+    "meanRegret": 0.792,
+    "dnShuffledBA": 0.475,
+    "dnShuffleMargin": 0.40,
+    "neuralOffBA": 0.50,
+    "neuralOffMargin": 0.375
+  },
+  "phaseBins": {
+    "early": {"n": 16, "drinkRecall": 0.938},
+    "mid": {"n": 29, "drinkRecall": 0.793},
+    "late": {"n": 15, "drinkRecall": 0.867}
+  },
+  "next": "V15F_FROZEN_REMEDIATION_VALIDATION_AUTHORIZED",
+  "deployment": "BLOCKED"
+}
