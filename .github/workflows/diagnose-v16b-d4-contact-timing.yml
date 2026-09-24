@@ -1,0 +1,51 @@
+name: Diagnose MapleFly v16B D4 Contact Timing
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v16b-d4-contact-timing.mjs"
+      - "history/prereg_v16b_d4.md"
+      - ".github/workflows/diagnose-v16b-d4-contact-timing.yml"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  contact-timing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v16b-d4-contact-timing.mjs
+      - name: Download authoritative v16B source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache/v16b-authoritative
+          gh run download 35944188466 \
+            --repo ${{ github.repository }} \
+            --name maplefly-v16b-continuous-ecology-35944188466 \
+            --dir .cache/v16b-authoritative
+          test "$(sha256sum .cache/v16b-authoritative/v16b_ecology.json | cut -d' ' -f1)" = "062f5d8e222ba188f173bec96fc2a8210910938b074fb45f4708fa0f45611528"
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v16B D4 decomposition
+        run: node scripts/diagnose-v16b-d4-contact-timing.mjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v16b-d4-contact-timing-${{ github.run_id }}
+          path: results/v16b-d4-contact-timing
+          if-no-files-found: warn
+          retention-days: 30
