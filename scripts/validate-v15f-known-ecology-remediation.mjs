@@ -175,13 +175,18 @@ async function loadRemediationPotion() {
   }
 
   const rep = parsed.representation;
+  const dnIds = Array.isArray(rep.dnIds)
+    ? rep.dnIds
+    : Object.keys(rep.dnIds ?? {})
+        .sort((a, b) => Number(a) - Number(b))
+        .map((key) => rep.dnIds[key]);
   if (
     rep.type !== "MEAN_POOLED_ALL_DN" ||
     rep.dnCount !== DN_COUNT ||
     rep.historyFrames !== POTION_HISTORY_FRAMES ||
     rep.means?.length !== DN_COUNT ||
     rep.scales?.length !== DN_COUNT ||
-    rep.dnIds?.length !== DN_COUNT
+    dnIds.length !== DN_COUNT
   ) {
     throw new Error("v15E2 representation contract mismatch");
   }
@@ -226,7 +231,7 @@ async function loadRemediationPotion() {
     artifactDigest: V15E2_ARTIFACT_DIGEST,
     representationSha256: repHash,
     modelSha256: modelHash,
-    dnIds: rep.dnIds,
+    dnIds,
     means: Float64Array.from(rep.means),
     scales: Float64Array.from(rep.scales),
     wait: {
