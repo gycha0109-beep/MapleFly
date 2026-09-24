@@ -1715,31 +1715,6 @@ function simulateSequentialPolicy(
   };
 }
 
-function oracleMinimumUses(tape) {
-  let minimum = Infinity;
-  let bestActions = null;
-  for (let mask = 0; mask < 1024; mask += 1) {
-    const actions = Array.from(
-      { length: 10 },
-      (_, i) => (mask >> i) & 1,
-    );
-    const row = simulateSequentialPolicy(
-      tape,
-      [0, 0, 0, 0, 0],
-      { fixedActions: actions },
-    );
-    if (row.survived && row.uses < minimum) {
-      minimum = row.uses;
-      bestActions = actions;
-    }
-  }
-  if (!Number.isFinite(minimum)) {
-    throw new Error("v15G oracle cannot survive tape " + tape.seed);
-  }
-  return { minimumUses: minimum, bestActions };
-}
-
-
 function tapeValidity(rows) {
   const encounters = rows.flatMap((row) => row.encounters);
   const left = encounters.filter((row) => row.side === "L");
