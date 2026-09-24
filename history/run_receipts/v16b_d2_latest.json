@@ -1,0 +1,41 @@
+{
+  "schema": "maplefly.run-receipt.v16b-d2.1",
+  "experiment": "v16B-D2",
+  "status": "CLOSED",
+  "outcome": "V16B_D2_PERSISTENT_STATE_NOT_SUFFICIENT",
+  "preregistration": {
+    "commit": "77f359f613f0fa55c7c16d0e3c3971143fb93797"
+  },
+  "implementation": {
+    "commit": "64d77fd1a2d35b279a2e37c93ecbc378e8d11ba8"
+  },
+  "authoritativeRun": {
+    "runId": 35948844108,
+    "head": "96365d7f4618acbc170c22f898ab4750b20f44e5",
+    "conclusion": "success",
+    "artifactId": 10788146336,
+    "artifactDigest": "sha256:d56ea54380c65f8c632b335f06bf46d26830f88f794846ab93df036f226f0ca9"
+  },
+  "resetControlPass": true,
+  "classification": {
+    "CLEAN": {
+      "resetLateDrinkRate": 1,
+      "persistentLateDrinkRate": 1,
+      "carryoverDrop": 0,
+      "interference": false
+    },
+    "TARGET_OBSTACLE_STATIC": {
+      "resetLateDrinkRate": 1,
+      "persistentLateDrinkRate": 1,
+      "carryoverDrop": 0,
+      "interference": false
+    },
+    "FULL_DYNAMIC_VISUAL": {
+      "resetLateDrinkRate": 1,
+      "persistentLateDrinkRate": 1,
+      "carryoverDrop": 0,
+      "interference": false
+    }
+  },
+  "next": "V16B_D3_REAL_CONTACT_HISTORY_DIAGNOSTIC_AUTHORIZED"
+}
