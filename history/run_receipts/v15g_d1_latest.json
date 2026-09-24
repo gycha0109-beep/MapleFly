@@ -1,0 +1,49 @@
+{
+  "schema": "maplefly.run-receipt.v15g-d1.1",
+  "experiment": "v15G-D1",
+  "status": "CLOSED",
+  "outcome": "V15G_D1_OBSERVABLE_STATE_LIMITED",
+  "preregistration": {
+    "commit": "c04fa62f58051f3a5ee422a3aed6a8f8d0f99af9"
+  },
+  "implementation": {
+    "commit": "e66f5d41ee7aadef462432eda32d563ab5562310"
+  },
+  "authoritativeRun": {
+    "runId": 35971683895,
+    "head": "fda411030e18e67284c5addb356068555858aa9b",
+    "conclusion": "success",
+    "artifactId": 10796781682,
+    "artifactDigest": "sha256:d33df817b43cef3dd166f76ed9699e5141c8fbacaf2944ddc5a65b76a42ce46e"
+  },
+  "evalAlias": {
+    "observableGroups": 1956,
+    "conflictGroups": 205,
+    "conflictGroupFraction": 0.10480572597137014,
+    "strictStates": 5975,
+    "strictConflictStates": 1278,
+    "conflictStateFraction": 0.21389121338912134
+  },
+  "probes": {
+    "marginOnly": {
+      "balancedAccuracy": 0.558236622179023,
+      "survivalRate": 0.25,
+      "meanExcessUses": 1.5,
+      "economyCapable": false
+    },
+    "fixedV15gClass": {
+      "balancedAccuracy": 0.6639563577138744,
+      "survivalRate": 0.4166666666666667,
+      "meanExcessUses": 1.4,
+      "economyCapable": false
+    },
+    "freeMarginLinear": {
+      "balancedAccuracy": 0.6416239117752303,
+      "survivalRate": 0.4166666666666667,
+      "meanExcessUses": 1.2,
+      "economyCapable": false
+    }
+  },
+  "next": "LONGER_NEURAL_SELF_ACTION_MEMORY_REMEDIATION_PREREGISTRATION_AUTHORIZED",
+  "deployment": "BLOCKED"
+}
