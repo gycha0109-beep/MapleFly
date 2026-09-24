@@ -1,0 +1,54 @@
+name: Audit MapleFly v15F D1 Value Gate Feasibility
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/audit-v15f-d1-value-gate-feasibility.mjs"
+      - "history/prereg_v15f_d1.md"
+      - ".github/workflows/audit-v15f-d1-value-gate-feasibility.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  value-gate-feasibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/audit-v15f-d1-value-gate-feasibility.mjs
+      - name: Fetch authoritative v15F evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15f-authoritative
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10794886720" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10794886720" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:4b0ebfc818cdc150ccea1fc86cef7f7aac5b2df587394233c233b8eacc926073"
+          test "$head_sha" = "3b80740d11fb721ea5e9042fd995b35c4d17cc7f"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10794886720/zip" > /tmp/v15f.zip
+          unzip -q /tmp/v15f.zip -d .cache/v15f-authoritative
+          test -f .cache/v15f-authoritative/v15f_ecology.json
+          sha256sum .cache/v15f-authoritative/v15f_ecology.json
+      - name: Run preregistered exhaustive feasibility audit
+        env:
+          V15F_SOURCE_FILE: .cache/v15f-authoritative/v15f_ecology.json
+        run: node scripts/audit-v15f-d1-value-gate-feasibility.mjs
+      - name: Upload v15F D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15f-d1-value-gate-feasibility-${{ github.run_id }}
+          path: results/v15f-d1-value-gate-feasibility
+          if-no-files-found: warn
+          retention-days: 30
