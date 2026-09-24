@@ -2493,11 +2493,11 @@ async function main() {
   };
 
   const outDir = resolve(
-    "results/v15j-reward-only-long-neural-history",
+    "results/v15k-reward-only-terminal-health",
   );
   await mkdir(outDir, { recursive: true });
   await writeFile(
-    resolve(outDir, "v15j_training.json"),
+    resolve(outDir, "v15k_training.json"),
     JSON.stringify(output, null, 2) + "\n",
   );
 
