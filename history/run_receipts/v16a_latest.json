@@ -1,0 +1,98 @@
+{
+  "schema": "maplefly.run-receipt.v16a.1",
+  "experiment": "v16A",
+  "status": "CLOSED_PASS",
+  "outcome": "V16A_FROZEN_FIVE_SKILL_INTEGRATION_PASS",
+  "preregistration": {
+    "path": "history/prereg_v16a.md",
+    "commit": "622e9c6e790c0506a5672544ff2576cd0814ff72"
+  },
+  "implementation": {
+    "path": "scripts/evaluate-v16a-five-skill-integration.mjs",
+    "commit": "9b5bf6a0bf0204b62b89f8a885f9cd55eb159c33"
+  },
+  "authoritativeRun": {
+    "workflow": "Evaluate MapleFly v16A Five-Skill Integration",
+    "runId": 35941098263,
+    "head": "5dee3f578c8f0beece2c1c6155adbefaf67a0aa8",
+    "conclusion": "success",
+    "artifactId": 10785212130,
+    "artifactName": "maplefly-v16a-five-skill-integration-35941098263",
+    "artifactDigest": "sha256:a5ec82ae290720eb21e81c6ec543e83837e3b04aea9c270f3284f213aaf7bbb3"
+  },
+  "cohort": {
+    "baseSeeds": [
+      3001000,
+      3011000,
+      3021000
+    ],
+    "distances": [
+      155,
+      195,
+      235,
+      275
+    ],
+    "sides": [
+      "L",
+      "R"
+    ],
+    "injuryClasses": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "episodes": 96,
+    "horizonSteps": 400,
+    "horizonSeconds": 8
+  },
+  "summary": {
+    "courseCompletionRate": 0.9791666666666666,
+    "minSeedCompletionRate": 0.9375,
+    "obstacleClearRate": 1,
+    "leftObstacleClearRate": 1,
+    "rightObstacleClearRate": 1,
+    "targetKillRate": 0.9791666666666666,
+    "timeoutRate": 0.020833333333333332,
+    "meanActualJumps": 1.5416666666666667,
+    "postClearJumpEpisodeRate": 0.03125,
+    "preClearAttackEpisodeRate": 0.052083333333333336,
+    "attackHitPrecision": 0.639821029082774,
+    "airborneAttackActionFraction": 0.10738255033557047,
+    "maxSeedAirborneAttackActionFraction": 0.12738853503184713,
+    "postKillAttacks": 1,
+    "postKillJumps": 0,
+    "potionDecisionCoverage": 1,
+    "meanPotionDecisions": 1,
+    "potionWaitRecall": 0.75,
+    "potionDrinkRecall": 1,
+    "potionBalancedAccuracy": 0.875,
+    "potionMeanG": 29.375,
+    "potionMeanRegret": 0.625,
+    "meanPotionUses": 0.625,
+    "meanWastedHealing": 5
+  },
+  "gateChecks": {
+    "courseCompletion": true,
+    "minSeedCompletion": true,
+    "obstacleClear": true,
+    "leftObstacleClear": true,
+    "rightObstacleClear": true,
+    "targetKill": true,
+    "timeout": true,
+    "meanJumps": true,
+    "postClearJump": true,
+    "preClearAttack": true,
+    "attackHitPrecision": true,
+    "airborneAttackActionFraction": true,
+    "perSeedAirborneAttackActionFraction": true,
+    "potionDecisionCoverage": true,
+    "potionDecisionCount": true,
+    "potionBalancedAccuracy": true,
+    "potionWaitRecall": true,
+    "potionDrinkRecall": true,
+    "potionMeanG": true,
+    "potionMeanRegret": true
+  },
+  "next": "V16B_PREREGISTRATION_AUTHORIZED"
+}
