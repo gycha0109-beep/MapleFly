@@ -1828,44 +1828,6 @@ const MEMORY_VARIANTS = Object.freeze([
   { name: "M3_FULL_LONG", neuralDepth: 10, actionDepth: 9 },
 ]);
 
-function tapeValidity(rows) {
-  const encounters = rows.flatMap((row) => row.encounters);
-  const left = encounters.filter((row) => row.side === "L");
-  const right = encounters.filter((row) => row.side === "R");
-  const attacks = encounters.reduce((sum, row) => sum + row.attacks, 0);
-  const hits = encounters.reduce((sum, row) => sum + row.hits, 0);
-  const airborne = encounters.reduce(
-    (sum, row) => sum + row.airborneAttacks,
-    0,
-  );
-  return {
-    threeKillEpisodeRate: mean(
-      rows.map((row) => Number(row.killEvents.length >= 3)),
-    ),
-    encounterObstacleClearRate: mean(
-      encounters.map((row) => Number(row.clearStep !== null)),
-    ),
-    encounterTargetKillRate: mean(
-      encounters.map((row) => Number(row.killed)),
-    ),
-    leftEncounterTargetKillRate: mean(
-      left.map((row) => Number(row.killed)),
-    ),
-    rightEncounterTargetKillRate: mean(
-      right.map((row) => Number(row.killed)),
-    ),
-    attackHitPrecision: attacks ? hits / attacks : 0,
-    airborneAttackActionFraction:
-      attacks ? airborne / attacks : 0,
-    postClearJumpEncounterRate: mean(
-      encounters.map((row) => Number(row.postClearJumps > 0)),
-    ),
-    preClearAttackEncounterRate: mean(
-      encounters.map((row) => Number(row.preClearAttacks > 0)),
-    ),
-  };
-}
-
 async function collectD2Tapes({
   connectome,
   dnSlot,
