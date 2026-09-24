@@ -1,0 +1,58 @@
+name: Train MapleFly v15E Phase Randomized Reward
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/train-v15e-phase-randomized-reward-potion.mjs"
+      - "history/prereg_v15e.md"
+      - ".github/workflows/train-v15e-phase-randomized-reward-potion.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  phase-randomized-reward-learning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/train-v15e-phase-randomized-reward-potion.mjs
+      - name: Fetch frozen v15A12 representation evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15a12-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10768761312" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10768761312" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:8aa759b04643d618e69aaa647d7251eb237816ee3b84bcc97a0f451d20cbba78"
+          test "$head_sha" = "353bbdc91bbe125434c1263d8c8d1be308e1844d"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10768761312/zip" > /tmp/v15a12.zip
+          unzip -q /tmp/v15a12.zip -d .cache/v15a12-artifact
+          test -f .cache/v15a12-artifact/v15a12_screen.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15E phase-randomized reward learning
+        env:
+          V15A12_REPRESENTATION_FILE: .cache/v15a12-artifact/v15a12_screen.json
+        run: node scripts/train-v15e-phase-randomized-reward-potion.mjs
+      - name: Upload v15E evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15e-phase-randomized-reward-${{ github.run_id }}
+          path: results/train-v15e-phase-randomized-reward-potion
+          if-no-files-found: warn
+          retention-days: 30
