@@ -189,6 +189,14 @@ Totals:
 
 Use the exact 48-second continuous ecology and exact v15E2 neural tape collection.
 
+Freeze the deterministic lower-skill interruption RNG for tape generation:
+
+```text
+3457000
+```
+
+The same RNG stream is consumed in TRAIN then EVAL collection order.
+
 Each complete tape must contain exactly ten POTION opportunities.
 
 ---
