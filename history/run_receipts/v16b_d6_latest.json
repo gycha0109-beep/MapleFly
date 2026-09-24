@@ -1,0 +1,21 @@
+{
+  "schema": "maplefly.run-receipt.v16b-d6.1",
+  "experiment": "v16B-D6",
+  "status": "CLOSED",
+  "outcome": "V16B_D6_TRAINED_PHASE_PEAK",
+  "preregistration": {"commit": "7224037aea1137e9ca6f51c6c9e117edb02330fd"},
+  "implementation": {"commit": "9983dc03a7a22e127d56c62500c9a06c3e9ee8e3"},
+  "authoritativeRun": {
+    "runId": 35958610575,
+    "head": "dbc7760df766332e6f137bf81a6c603f91f1f487",
+    "conclusion": "success",
+    "artifactId": 10791174814,
+    "artifactDigest": "sha256:2e6da234eee7c61bbf25bf356c18f71201523c37c223702f023e1be65cecdfdc"
+  },
+  "baseSupportWindows": 67,
+  "commonWindows": 53,
+  "drinkRates": {"real": 0.038, "a145": 0.094, "a175": 0.283, "a205": 0.0, "canonical": 0.792},
+  "effects": {"d5Replication": 0.245, "earlyToTrained": 0.189, "trainedToLate": -0.283, "fullSweep": -0.094},
+  "classification": {"valid": true, "trainedPhasePeak": true, "recencyGradient": false, "latePhasePeak": false},
+  "next": "V15E_PHASE_RANDOMIZED_REWARD_TRAINING_PREREGISTRATION_AUTHORIZED"
+}
