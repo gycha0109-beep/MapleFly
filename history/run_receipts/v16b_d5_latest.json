@@ -1,0 +1,39 @@
+{
+  "schema": "maplefly.run-receipt.v16b-d5.1",
+  "experiment": "v16B-D5",
+  "status": "CLOSED",
+  "outcome": "V16B_D5_PHASE_RECENCY_DOMINANT",
+  "preregistration": {
+    "commit": "4b02bd3b77d51f8350b339dcb8a157d42b49c691"
+  },
+  "implementation": {
+    "commit": "c939d7ca37ee62b7af86ffa1478697e3eee65a94"
+  },
+  "authoritativeRun": {
+    "runId": 35956418116,
+    "head": "476ed5045f60b206a963b0df344edb4d89d856a5",
+    "conclusion": "success",
+    "artifactId": 10790728530,
+    "artifactDigest": "sha256:c037eb2043713d27b9c31a364932af268e3e543ae453e33d207029ee7e611f7b"
+  },
+  "baseSupportWindows": 67,
+  "phase": {
+    "eligibleN": 58,
+    "realDrinkRate": 0.034,
+    "phase175DrinkRate": 0.259,
+    "canonicalDrinkRate": 0.810,
+    "rescue": 0.224,
+    "valid": true,
+    "sensitive": true
+  },
+  "spacing": {
+    "eligibleN": 63,
+    "realDrinkRate": 0.048,
+    "canonicalGapsDrinkRate": 0.079,
+    "canonicalDrinkRate": 0.825,
+    "rescue": 0.032,
+    "valid": true,
+    "sensitive": false
+  },
+  "next": "V16B_D6_PHASE_RESPONSE_DIAGNOSTIC_AUTHORIZED"
+}
