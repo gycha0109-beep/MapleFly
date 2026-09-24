@@ -1,0 +1,51 @@
+{
+  "schema": "maplefly.run-receipt.v15i-d1.1",
+  "phase": "v15I-D1",
+  "outcome": "V15I_D1_SCHEDULE_DOMINATED_POLICY",
+  "preregistration": {
+    "commit": "7cded543afba1160173044ebdbfb9c2f509232a9"
+  },
+  "implementation": {
+    "scriptCommit": "58ee45142edd6fb325067d983e4e80325ef9df99",
+    "workflowCommit": "164ab97c57e626634a52b9f2e783e40a80e7d82b"
+  },
+  "authoritativeRun": {
+    "id": 35982770613,
+    "headSha": "164ab97c57e626634a52b9f2e783e40a80e7d82b",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10799989166,
+      "name": "maplefly-v15i-d1-schedule-vs-neural-alignment-35982770613",
+      "digest": "sha256:ace33ca9c49abb8dab44a44deb52601b7a5be6cbb6663b79954460721b3dbbde",
+      "sizeInBytes": 1519
+    }
+  },
+  "headline": {
+    "reconstructionMismatches": 0,
+    "first8ActionMismatch": {
+      "count": 9,
+      "total": 240,
+      "fraction": 0.0375
+    },
+    "full": {
+      "survivalRate": 0.8333333333333334,
+      "meanExcessUses": 1.65
+    },
+    "first8": {
+      "survivalRate": 0.9583333333333334,
+      "meanExcessUses": 1.6956521739130435
+    },
+    "episodeShift1": {
+      "survivalRate": 0.875,
+      "meanExcessUses": 1.5238095238095237,
+      "alignmentContributes": false
+    },
+    "decisionMeanNeural": {
+      "survivalRate": 0.9583333333333334,
+      "meanExcessUses": 1.6956521739130435,
+      "alignmentContributes": false
+    }
+  },
+  "deployment": "BLOCKED",
+  "next": "SHIFT_PERSISTENCE_TOWARD_LONG_NEURAL_HISTORY_WITH_SHORT_ACTION_MEMORY"
+}
