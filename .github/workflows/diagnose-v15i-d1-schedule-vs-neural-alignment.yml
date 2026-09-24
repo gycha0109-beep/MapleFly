@@ -1,0 +1,53 @@
+name: Diagnose MapleFly v15I D1 Schedule vs Neural Alignment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15i-d1-schedule-vs-neural-alignment.mjs"
+      - "history/prereg_v15i_d1.md"
+      - ".github/workflows/diagnose-v15i-d1-schedule-vs-neural-alignment.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  schedule-vs-neural-alignment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15i-d1-schedule-vs-neural-alignment.mjs
+      - name: Fetch authoritative v15I artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15i-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10800930547" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10800930547" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:8aaf38c7d46c6db3a4ae4aeb2eeaf8e81d48d329d8071a66d73f4e87f3ec26a9"
+          test "$head_sha" = "8915f99273f260f030701e2be15c3060f3509174"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10800930547/zip" > /tmp/v15i.zip
+          unzip -q /tmp/v15i.zip -d .cache/v15i-artifact
+          test -f .cache/v15i-artifact/v15i_training.json
+      - name: Run preregistered v15I-D1 diagnostic
+        env:
+          V15I_ARTIFACT_FILE: .cache/v15i-artifact/v15i_training.json
+        run: node scripts/diagnose-v15i-d1-schedule-vs-neural-alignment.mjs
+      - name: Upload v15I-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15i-d1-schedule-vs-neural-alignment-${{ github.run_id }}
+          path: results/v15i-d1-schedule-vs-neural-alignment
+          if-no-files-found: warn
+          retention-days: 30
