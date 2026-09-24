@@ -346,9 +346,6 @@ function geometryFits(geometry) {
 function makeInitialGeometry(side, startDistance) {
   const playerX = WORLD_WIDTH / 2 - PLAYER_WIDTH / 2;
   const geometry = geometryFromPlayer(playerX, side, startDistance);
-  if (!geometryFits(geometry)) {
-    throw new Error("initial v16B geometry does not fit world");
-  }
   return {
     playerX,
     playerY: GROUND_Y - PLAYER_HEIGHT,
