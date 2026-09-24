@@ -1,0 +1,20 @@
+{
+  "schema": "maplefly.run-receipt.v16b-d4.1",
+  "experiment": "v16B-D4",
+  "status": "CLOSED",
+  "outcome": "V16B_D4_IN_WINDOW_TIMING_DOMINANT",
+  "preregistration": {"commit":"a386fffc56f418aeb9dde8ccdb1f74385046f82b"},
+  "implementation": {"commit":"d384e5ada7c60f3a9bcb0d512a70d3359c205a19"},
+  "authoritativeRun": {
+    "runId":35955487325,
+    "head":"635f93a67d758d5f56af7a2e937a06b8b7d7d730",
+    "conclusion":"success",
+    "artifactId":10790362728,
+    "artifactDigest":"sha256:fe601ff6b2c80808e9a00856283e587205dc78152e80305043a23633178c606d"
+  },
+  "supportWindows":67,
+  "drinkRates":{"C0":0.851,"C1":0.821,"R0":0.09,"R1":0.045,"R1T":0.045},
+  "effects":{"sideOnCanonical":0.03,"timingWithCanonicalSide":0.761,"timingWithRealSide":0.776,"sideOnRealTiming":0.045,"boundaryTail":0.0},
+  "classification":{"timingDominant":true,"sideSensitive":false,"boundaryTailSensitive":false},
+  "next":"V16B_D5_PHASE_VS_SPACING_DIAGNOSTIC_AUTHORIZED"
+}
