@@ -1,0 +1,33 @@
+{
+  "schema": "maplefly.run-receipt.v15e.1",
+  "experiment": "v15E",
+  "status": "CLOSED",
+  "outcome": "V15E_PHASE_RANDOMIZED_REWARD_POLICY_FAIL",
+  "preregistration": {"commit": "6b58967912533cf068c6687a84584a9b0a7f2dc4"},
+  "implementation": {"commit": "e26d355be09abdb34d795d8f8e840b383117ce25"},
+  "authoritativeRun": {
+    "runId": 35960600099,
+    "head": "289a37a843302e56a8d844ba517d05dc542bd18f",
+    "conclusion": "failure",
+    "artifactId": 10793015011,
+    "artifactDigest": "sha256:19b57d749a41df15d7b8c7782409d7e66607912aa709b2c3dcb2c4f314738f02"
+  },
+  "candidateModelSha256": "45bc54c314b0c3d4323c945c6fb0440065ce89a424da7b4299489c45fc7eb462",
+  "evaluation": {
+    "balancedAccuracy": 0.533,
+    "waitRecall": 0.55,
+    "drinkRecall": 0.517,
+    "meanG": 25.333,
+    "meanRegret": 4.667,
+    "dnShuffledBA": 0.525,
+    "dnShuffleMargin": 0.008,
+    "neuralOffBA": 0.50,
+    "neuralOffMargin": 0.033
+  },
+  "phaseBins": {
+    "early": {"n": 22, "drinkRecall": 0.591},
+    "mid": {"n": 20, "drinkRecall": 0.45},
+    "late": {"n": 18, "drinkRecall": 0.50}
+  },
+  "next": "V15E2_PHASE_INVARIANT_REPRESENTATION_PREREGISTRATION_AUTHORIZED"
+}
