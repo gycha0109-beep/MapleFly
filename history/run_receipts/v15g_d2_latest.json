@@ -1,0 +1,53 @@
+{
+  "schema": "maplefly.run-receipt.v15g-d2.1",
+  "phase": "v15G-D2",
+  "outcome": "V15G_D2_ACTION_MEMORY_SUFFICIENT",
+  "authoritativeRun": {
+    "id": 35974540001,
+    "headSha": "ca5eecf35015253ad1fefc5c9678b07f1a03af68",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10797874198,
+      "name": "maplefly-v15g-d2-long-memory-35974540001",
+      "digest": "sha256:785afcd37c45530a7f2f9898268950bcfc0d2642d44dd23de374dd396882c284",
+      "sizeInBytes": 15206
+    }
+  },
+  "preregistration": {
+    "initialCommit": "cd217554910c50dea59b6a10c520fe1c112ff655",
+    "frozenCommit": "c0c8d61c8e99c156dc4057fab2358ce15eaafe49"
+  },
+  "implementation": {
+    "scriptCommit": "f474d6dfd1e3cd95c748e73a4e6a9e0e37f3e0a2",
+    "workflowCommit": "0bc681372391ff266286b5c627e506b362af09fb",
+    "syntaxFixCommit": "ca5eecf35015253ad1fefc5c9678b07f1a03af68",
+    "firstInvalidRun": 35974472864,
+    "firstInvalidReason": "duplicate tapeValidity declaration; failed at syntax check before scientific execution"
+  },
+  "headline": {
+    "tapeValidityPass": true,
+    "m0": {
+      "conflictStateFraction": 0.25726802070888094,
+      "economyCapable": false
+    },
+    "m1": {
+      "conflictStateFraction": 0,
+      "economyCapable": true,
+      "linearBalancedAccuracy": 0.817242,
+      "linearSurvivalRate": 0.875,
+      "linearMinSeedSurvivalRate": 0.875,
+      "linearMeanExcessUses": 1
+    },
+    "m2": {
+      "conflictStateFraction": 0.25726802070888094,
+      "economyCapable": true
+    },
+    "m3": {
+      "conflictStateFraction": 0,
+      "economyCapable": false
+    }
+  },
+  "deployment": "BLOCKED",
+  "supervisedProbeDeployment": "FORBIDDEN",
+  "next": "SEPARATE_REWARD_ONLY_LONG_ACTION_MEMORY_REMEDIATION_PREREGISTRATION_AUTHORIZED"
+}
