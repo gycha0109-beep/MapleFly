@@ -1,0 +1,48 @@
+{
+  "schema": "maplefly.run-receipt.v15i.1",
+  "phase": "v15I",
+  "outcome": "V15I_REWARD_ONLY_LONG_ACTION_MEMORY_FAIL",
+  "preregistration": {
+    "commit": "32d600cace1ece3447e9ce50433a44e06d7714d5"
+  },
+  "implementation": {
+    "scriptCommit": "169d4ba9c4424499749ace3dd71d5918ee6777ba",
+    "workflowCommit": "8915f99273f260f030701e2be15c3060f3509174"
+  },
+  "authoritativeRun": {
+    "id": 35980309878,
+    "headSha": "8915f99273f260f030701e2be15c3060f3509174",
+    "conclusion": "failure",
+    "failureType": "SCIENTIFIC_GATE_FAILURE",
+    "artifact": {
+      "id": 10800930547,
+      "name": "maplefly-v15i-reward-only-long-action-memory-35980309878",
+      "digest": "sha256:8aaf38c7d46c6db3a4ae4aeb2eeaf8e81d48d329d8071a66d73f4e87f3ec26a9",
+      "sizeInBytes": 27236
+    }
+  },
+  "policySha256": "2cd005ebe7587aac363938dbb9bce9f7dbfc5ba8400a363470478859b6ca8d1e",
+  "headline": {
+    "tapeValidityPass": true,
+    "full": {
+      "survivalRate": 0.8333333333333334,
+      "minSeedSurvivalRate": 0.75,
+      "meanUses": 7.708333333333333,
+      "meanExcessUses": 1.65,
+      "wastedHealingPerDrink": 3.8378378378378377
+    },
+    "actionMemoryOff": {
+      "survivalRate": 1,
+      "meanExcessUses": 3.5833333333333335,
+      "contributes": true
+    },
+    "neuralOff": {
+      "survivalRate": 0.5416666666666666,
+      "minSeedSurvivalRate": 0.375,
+      "contributes": true
+    },
+    "failedGate": "meanExcessUses <= 1.5"
+  },
+  "deployment": "BLOCKED",
+  "next": "V15I_D1_SCHEDULE_VS_NEURAL_ALIGNMENT_DIAGNOSTIC"
+}
