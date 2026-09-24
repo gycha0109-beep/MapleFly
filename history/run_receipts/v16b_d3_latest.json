@@ -1,0 +1,40 @@
+{
+  "schema": "maplefly.run-receipt.v16b-d3.1",
+  "experiment": "v16B-D3",
+  "status": "CLOSED",
+  "outcome": "V16B_D3_REAL_CONTACT_SCHEDULE_INTERFERENCE",
+  "preregistration": {
+    "initialCommit": "3264ed46d2143c08a14b85dfe17eda0d3bd081c0",
+    "amendedCommit": "c11afb6055678fbc6136f4a819c8071fe3b9cf59"
+  },
+  "implementation": {
+    "commit": "fba4a00a3e21b21d653df9448f552b3babd9322a"
+  },
+  "authoritativeRun": {
+    "runId": 35950443954,
+    "head": "8d08dbafd967b72bc270e18202f090c9391ff26b",
+    "conclusion": "success",
+    "artifactId": 10789315281,
+    "artifactDigest": "sha256:80503579c0e72ce60d682cd8592d9ddf84094a0f0a84338e69afe1fd88a60025"
+  },
+  "source": {
+    "v16bRunId": 35944188466,
+    "v16bJsonSha256": "062f5d8e222ba188f173bec96fc2a8210910938b074fb45f4708fa0f45611528",
+    "windows": 84,
+    "primarySupportWindows": 67
+  },
+  "primarySupport": {
+    "sourceFullDrinkRate": 0.06,
+    "canonicalResetDrinkRate": 0.851,
+    "realResetDrinkRate": 0.045,
+    "realPersistentDrinkRate": 0.045,
+    "scheduleDrop": 0.806,
+    "persistenceDrop": 0.0
+  },
+  "classification": {
+    "canonicalControlPass": true,
+    "realContactScheduleInterference": true,
+    "realContactPersistenceInteraction": false
+  },
+  "next": "V16B_D4_CONTACT_TIMING_DECOMPOSITION_AUTHORIZED"
+}
