@@ -1,0 +1,43 @@
+{
+  "schema": "maplefly.run-receipt.v15g.1",
+  "experiment": "v15G",
+  "status": "CLOSED",
+  "outcome": "V15G_SEQUENTIAL_POTION_ECONOMY_FAIL",
+  "preregistration": {
+    "commit": "2a4c80560fa772dcf0caa974443912bac71476cc"
+  },
+  "implementation": {
+    "commit": "e299ceb50397cd76457b08967c3e9ee64c7d596f"
+  },
+  "authoritativeRun": {
+    "runId": 35969268691,
+    "head": "a3fd2a04b64605deb27e10bdeae23c5024de25e0",
+    "conclusion": "failure",
+    "artifactId": 10796405663,
+    "artifactDigest": "sha256:c27d7a42ef2ac9fad1cf9c687b4d55ddf33a019c49af0f185ff138a76693b99f"
+  },
+  "thetaSha256": "491d7f3a2d58e05e30158e801bce1555fc3712801f35dd949c394c168fe0ff14",
+  "evaluation": {
+    "survivalRate": 1,
+    "minSeedSurvivalRate": 1,
+    "meanUses": 9.666666666666666,
+    "meanExcessUses": 3.7916666666666665,
+    "wastedHealingPerDrink": 4.094827586206897,
+    "fullMeanUtility": 20,
+    "historyOffMeanUtility": 20,
+    "historyMargin": 0,
+    "neuralOffMeanUtility": 15,
+    "neuralMargin": 5
+  },
+  "gateChecks": {
+    "tapeValidity": true,
+    "survivalRate": true,
+    "minSeedSurvival": true,
+    "meanExcessUses": false,
+    "wastedHealingPerDrink": true,
+    "historyContribution": false,
+    "neuralContribution": false
+  },
+  "next": "V15G_D1_POLICY_INFORMATION_FEASIBILITY_AUDIT_AUTHORIZED",
+  "deployment": "BLOCKED"
+}
