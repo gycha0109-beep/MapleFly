@@ -1,0 +1,65 @@
+name: Diagnose MapleFly v15K-D1 Neural Residual
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15k-d1-neural-residual.mjs"
+      - "history/prereg_v15k_d1.md"
+      - ".github/workflows/diagnose-v15k-d1-neural-residual.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  neural-residual-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15k-d1-neural-residual.mjs
+      - name: Reject prior supervised/probe dependencies
+        run: |
+          set -euo pipefail
+          ! grep -q "b2a3d2e47ff9be3f1721638a75b779c37b3a8a0fb49c32fabdb0e0d8aa2af5f4" scripts/diagnose-v15k-d1-neural-residual.mjs
+          ! grep -q "v15g_d2.json" scripts/diagnose-v15k-d1-neural-residual.mjs
+          ! grep -q "v15i_training.json" scripts/diagnose-v15k-d1-neural-residual.mjs
+          ! grep -q "v15j_training.json" scripts/diagnose-v15k-d1-neural-residual.mjs
+          ! grep -q "v15k_training.json" scripts/diagnose-v15k-d1-neural-residual.mjs
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15K-D1 residual audit
+        env:
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15k-d1-neural-residual.mjs
+      - name: Upload v15K-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15k-d1-neural-residual-${{ github.run_id }}
+          path: results/v15k-d1-episode-specific-neural-residual-audit
+          if-no-files-found: warn
+          retention-days: 30
