@@ -1,0 +1,57 @@
+{
+  "schema": "maplefly.run-receipt.v15k-d1.1",
+  "phase": "v15K-D1",
+  "outcome": "V15K_D1_EPISODE_SPECIFIC_SIGNAL_NOT_DEMONSTRATED",
+  "authoritativeRun": {
+    "id": 36073412333,
+    "headSha": "e5a70f142114c0bd3c970586fb9f0664a81bef57",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10839846180,
+      "name": "maplefly-v15k-d1-neural-residual-36073412333",
+      "digest": "sha256:57e92d596b8b807cf0dfd7324b9ad34fec482988e4547dba54f073fb22ffb5fe",
+      "sizeInBytes": 9079
+    }
+  },
+  "preregistration": "01d1e90520ddd5891b268f0fd84c2f5aeb9ca04e",
+  "implementation": "7b9a926359dd8215cad3f84c5163dfc5885e4ef4",
+  "headline": {
+    "P0_PHASE_ACTION": {
+      "balancedAccuracy": 0.841,
+      "waitRecall": 0.681,
+      "drinkRecall": 1,
+      "survivalRate": 1,
+      "meanExcessUses": 2.708,
+      "economyCapable": false
+    },
+    "P1_RAW_MARGIN": {
+      "balancedAccuracy": 0.772,
+      "waitRecall": 0.833,
+      "drinkRecall": 0.711,
+      "survivalRate": 1,
+      "meanExcessUses": 1.875,
+      "economyCapable": false
+    },
+    "P2_RESIDUAL_MARGIN": {
+      "balancedAccuracy": 0.597,
+      "waitRecall": 0.781,
+      "drinkRecall": 0.412,
+      "survivalRate": 0.167,
+      "meanExcessUses": 0.75,
+      "economyCapable": false,
+      "shiftContribution": false
+    },
+    "P3_RESIDUAL_DN32": {
+      "balancedAccuracy": 0.527,
+      "waitRecall": 0.363,
+      "drinkRecall": 0.69,
+      "survivalRate": 0.5,
+      "meanExcessUses": 2.167,
+      "economyCapable": false,
+      "shiftContribution": false
+    }
+  },
+  "deployment": "BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "IMPACT_LOCKED_DN_TEMPORAL_RETENTION_AUDIT_AUTHORIZED"
+}
