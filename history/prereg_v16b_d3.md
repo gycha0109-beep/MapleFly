@@ -78,7 +78,11 @@ window start
   decisionStep - 239
 
 recorded contacts
-  damageEvents whose step is inside that exact window
+  causal onsets with windowStart <= damageEvent.step < decisionStep
+
+pulse-overlap audit
+  additionally inspect damageEvents from windowStart-6 through decisionStep-1
+  because v16B applies LgLG on the six brain steps after contact
 
 recorded fields used
   brain seed
@@ -94,9 +98,9 @@ authoritative source의 observed contact-count distribution은 audit 대상으�
 
 ```text
 1 contact   8 windows
-2 contacts 37 windows
-3 contacts 29 windows
-4 contacts  9 windows
+2 contacts 41 windows
+3 contacts 26 windows
+4 contacts  8 windows
 5 contacts  1 window
 total      84 windows
 ```
@@ -105,7 +109,7 @@ primary support set:
 
 ```text
 contact count 2..3
-66 windows
+67 windows
 ```
 
 이는 original v15 reward policy에서 DRINK가 optimal인 2/3-injury support와 대응한다.
@@ -117,16 +121,26 @@ contact count 2..3
 real v16B에서는 contact가 physics/contact update에서 기록된 뒤 다음 brain step부터
 LgLG pulse가 들어간다.
 
-따라서 recorded relative contact step `r`에 대해 replay LgLG pulse는:
+따라서 absolute recorded contact step `d`에 대해 replay LgLG pulse는 exact v16B order를 따라:
 
 ```text
-r+1 .. r+6
+d+1 .. d+6
 ```
 
-단, 240-step window 밖으로 넘어가는 pulse portion은 해당 window에서는 재생하지 않는다.
-PERSISTENT mode에서는 다음 cycle로 pulse를 carry하지 않는다. 이는 v16B에서 decision boundary와
-contact update 순서상 step 240 contact가 decision 이후 발생하므로 source window attribution과
-동일한 규칙을 유지하기 위함이다.
+이다.
+
+따라서 RESET replay도 window 시작 직전 contact의 pulse tail이 현재 window와 겹치면 재생한다.
+
+```text
+window = [start, end]
+relevant source contacts = d where start-6 <= d <= end-1
+active on replay step t iff d+1 <= t <= d+6
+```
+
+PERSISTENT replay에서는 이 pulse tail을 cycle boundary 너머로 그대로 carry한다.
+
+decisionStep 자체에서 physics/contact update로 새로 기록된 contact는 그 decision에 영향을 주지 않고
+다음 step부터 영향을 주므로 primary contact count에서도 제외한다.
 
 공통:
 
@@ -177,7 +191,8 @@ same frozen policy + same brain-seed family에서 count-matched controlled DRINK
 
 visual OFF.
 
-source의 exact relative contact timing/side를 위 real-contact `r+1..r+6` semantics로 replay한다.
+source의 exact absolute contact timing/side를 위 real-contact `d+1..d+6` semantics로 replay한다.
+window 시작 전 최대 6-step pulse tail도 source artifact에서 복원한다.
 
 목적:
 real contact schedule만으로 WAIT bias가 재현되는지 검사.
@@ -186,7 +201,8 @@ real contact schedule만으로 WAIT bias가 재현되는지 검사.
 
 episode별로 MaleCNS instance 하나를 만들고 ground baseline을 최초 1회만 측정한다.
 
-source decision window를 시간 순서대로 연속 replay한다.
+source decision window를 시간 순서대로 연속 replay하며, absolute damage-event pulse tail을
+cycle boundary 너머로 그대로 유지한다.
 
 각 cycle 뒤:
 - POTION history만 `finishCycle`로 clear
@@ -303,8 +319,8 @@ authoritative D3 결과를 본 뒤 다음을 변경하지 않는다.
 ```text
 source artifact/run
 source window selection
-support definition 2..3
-pulse onset rule
+support definition 2..3 causal contact onsets (decisionStep excluded)
+pulse onset/cross-boundary rule
 canonical event generator
 history/frame timing
 sensory gains
