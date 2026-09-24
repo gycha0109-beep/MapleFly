@@ -1,0 +1,96 @@
+{
+  "schema": "maplefly.run-receipt.v16b.1",
+  "experiment": "v16B",
+  "status": "CLOSED_FAIL",
+  "outcome": "V16B_CONTINUOUS_ECOLOGY_FAIL",
+  "stressSufficient": true,
+  "preregistration": {
+    "path": "history/prereg_v16b.md",
+    "commit": "04cb62206312f4b3b452548a35dfc26c46d3646e"
+  },
+  "implementation": {
+    "initialCommit": "5fd8c8d63145cc6efae310f261f1ed3ab9c640f6",
+    "workflowCommit": "cdeb1a327ea745f54fdc5b00ef43aa534a3a2ed4",
+    "invalidRunId": 35943893212,
+    "invalidReason": "initial v16A geometry incorrectly subjected to respawn world-fit constraint",
+    "correctionCommit": "6ec552a49685d2e62a6c33fceaa2e6a378d9760a"
+  },
+  "authoritativeRun": {
+    "workflow": "Evaluate MapleFly v16B Continuous Ecology",
+    "runId": 35944188466,
+    "head": "6ec552a49685d2e62a6c33fceaa2e6a378d9760a",
+    "conclusion": "failure",
+    "scientificFailure": true,
+    "artifactId": 10785384382,
+    "artifactName": "maplefly-v16b-continuous-ecology-35944188466",
+    "artifactDigest": "sha256:21c50f6dfb7f46bafaf25c8c7ed59666b2a1b7e3e7ffba9613d1e38686a3d76e",
+    "pagesRunId": 35944188485,
+    "pagesConclusion": "success"
+  },
+  "cohort": {
+    "baseSeeds": [
+      3101000,
+      3111000,
+      3121000
+    ],
+    "episodes": 24,
+    "encounters": 106,
+    "horizonSteps": 2400,
+    "horizonSeconds": 48,
+    "respawnGapSteps": 35
+  },
+  "summary": {
+    "survivalRate": 0,
+    "minSeedSurvivalRate": 0,
+    "threeKillEpisodeRate": 0.9583333333333334,
+    "meanKills": 3.4166666666666665,
+    "encounterObstacleClearRate": 1,
+    "encounterTargetKillRate": 0.7735849056603774,
+    "leftEncounterTargetKillRate": 0.7735849056603774,
+    "rightEncounterTargetKillRate": 0.7735849056603774,
+    "attackHitPrecision": 0.6592592592592592,
+    "airborneAttackActionFraction": 0.11851851851851852,
+    "postClearJumpEncounterRate": 0,
+    "preClearAttackEncounterRate": 0.02830188679245283,
+    "offDeathRate": 1,
+    "survivalBenefit": 0,
+    "offMeanKills": 3.1666666666666665,
+    "meanKillBenefit": 0.25,
+    "meanFullCostAdjustedValue": -2.5,
+    "meanOffTerminalHp": 0,
+    "meanValueImprovement": -2.5,
+    "meanPotionDecisions": 3.5,
+    "meanPotionUses": 0.16666666666666666,
+    "totalPotionUses": 4,
+    "totalPotionDecisions": 84,
+    "wastedHealingPerDrink": 0,
+    "meanContacts": 10.5,
+    "meanDamageTaken": 105,
+    "meanDeathStep": 971.3333333333334
+  },
+  "gateChecks": {
+    "survivalRate": false,
+    "minSeedSurvival": false,
+    "threeKillEpisodeRate": true,
+    "encounterObstacleClear": true,
+    "encounterTargetKill": true,
+    "leftEncounterTargetKill": true,
+    "rightEncounterTargetKill": true,
+    "attackHitPrecision": true,
+    "airborneAttackActionFraction": true,
+    "postClearJumpEncounter": true,
+    "preClearAttackEncounter": true,
+    "survivorPotionDecisionCount": false,
+    "survivalBenefit": false,
+    "meanKillBenefit": false,
+    "meanValueImprovement": false,
+    "wastedHealingPerDrink": true
+  },
+  "diagnosticObservation": {
+    "drinkActions": 4,
+    "totalDecisions": 84,
+    "drinkRate": 0.047619047619047616,
+    "interpretation": "WAIT-biased under continuous mixed-sensory ecology; causal source not established"
+  },
+  "next": "V16B_DIAGNOSTIC_REQUIRED"
+}
