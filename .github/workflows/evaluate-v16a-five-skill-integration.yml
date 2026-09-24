@@ -1,0 +1,43 @@
+name: Evaluate MapleFly v16A Five-Skill Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/evaluate-v16a-five-skill-integration.mjs"
+      - "history/prereg_v16a.md"
+      - ".github/workflows/evaluate-v16a-five-skill-integration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-five-skill-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/evaluate-v16a-five-skill-integration.mjs
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v16A integrated baseline
+        run: node scripts/evaluate-v16a-five-skill-integration.mjs
+      - name: Upload v16A evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v16a-five-skill-integration-${{ github.run_id }}
+          path: results/v16a-five-skill-integration
+          if-no-files-found: warn
+          retention-days: 30
