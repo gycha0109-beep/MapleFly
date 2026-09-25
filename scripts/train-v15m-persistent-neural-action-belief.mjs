@@ -1979,15 +1979,6 @@ function attachTraceFeatures(tapes, preprocessing) {
   }
 }
 
-function sigmoid(value) {
-  if (value >= 0) {
-    const z = Math.exp(-value);
-    return 1 / (1 + z);
-  }
-  const z = Math.exp(value);
-  return z / (1 + z);
-}
-
 function policyActions(
   neuralSequence,
   params,
