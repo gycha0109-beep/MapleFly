@@ -1,0 +1,103 @@
+{
+  "schema": "maplefly.run-receipt.v15l.1",
+  "phase": "v15L",
+  "outcome": "V15L_CAUSAL_NEURAL_TRACE_REMEDIATION_FAIL",
+  "scientificValidity": "VALID_FAIL",
+  "authoritativeRun": {
+    "id": 36081124828,
+    "headSha": "c4c00392b7e86ecdc76b7ba0ecae1975b76723b5",
+    "conclusion": "failure",
+    "artifact": {
+      "id": 10842242941,
+      "name": "maplefly-v15l-causal-neural-trace-36081124828",
+      "digest": "sha256:92335df0c05930d02820bdd477c3c39f890a30ef7be9f4adba04a699edaa2b46",
+      "evidenceJsonSha256": "f712f3d2f30619bd57a9b89b82cca42061a8c5b80052619a6780a7563a170673"
+    }
+  },
+  "deterministicCorroboration": {
+    "runId": 36081114727,
+    "headSha": "84ce4b7979893c15d6b7265a4353a5561c202858",
+    "artifactId": 10842875764,
+    "artifactDigest": "sha256:7efb99a1e3ce2f125eb78061d46950b64e9bd655f8c6620bcd969be8eb35fe12",
+    "evidenceJsonSha256": "f712f3d2f30619bd57a9b89b82cca42061a8c5b80052619a6780a7563a170673",
+    "byteIdenticalEvidenceJson": true
+  },
+  "preregistration": "613143b63fd4149015d6b0b2a3f435bfb3362573",
+  "implementation": [
+    "f589dcb3829b02459b394a807614c28edabb5e94",
+    "72b8ffffff85751163de46a60dd4205423aee4de",
+    "84ce4b7979893c15d6b7265a4353a5561c202858",
+    "c4c00392b7e86ecdc76b7ba0ecae1975b76723b5"
+  ],
+  "representation": {
+    "type": "CAUSAL_EXPONENTIAL_DN_TRACE_PCA32",
+    "frameMilliseconds": 100,
+    "dnCount": 1316,
+    "halfLifeSeconds": 2,
+    "decay": 0.9659363289248456,
+    "pcaComponents": 32,
+    "policyParameterCount": 37,
+    "preprocessingSha256": "f3145c140b7eff694ad503201a708e34c7f2d2701c109f0f7179bf19e3d35421",
+    "paramsSha256": "ec2f49955e4a24e458babde1b5d8c49abd4ea3c1b7e6c28bdea1fc159254d166"
+  },
+  "ecology": {
+    "pass": true,
+    "threeKillEpisodeRate": 1,
+    "obstacleClearRate": 0.9870689655172413,
+    "targetKillRate": 0.9181034482758621,
+    "leftTargetKillRate": 0.9478260869565217,
+    "rightTargetKillRate": 0.8888888888888888,
+    "attackHitPrecision": 0.5898123324396782,
+    "airborneAttackFraction": 0.13315460232350312,
+    "postClearJumpEncounterRate": 0.004310344827586207,
+    "preClearAttackEncounterRate": 0.0603448275862069
+  },
+  "full": {
+    "survivalRate": 0.125,
+    "minSeedSurvivalRate": 0,
+    "meanUses": 1.7083333333333333,
+    "meanExcessUses": 2.6666666666666665,
+    "wastedHealingPerDrink": 1.951219512195122
+  },
+  "controls": {
+    "neuralTraceOff": {
+      "survivalRate": 1,
+      "meanUses": 10,
+      "meanExcessUses": 3.7083333333333335,
+      "contribution": true
+    },
+    "actionMemoryOff": {
+      "survivalRate": 0.041666666666666664,
+      "meanUses": 1.2083333333333333,
+      "meanExcessUses": 4,
+      "contribution": true
+    },
+    "episodeShift1": {
+      "survivalRate": 0.125,
+      "meanUses": 1.5833333333333333,
+      "meanExcessUses": 3.3333333333333335,
+      "contribution": true
+    },
+    "decisionMeanNeural": {
+      "survivalRate": 0.9583333333333334,
+      "minSeedSurvivalRate": 0.875,
+      "meanUses": 8.791666666666666,
+      "meanExcessUses": 2.782608695652174,
+      "contribution": false
+    }
+  },
+  "gateChecks": {
+    "tapeValidity": true,
+    "survivalRate": false,
+    "minSeedSurvival": false,
+    "meanExcessUses": false,
+    "wastedHealingPerDrink": true,
+    "neuralTraceContribution": true,
+    "episodeShift1Contribution": true,
+    "decisionMeanNeuralContribution": false
+  },
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "FROZEN_V15L_FAILURE_DIAGNOSTIC_AUTHORIZED"
+}
