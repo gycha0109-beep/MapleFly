@@ -1,0 +1,88 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d4.1",
+  "phase": "v15N-D4",
+  "outcome": "V15N_D4_INCONCLUSIVE",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36097663719,
+    "headSha": "43009412a0c65b6add0682da8723c490f8048e22",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10849120410,
+      "name": "maplefly-v15n-d4-continuous-health-36097663719",
+      "digest": "sha256:38d455554f11da5de9fcf745ee6f9584f59b399f92f04bd2dcaad72b39705a7a",
+      "evidenceJsonSha256": "f838731a5ea4bb647bb2bc2369f83ee4bd2cb65e8072eb20b79358c8b9a01735"
+    }
+  },
+  "preregistration": "b8d0e6b946412c8269597865b122b49f16599ee6",
+  "implementation": "89afa03c168418837060fda847512fbc14b25b83",
+  "workflow": "43009412a0c65b6add0682da8723c490f8048e22",
+  "support": {
+    "trainStates": 5222,
+    "evalStates": 7180,
+    "holdoutStates": 5855,
+    "hpSd": {
+      "train": 18.583375156954553,
+      "eval": 19.076030710420124,
+      "holdout": 19.145434369457504
+    },
+    "pass": true
+  },
+  "full34": {
+    "train": {
+      "r2": 0.17616455651397944,
+      "mae": 13.825624643587739,
+      "rmse": 16.867271311763183,
+      "pearson": 0.4197196165465888
+    },
+    "eval": {
+      "r2": -0.0829862307580711,
+      "mae": 16.317476761734735,
+      "rmse": 19.85178122394831,
+      "pearson": 0.18669552681776713
+    },
+    "holdout": {
+      "r2": -0.03368011213689104,
+      "mae": 16.445511894703536,
+      "rmse": 19.4651746304279,
+      "pearson": 0.2917023204040557
+    }
+  },
+  "neural32": {
+    "eval": {
+      "r2": -0.08849901340307187,
+      "mae": 16.4584633876561,
+      "pearson": -0.022436829209704842
+    },
+    "holdout": {
+      "r2": -0.04009058507449614,
+      "mae": 16.54451362155856,
+      "pearson": 0.1288020342278131
+    }
+  },
+  "actionState2": {
+    "eval": {
+      "r2": 0.09496813061358622,
+      "mae": 14.967182209642033,
+      "pearson": 0.31828928832223247
+    },
+    "holdout": {
+      "r2": 0.08244620951739845,
+      "mae": 15.26479582860451,
+      "pearson": 0.288278966497033
+    }
+  },
+  "gates": {
+    "supportPass": true,
+    "fullStable": false,
+    "neuralAddsHealth": false,
+    "fullClearlyWeak": false
+  },
+  "ecologyPass": true,
+  "replacementPolicyTrained": false,
+  "diagnosticRegressionWeightsDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "CAUSAL_MULTI_TIMESCALE_NEURAL_MEMORY_HEALTH_OBSERVABILITY"
+}
