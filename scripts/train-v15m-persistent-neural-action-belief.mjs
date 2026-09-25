@@ -2782,11 +2782,11 @@ async function main() {
   };
 
   const outDir = resolve(
-    "results/v15l-causal-neural-trace-remediation",
+    "results/v15m-persistent-neural-action-belief",
   );
   await mkdir(outDir, { recursive: true });
   await writeFile(
-    resolve(outDir, "v15l_training.json"),
+    resolve(outDir, "v15m_training.json"),
     JSON.stringify(output, null, 2) + "\n",
   );
 
