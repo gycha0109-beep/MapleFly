@@ -1,0 +1,96 @@
+name: Diagnose MapleFly v15N-D6-D1 Eventization Attribution
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs"
+      - "history/prereg_v15n_d6_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d1-eventization-attribution.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  eventization-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+      - name: Verify frozen v15N-D6-D1 contract
+        run: |
+          set -euo pipefail
+          grep -q '20edf4db027b1e91ced7038eff895969a08b2d60' scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+          grep -q '4d83e773948a98f234b2e14e7145914007c3584277064f4440153b0489b94285' scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+          grep -q 'V15N_D6_D1_BACKGROUND_FRACTION_GATE = 0.25' scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+          grep -q 'V15N_D6_D1_DUPLICATE_FRACTION_GATE = 0.50' scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+          grep -q 'V15N_D6_D1_BACKGROUND_AND_MULTICOUNT_FAILURE' scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+          grep -q 'replacementDetectorTrained: false' scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+      - name: Fetch authoritative v15N-D6 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-d6-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10888904036" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10888904036" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:9b71847f20da22751db3a8a6b21df9d06ff3cda82095dd5fcc6a863504a6f6d6"
+          test "$head_sha" = "69528cc81c108f7860f8a9022418e6067232e5ac"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10888904036/zip" > /tmp/v15n-d6.zip
+          unzip -q /tmp/v15n-d6.zip -d .cache/v15n-d6-artifact
+          test -f .cache/v15n-d6-artifact/v15n_d6.json
+          echo "4d83e773948a98f234b2e14e7145914007c3584277064f4440153b0489b94285  .cache/v15n-d6-artifact/v15n_d6.json" | sha256sum -c -
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2"
+          test "$head_sha" = "d3e434fc5a9f9a8b9e83d96637b25e2058398274"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+          echo "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4  .cache/v15n-artifact/v15n_training.json" | sha256sum -c -
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15N-D6-D1 eventization attribution
+        env:
+          V15N_D6_ARTIFACT_FILE: .cache/v15n-d6-artifact/v15n_d6.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d1-eventization-attribution.mjs
+      - name: Upload v15N-D6-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d1-eventization-attribution-${{ github.run_id }}
+          path: results/v15n-d6-d1-eventization-attribution
+          if-no-files-found: warn
+          retention-days: 30
