@@ -1,0 +1,91 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d3.1",
+  "phase": "v15N-D3",
+  "outcome": "V15N_D3_INSUFFICIENT_HEALTH_STATE_SUPPORT",
+  "scientificValidity": "VALID_DIAGNOSTIC_INSUFFICIENT_PRIMARY_SUPPORT",
+  "authoritativeRun": {
+    "id": 36095500223,
+    "headSha": "8b1e619f4ff6de9ca9650945806a8a469d27e1c5",
+    "conclusion": "failure",
+    "artifact": {
+      "id": 10847054092,
+      "name": "maplefly-v15n-d3-health-observability-36095500223",
+      "digest": "sha256:668238ed23f2a60ff97a7dec795932f55967bde4f683385b97e04c8c36b9600a",
+      "evidenceJsonSha256": "b7da534ad4110407efdc92b77e4082d9f6693236170664f623c8c4adfa797d0f"
+    }
+  },
+  "preregistration": "73d6f01a0db369525ebe31bc3875211a22c51ecd",
+  "implementation": "4b406707e01d38b2e512866f4b35ba7367b86032",
+  "workflow": "8b1e619f4ff6de9ca9650945806a8a469d27e1c5",
+  "support": {
+    "critical": {
+      "train": {
+        "positive": 3143,
+        "negative": 2079
+      },
+      "eval": {
+        "positive": 4086,
+        "negative": 3094
+      },
+      "holdout": {
+        "positive": 3372,
+        "negative": 2375
+      }
+    },
+    "fullHealAvailable": {
+      "train": {
+        "positive": 5100,
+        "negative": 122
+      },
+      "eval": {
+        "positive": 6978,
+        "negative": 202
+      },
+      "holdout": {
+        "positive": 5608,
+        "negative": 139
+      }
+    },
+    "requiredPerClass": 500,
+    "pass": false
+  },
+  "descriptive": {
+    "critical": {
+      "full34": {
+        "trainBA": 0.6511498482545253,
+        "evalBA": 0.5517200328679986,
+        "holdoutBA": 0.6063481301117563
+      },
+      "neural32": {
+        "evalBA": 0.49734134024105525,
+        "holdoutBA": 0.5074254229880751
+      },
+      "actionState2": {
+        "evalBA": 0.6174118127992189,
+        "holdoutBA": 0.6200216644814884
+      }
+    },
+    "fullHealAvailable": {
+      "full34": {
+        "trainBA": 0.7672693667630986,
+        "evalBA": 0.6454557321596304,
+        "holdoutBA": 0.6107468518765586
+      },
+      "neural32": {
+        "evalBA": 0.5738480769831067,
+        "holdoutBA": 0.5524308798325106
+      },
+      "actionState2": {
+        "evalBA": 0.6688879335053024,
+        "holdoutBA": 0.6640513552068473
+      }
+    }
+  },
+  "ecologyPass": true,
+  "replacementPolicyTrained": false,
+  "diagnosticProbeWeightsDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "CONTINUOUS_CURRENT_HP_REGRESSION_ON_FROZEN_PCA32_PLUS_H2"
+}
