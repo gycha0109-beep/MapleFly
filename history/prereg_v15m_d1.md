@@ -281,7 +281,7 @@ TRAIN -> HOLDOUT PCA BA drop >= 15 pp
 
 ### Outcome A
 
-If RAW is stable and strong PCA degradation is true:
+If RAW is stable, PCA is not stable, and strong PCA degradation is true:
 
 ```text
 V15M_D1_PCA_BOTTLENECK_SUPPORTED
