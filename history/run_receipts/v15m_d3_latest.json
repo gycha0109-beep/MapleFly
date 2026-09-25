@@ -1,0 +1,70 @@
+{
+  "schema": "maplefly.run-receipt.v15m-d3.1",
+  "phase": "v15M-D3",
+  "outcome": "V15M_D3_TWO_TIMESCALE_STATE_BOTTLENECK",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36088917488,
+    "headSha": "cf1ab147c9d64d7abf4af49ee5964546e4a9b564",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10845137132,
+      "name": "maplefly-v15m-d3-two-timescale-action-state-36088917488",
+      "digest": "sha256:96140389e273926dfa702fdaf51512454d054a465596ccde5085df9e72ea837b",
+      "evidenceJsonSha256": "838d291d09f6563397ad56fcee36db5ff0d918ae5a042e3e424281cae764162c"
+    }
+  },
+  "preregistration": "412f08a5994bb6d6a0d7baca54a2096767b25383",
+  "implementation": "cf848301f51efdee4fe9ea2fc5b9c878369c2090",
+  "workflow": "cf1ab147c9d64d7abf4af49ee5964546e4a9b564",
+  "evidenceChain": {
+    "v15mD2Receipt": "7a39fa1ca9ec1fbb715e7101085dc13924a8eec4",
+    "v15mD2Outcome": "V15M_D2_SCALAR_ACTION_STATE_BOTTLENECK"
+  },
+  "cohort": {
+    "baseSeeds": [
+      4041000,
+      4051000,
+      4061000
+    ],
+    "tapes": 24,
+    "interruptionRngSeed": 4077000
+  },
+  "state": {
+    "dimensions": 2,
+    "shortDecay": 0.5,
+    "longDecay": 0.9,
+    "environmentStateInputs": false
+  },
+  "oracle": {
+    "reachableStates": 5655,
+    "forcedWait": 2241,
+    "forcedDrink": 2000,
+    "either": 1129,
+    "unsurvivable": 285,
+    "forcedTotal": 4241
+  },
+  "geometry": {
+    "mixedGroupCount": 50,
+    "nonSeparableMixedGroupCount": 11,
+    "nonSeparableMixedGroupFraction": 0.22,
+    "nonSeparableByDecision": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      10,
+      1
+    ]
+  },
+  "interpretation": "Two fixed exponential own-action traces still have overlapping forced-class convex hulls in 11/50 mixed tape-decision groups even with a free linear separator per group; the defect remains concentrated at decisions 8-9.",
+  "next": "DESIGN_MINIMAL_NONLINEAR_RECURRENT_OWN_ACTION_STATE_WITH_NO_CLOCK_BIAS",
+  "replacementPolicyTrained": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED"
+}
