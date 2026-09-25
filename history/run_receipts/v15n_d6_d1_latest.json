@@ -1,0 +1,64 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d1.1",
+  "phase": "v15N-D6-D1",
+  "outcome": "V15N_D6_D1_TEMPORAL_MULTICOUNT_FAILURE",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36195755217,
+    "headSha": "f1a5412aed24d1b9f35d3d2c3e901799c46b1786",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10889583735,
+      "name": "maplefly-v15n-d6-d1-eventization-attribution-36195755217",
+      "digest": "sha256:8e145733e95d83f25e548aa05e531357b6e685df7b6e8d8e3bc92f3f5fef84c3",
+      "evidenceJsonSha256": "90fdd058e87d380140aeade0cb4e7a172bb8f4848308969b0c1f9903a100c177"
+    }
+  },
+  "design": "ece6eee47a5ba7b236bb75a5a0cd6f4afc8317fc",
+  "preregistration": "20edf4db027b1e91ced7038eff895969a08b2d60",
+  "implementation": "d3e891016d244fd6e601d4aef3790d597082d4c7",
+  "workflow": "f1a5412aed24d1b9f35d3d2c3e901799c46b1786",
+  "detectorReproduction": {
+    "weightsSha256": "5dc677cf4c14e398465af72cbcff784e40163cdf702064359e7f4648319c9eb5",
+    "threshold": 0.1367936045430042,
+    "separation": 0.7830625725367281,
+    "pass": true
+  },
+  "attribution": {
+    "train": {
+      "backgroundMassFraction": 0.053164983440233966,
+      "backgroundPositiveFrameRate": 0.12427536231884058,
+      "duplicateMassFraction": 0.7954928752024729,
+      "medianPositiveFramesPerHit": 6,
+      "perHitEvidenceCv": 0.39768182557528775
+    },
+    "eval": {
+      "backgroundMassFraction": 0.05790195769284018,
+      "backgroundPositiveFrameRate": 0.11351875808538163,
+      "duplicateMassFraction": 0.7985195346406622,
+      "medianPositiveFramesPerHit": 6,
+      "perHitEvidenceCv": 0.41040658361292187
+    },
+    "holdout": {
+      "backgroundMassFraction": 0.05627050345488157,
+      "backgroundPositiveFrameRate": 0.11967329545454546,
+      "duplicateMassFraction": 0.7987365321640507,
+      "medianPositiveFramesPerHit": 6,
+      "perHitEvidenceCv": 0.43283933091291843
+    },
+    "amplitudeRatioHoldoutOverEval": 0.939601787052715
+  },
+  "globalFlags": {
+    "backgroundLeakageHigh": false,
+    "multiCountHigh": true,
+    "amplitudeUnstable": false,
+    "amplitudeShift": false
+  },
+  "replacementPolicyTrained": false,
+  "replacementDetectorTrained": false,
+  "diagnosticImpactDetectorDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_CAUSAL_NEURAL_EVENTIZER_AUDIT"
+}
