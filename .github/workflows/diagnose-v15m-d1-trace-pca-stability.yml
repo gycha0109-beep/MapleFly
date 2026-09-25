@@ -1,0 +1,69 @@
+name: Diagnose MapleFly v15M-D1 Trace PCA Stability
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15m-d1-trace-pca-stability.mjs"
+      - "history/prereg_v15m_d1.md"
+      - ".github/workflows/diagnose-v15m-d1-trace-pca-stability.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  trace-pca-stability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+      - name: Verify frozen D1 contract
+        run: |
+          set -euo pipefail
+          grep -q '41be09846362c0e4162468b6bbaa183144555f92' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          grep -q 'V15M_D1_HOLDOUT_BASE_SEEDS = \[3961000, 3971000, 3981000\]' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          grep -q 'V15M_D1_RECENT_IMPACT_SECONDS = 2.0' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          grep -q 'V15M_D1_MIN_CLASS_SUPPORT = 30' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          grep -q 'V15M_D1_PCA_BOTTLENECK_SUPPORTED' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          grep -q 'V15M_D1_TRACE_AND_PCA_SIGNAL_STABLE' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          grep -q 'replacementPolicyTrained: false' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          ! grep -q 'function trainCem(' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+          ! grep -q 'function policyActions(' scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15M-D1 stability audit
+        env:
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15m-d1-trace-pca-stability.mjs
+      - name: Upload v15M-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15m-d1-trace-pca-stability-${{ github.run_id }}
+          path: results/v15m-d1-trace-pca-stability
+          if-no-files-found: warn
+          retention-days: 30
