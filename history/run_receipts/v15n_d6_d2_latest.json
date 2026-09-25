@@ -1,0 +1,88 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2.1",
+  "phase": "v15N-D6-D2",
+  "outcome": "V15N_D6_D2_EVENTIZER_NOT_STABLE",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36198312071,
+    "headSha": "b987e972f8fef623c374c8b5752a891a3d6409d4",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10891293918,
+      "name": "maplefly-v15n-d6-d2-causal-neural-eventizer-36198312071",
+      "digest": "sha256:377027609d0e87aeb50dea973c6871a67f7eeb421edef7cbf64bb14797b495ba",
+      "evidenceJsonSha256": "475d612723d48f89224bedbde903431235f0ae4555d38742ccaaaa7dae81f2a5"
+    }
+  },
+  "design": "1506ccca14c888ae59b7a2674563179b6b09dd53",
+  "preregistration": "4f2d707620f0010efa431cb1d66828d7590e6920",
+  "implementation": "cfc5ac3b2b0b3131802d83917255d8741257e1cc",
+  "workflow": "b987e972f8fef623c374c8b5752a891a3d6409d4",
+  "eventMetrics": {
+    "train": {
+      "neuralEvents": 491,
+      "physicalHits": 648,
+      "precision": 0.20977596741344195,
+      "recall": 0.15895061728395063,
+      "falseEventsPerEpisode": 16.166666666666668
+    },
+    "eval": {
+      "neuralEvents": 476,
+      "physicalHits": 606,
+      "precision": 0.1407563025210084,
+      "recall": 0.11056105610561057,
+      "falseEventsPerEpisode": 17.041666666666668
+    },
+    "holdout": {
+      "neuralEvents": 499,
+      "physicalHits": 648,
+      "precision": 0.1903807615230461,
+      "recall": 0.14660493827160495,
+      "falseEventsPerEpisode": 16.833333333333332
+    }
+  },
+  "directMetrics": {
+    "eval": {
+      "r2": 0.7442117886622694,
+      "mae": 2.8583333333333334,
+      "pearson": 0.9401716272659767,
+      "meanSignedError": -2.533333333333333
+    },
+    "holdout": {
+      "r2": 0.723662356244859,
+      "mae": 3.0416666666666665,
+      "pearson": 0.9413479358880257,
+      "meanSignedError": -2.9916666666666667
+    }
+  },
+  "residualMetrics": {
+    "eval": {
+      "r2": -1.5286745493999363,
+      "mae": 1.990277777777777,
+      "pearson": 0.07262268444734064
+    },
+    "holdout": {
+      "r2": -0.9386959390558454,
+      "mae": 1.869097222222222,
+      "pearson": 0.011001363250705372
+    },
+    "shiftedEvalR2": -1.5605597626322982,
+    "shiftedHoldoutR2": -0.8706409060916878
+  },
+  "gates": {
+    "supportPass": true,
+    "ecologyPass": true,
+    "eventDetectionStable": false,
+    "directCountStable": false,
+    "residualStable": false,
+    "episodeSpecific": false
+  },
+  "replacementPolicyTrained": false,
+  "replacementDetectorTrained": false,
+  "diagnosticImpactDetectorDeployable": false,
+  "eventizerDeployableWithCurrentDetector": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D1_EVENT_TIMING_AND_LOCKOUT_ATTRIBUTION"
+}
