@@ -1,0 +1,68 @@
+{
+  "schema": "maplefly.run-receipt.v15m-d2.1",
+  "phase": "v15M-D2",
+  "outcome": "V15M_D2_SCALAR_ACTION_STATE_BOTTLENECK",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36088009381,
+    "headSha": "89d1926570b12747ad772e0d12cc76eedff964bc",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10844514633,
+      "name": "maplefly-v15m-d2-scalar-action-state-36088009381",
+      "digest": "sha256:10b58bf495b90e23c23bdda5d2c673a6d3f01b6c00f40c6a02128d0ce96aa464",
+      "evidenceJsonSha256": "1802ccc5cb35a5a6fd436334ad89e264e9cfc754f05f88ecd8f6c3025194f1aa"
+    }
+  },
+  "preregistration": "59ca34a3edd103489bb98f09b325ef3915d43b59",
+  "implementation": "88b5b399fa65846a18587bd7e52139d598fcb931",
+  "workflow": "89d1926570b12747ad772e0d12cc76eedff964bc",
+  "evidenceChain": {
+    "v15mD1Receipt": "976766d42983b8070c78651660532a1103100f13",
+    "v15mD1Outcome": "V15M_D1_TRACE_AND_PCA_SIGNAL_STABLE"
+  },
+  "cohort": {
+    "baseSeeds": [
+      4001000,
+      4011000,
+      4021000
+    ],
+    "tapes": 24,
+    "interruptionRngSeed": 4037000
+  },
+  "oracle": {
+    "reachableStates": 5363,
+    "forcedWait": 2182,
+    "forcedDrink": 1886,
+    "either": 1058,
+    "unsurvivable": 237,
+    "forcedTotal": 4068
+  },
+  "selectedUpperBound": {
+    "decay": 0.9,
+    "orientation": "NEGATIVE",
+    "balancedAccuracy": 0.989643161585245,
+    "ordinaryAccuracy": 0.9894296951819076,
+    "mixedGroupCount": 54,
+    "nonSeparableMixedGroupCount": 15,
+    "nonSeparableMixedGroupFraction": 0.2777777777777778,
+    "errorsByDecision": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      43,
+      0
+    ]
+  },
+  "interpretation": "A single exponentially persistent own-action scalar is nearly sufficient in aggregate but cannot monotonically separate the oracle boundary in 15/54 mixed tape-decision groups even with a free threshold per group; all selected-bound errors occur at decision 8.",
+  "next": "TEST_MINIMAL_TWO_TIMESCALE_CAUSAL_OWN_ACTION_STATE_BEFORE_REWARD_TRAINING",
+  "replacementPolicyTrained": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED"
+}
