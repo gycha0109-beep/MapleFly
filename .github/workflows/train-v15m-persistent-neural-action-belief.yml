@@ -1,0 +1,73 @@
+name: Train MapleFly v15M Persistent Neural-Action Belief
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/train-v15m-persistent-neural-action-belief.mjs"
+      - "history/prereg_v15m.md"
+      - ".github/workflows/train-v15m-persistent-neural-action-belief.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  persistent-neural-action-belief:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/train-v15m-persistent-neural-action-belief.mjs
+      - name: Verify frozen v15M contract
+        run: |
+          set -euo pipefail
+          grep -q 'e0aea2eed43942f6543fbcf40398501e1c99f432' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'const V15M_TRAIN_BASE_SEEDS = \[3871000, 3881000, 3891000\];' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'const V15M_EVAL_BASE_SEEDS = \[3901000, 3911000, 3921000\];' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'const V15M_PCA_SEED = 3948000;' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'const V15M_CEM_SEED = 3958000;' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'const V15M_POLICY_PARAMS = 35;' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'V15M_PERSISTENT_NEURAL_ACTION_BELIEF_PASS' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'actionFeedbackOff' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'memoryOff' scripts/train-v15m-persistent-neural-action-belief.mjs
+          grep -q 'neuralOff' scripts/train-v15m-persistent-neural-action-belief.mjs
+          ! grep -q 'actionHistory = Array(4)' scripts/train-v15m-persistent-neural-action-belief.mjs
+          ! grep -q 'previous_4_own_potion_actions' scripts/train-v15m-persistent-neural-action-belief.mjs
+          ! grep -q 'cumulativePotion' scripts/train-v15m-persistent-neural-action-belief.mjs
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15M persistent belief
+        env:
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/train-v15m-persistent-neural-action-belief.mjs
+      - name: Upload v15M evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15m-persistent-neural-action-belief-${{ github.run_id }}
+          path: results/v15m-persistent-neural-action-belief
+          if-no-files-found: warn
+          retention-days: 30
