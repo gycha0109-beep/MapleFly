@@ -1,0 +1,74 @@
+{
+  "schema": "maplefly.run-receipt.v15m-d1.1",
+  "phase": "v15M-D1",
+  "outcome": "V15M_D1_TRACE_AND_PCA_SIGNAL_STABLE",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36085872379,
+    "headSha": "3ad86f1ebf2e78175f8baa61c0c549029c01c5ff",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10843779825,
+      "name": "maplefly-v15m-d1-trace-pca-stability-36085872379",
+      "digest": "sha256:b88006fe192ede9d6a83897d3f1c9146f5b73d4522a3fd659e9bbfa2212a9286",
+      "evidenceJsonSha256": "64b8589f1c60e988d5c47749910ae5fdebad4acf497f91c8b28071e8a40efa08"
+    }
+  },
+  "preregistration": "41be09846362c0e4162468b6bbaa183144555f92",
+  "implementation": "fa44491c8224cfa158dbd4c904f9cb14d5f856f1",
+  "workflow": "3ad86f1ebf2e78175f8baa61c0c549029c01c5ff",
+  "frozenV15M": {
+    "receipt": "ac0c5c995ec48bfc1ef9c2ef0bd8580f03acf958",
+    "preprocessingSha256": "83cd6fa437c7cb526fc59bbb19285d7af7c7f2e397a97f7ac3b422409bccda99",
+    "preprocessingReproduced": true
+  },
+  "label": {
+    "name": "RECENT_IMPACT_2S",
+    "windowSeconds": 2,
+    "runtimeFeature": false,
+    "support": {
+      "train": {
+        "positive": 191,
+        "negative": 49
+      },
+      "eval": {
+        "positive": 193,
+        "negative": 47
+      },
+      "holdout": {
+        "positive": 191,
+        "negative": 49
+      }
+    }
+  },
+  "raw": {
+    "trainBA": 0.782775937600171,
+    "evalBA": 0.7512402160732004,
+    "holdoutBA": 0.8076717598033978,
+    "holdoutShiftedBA": 0.5512341062079282,
+    "holdoutShiftDrop": 0.25643765359546955,
+    "stable": true,
+    "probeDirectionSha256": "596d424f3bf14479ceb1f5733d66722ca60ce4e42f9df0145b400bdeaafe4e85"
+  },
+  "pca32": {
+    "trainBA": 0.7749225344588098,
+    "evalBA": 0.7647447910924925,
+    "holdoutBA": 0.8100224382946897,
+    "holdoutShiftedBA": 0.5407629020194464,
+    "holdoutShiftDrop": 0.26925953627524324,
+    "trainToHoldoutBaDrop": -0.03509990383587991,
+    "stable": true,
+    "strongDegradation": false,
+    "probeDirectionSha256": "01b2b6fbfdaf17eb455d0dadd848c7ee9e076263fefb72892626e566aadf6e9a"
+  },
+  "ecology": {
+    "evalPass": true,
+    "holdoutPass": true
+  },
+  "replacementPolicyTrained": false,
+  "conclusion": "Stable cross-cohort recent-impact information survives both the causal DN trace and frozen PCA32; v15M failure is downstream of this diagnostic signal.",
+  "next": "TEST_FROZEN_V15M_RECURRENT_DECISION_STATE_REPRESENTATIONAL_UPPER_BOUND",
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED"
+}
