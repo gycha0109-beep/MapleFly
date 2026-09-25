@@ -119,7 +119,45 @@ The D2 supervised probe weights were not loaded.
 
 ---
 
-## 3. lower-skill ecology validity
+## 3. frozen optimizer TRAIN endpoint
+
+The final frozen CEM distribution mean had:
+
+```text
+TRAIN survival
+  83.3%
+
+TRAIN mean terminal HP
+  78.75
+
+TRAIN mean potion uses
+  7.667
+
+TRAIN fitness
+  8297.083
+```
+
+The optimizer reached 75.0% TRAIN survival by generation 15 and plateaued at 83.3% by generation 30.
+
+Against the frozen EVAL result:
+
+```text
+TRAIN survival
+  83.3%
+
+EVAL survival
+  12.5%
+
+absolute generalization drop
+  70.8 percentage points
+```
+
+This large TRAIN-to-EVAL collapse is part of the frozen failure signature. It does not by itself identify
+whether the cause is PCA-domain shift, policy overfit, or another representation/optimization interaction.
+
+---
+
+## 4. lower-skill ecology validity
 
 All frozen ecology gates passed:
 
@@ -156,7 +194,7 @@ The scientific failure is therefore not attributed to invalid lower-skill ecolog
 
 ---
 
-## 4. FULL policy
+## 5. FULL policy
 
 ```text
 survival
@@ -184,7 +222,7 @@ enough to satisfy the frozen excess-use gate.
 
 ---
 
-## 5. controls
+## 6. controls
 
 ### NEURAL_TRACE_OFF
 
@@ -265,7 +303,7 @@ This is the most important failure signature.
 
 ---
 
-## 6. interpretation
+## 7. interpretation
 
 The result does **not** support deployment of the causal-trace policy.
 
@@ -303,7 +341,7 @@ Do not choose among these explanations from v15L alone.
 
 ---
 
-## 7. stop rule and deployment state
+## 8. stop rule and deployment state
 
 The frozen v15L preregistration is closed.
 
