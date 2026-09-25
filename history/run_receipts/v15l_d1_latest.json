@@ -1,0 +1,76 @@
+{
+  "schema": "maplefly.run-receipt.v15l-d1.1",
+  "phase": "v15L-D1",
+  "outcome": "V15L_D1_DECISION_RELEVANT_ALIASING_PRESENT",
+  "authoritativeRun": {
+    "id": 36082658620,
+    "headSha": "bd4d767ea3d111f2d20006ea9426dfa611e93752",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10842861523,
+      "name": "maplefly-v15l-d1-observation-aliasing-36082658620",
+      "digest": "sha256:47630f006cbbb46fb40b4922d090f9a2ba908aea2b7e775fbee412e1063ababd",
+      "evidenceJsonSha256": "02fc36d8569183b1a1159b994871a0bab29b95973a0d3fcbc683768569924c34"
+    }
+  },
+  "preregistration": "a2e58587672ece9bef8a62d70eac401d455cebef",
+  "implementation": "6997e6627b1b00ca8a19d0296a11449beb5a6136",
+  "workflow": "bd4d767ea3d111f2d20006ea9426dfa611e93752",
+  "frozenV15L": {
+    "receiptCommit": "dee412f6660743c36673415e5f3cd10513b59c63",
+    "outcome": "V15L_CAUSAL_NEURAL_TRACE_REMEDIATION_FAIL",
+    "trainSurvivalRate": 0.8333333333333334,
+    "evalSurvivalRate": 0.125,
+    "survivalGeneralizationDrop": 0.7083333333333334
+  },
+  "actionIndependence": {
+    "pass": true,
+    "boundarySha256": "493a48193eafe0ef08a9c2d1a0fdec9d4aaa1ef71a58c92e61b99f2f317e3c7b"
+  },
+  "ecology": {
+    "pass": true,
+    "threeKillEpisodeRate": 1,
+    "obstacleClearRate": 0.9747899159663865,
+    "targetKillRate": 0.9201680672268907,
+    "leftTargetKillRate": 0.925,
+    "rightTargetKillRate": 0.9152542372881356,
+    "attackHitPrecision": 0.6673306772908366,
+    "airborneAttackFraction": 0.11952191235059761,
+    "postClearJumpEncounterRate": 0.008403361344537815,
+    "preClearAttackEncounterRate": 0.01680672268907563
+  },
+  "aliasing": {
+    "reachableStates": 5350,
+    "exactObservationGroups": 1783,
+    "conflictGroups": 106,
+    "episodesWithConflict": 23,
+    "episodeConflictFraction": 0.9583333333333334,
+    "earliestConflictDecision": 6,
+    "conflictsByDecision": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      20,
+      84,
+      1
+    ],
+    "conflictHpRangeMin": 10,
+    "conflictHpRangeMax": 60,
+    "conflictHpRangeMean": 33.58490566037736,
+    "classificationCounts": {
+      "FORCED_WAIT": 362,
+      "FORCED_DRINK": 388,
+      "EITHER": 48,
+      "UNSURVIVABLE": 0
+    }
+  },
+  "replacementPolicyTrained": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "COMPACT_CAUSAL_OWN_ACTION_STATE_DESIGN_AND_PREREGISTRATION_AUTHORIZED"
+}
