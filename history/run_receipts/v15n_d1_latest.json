@@ -1,0 +1,68 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d1.1",
+  "phase": "v15N-D1",
+  "outcome": "V15N_D1_INSUFFICIENT_FORCED_STATE_SUPPORT",
+  "scientificValidity": "VALID_DIAGNOSTIC_INSUFFICIENT_PRIMARY_SUPPORT",
+  "authoritativeRun": {
+    "id": 36091961197,
+    "headSha": "a66ce94edff02125eaf5edde85216acef5b25db8",
+    "conclusion": "failure",
+    "artifact": {
+      "id": 10846710598,
+      "name": "maplefly-v15n-d1-readout-alignment-36091961197",
+      "digest": "sha256:4d304e29e5c3c43d4f70f77b312c48489fd8fbd6b46ff5195cc1882f86e263c9",
+      "evidenceJsonSha256": "b0d5cfea9d2e392ccd050dc3a7d0c0e6aadd3c45153f33443d541914def1ce04"
+    }
+  },
+  "preregistration": "9d85eb371bc8b8f58aedb62fbb718ff4b7b9b8c4",
+  "implementation": "3f71c3781906575d34cad6b98cc8addc00b2c05b",
+  "workflow": "a66ce94edff02125eaf5edde85216acef5b25db8",
+  "frozenV15n": {
+    "receipt": "737bd55905d5d6fdffd8f15c82d9b45f6d32e372",
+    "paramsSha256": "c3a2a2516296fb907834c3f6556afca1ea2f127a09e1b64d5ad46e4b00cbc5e5",
+    "preprocessingSha256": "977aa76306c4aa387585c7cdea9a96de26296764ef98962565bd49935d6ccc83",
+    "aggregateReproduced": true
+  },
+  "support": {
+    "requiredPerClass": 30,
+    "train": {
+      "forcedWait": 73,
+      "forcedDrink": 8,
+      "totalForced": 81
+    },
+    "eval": {
+      "forcedWait": 58,
+      "forcedDrink": 15,
+      "totalForced": 73
+    },
+    "pass": false
+  },
+  "descriptive": {
+    "train": {
+      "residualAuc": 0.3458904109589041,
+      "fullAgreement": 0.14814814814814814,
+      "pairedMeanAgreement": 0.18518518518518517,
+      "pairedMeanGain": 0.037037037037037035,
+      "stateToNeuralMagnitudeRatio": 0.04536736713639255
+    },
+    "eval": {
+      "residualAuc": 0.28160919540229884,
+      "fullAgreement": 0.2465753424657534,
+      "pairedMeanAgreement": 0.3013698630136986,
+      "pairedMeanGain": 0.0547945205479452,
+      "stateToNeuralMagnitudeRatio": 0.09550518027055857,
+      "flips": {
+        "total": 16,
+        "waitToDrink": 14,
+        "drinkToWait": 2,
+        "correcting": 10,
+        "harmful": 6
+      }
+    }
+  },
+  "replacementPolicyTrained": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "ENUMERATE_ALL_REACHABLE_OWN_ACTION_HISTORIES_WITH_FROZEN_V15N_READOUT"
+}
