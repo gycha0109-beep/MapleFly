@@ -1,0 +1,82 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6.1",
+  "phase": "v15N-D6",
+  "outcome": "V15N_D6_IMPACT_DETECTABLE_BUT_ACCUMULATOR_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36191864860,
+    "headSha": "69528cc81c108f7860f8a9022418e6067232e5ac",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10888904036,
+      "name": "maplefly-v15n-d6-mechanistic-impact-accumulator-36191864860",
+      "digest": "sha256:9b71847f20da22751db3a8a6b21df9d06ff3cda82095dd5fcc6a863504a6f6d6",
+      "evidenceJsonSha256": "4d83e773948a98f234b2e14e7145914007c3584277064f4440153b0489b94285"
+    }
+  },
+  "design": "c8ac0a6f5cc99bcaf856a226d324c73f9864d141",
+  "preregistration": "d7c7e6b2d3ad87bd94ec4713bc825d18b6ede155",
+  "implementation": "dc13b816",
+  "workflow": "69528cc81c108f7860f8a9022418e6067232e5ac",
+  "detector": {
+    "train": {
+      "balancedAccuracy": 0.9042456264139955,
+      "positiveRecall": 0.9327666151468316,
+      "negativeRecall": 0.8757246376811594,
+      "positives": 1294,
+      "negatives": 2760
+    },
+    "eval": {
+      "balancedAccuracy": 0.9093282967224043,
+      "positiveRecall": 0.9321753515301903,
+      "negativeRecall": 0.8864812419146184,
+      "positives": 1209,
+      "negatives": 3092
+    },
+    "holdout": {
+      "balancedAccuracy": 0.901762098354232,
+      "positiveRecall": 0.9231974921630094,
+      "negativeRecall": 0.8803267045454546,
+      "positives": 1276,
+      "negatives": 2816
+    },
+    "stable": true
+  },
+  "accumulator": {
+    "train": {
+      "r2": 0.4232953424120086,
+      "mae": 9.562265589051082,
+      "rmse": 12.274938045811126,
+      "pearson": 0.6506115142018494
+    },
+    "eval": {
+      "r2": -0.22058285593510463,
+      "mae": 13.299209127262316,
+      "rmse": 16.944142753308164,
+      "pearson": 0.45240708551067244
+    },
+    "holdout": {
+      "r2": -0.14283805734018706,
+      "mae": 12.630445213157826,
+      "rmse": 16.07915834735524,
+      "pearson": 0.2884210492589702
+    },
+    "shiftedEvalR2": -0.8828968928655119,
+    "shiftedHoldoutR2": -0.6923484752776112,
+    "stable": false,
+    "episodeSpecific": true
+  },
+  "gates": {
+    "supportPass": true,
+    "residualSupportPass": true,
+    "detectorStable": true,
+    "accumulatorStable": false,
+    "episodeSpecific": true
+  },
+  "replacementPolicyTrained": false,
+  "diagnosticImpactDetectorDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D1_NEURAL_EVENTIZATION_FAILURE_ATTRIBUTION"
+}
