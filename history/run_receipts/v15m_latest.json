@@ -1,0 +1,114 @@
+{
+  "schema": "maplefly.run-receipt.v15m.1",
+  "phase": "v15M",
+  "outcome": "V15M_PERSISTENT_NEURAL_ACTION_BELIEF_FAIL",
+  "scientificValidity": "VALID_FAIL",
+  "authoritativeRun": {
+    "id": 36084321090,
+    "headSha": "781000d481ba702e715e71109bf25b931488233f",
+    "conclusion": "failure",
+    "artifact": {
+      "id": 10843389025,
+      "name": "maplefly-v15m-persistent-neural-action-belief-36084321090",
+      "digest": "sha256:f1580b836145f3dc38934f58200bee0c92a3dd851821110e81f41a9fba690f3e",
+      "evidenceJsonSha256": "9d42047e23b87405448962d568fce62bead3ea390b7b8f2a4584507c158c04fe"
+    }
+  },
+  "preregistration": "e0aea2eed43942f6543fbcf40398501e1c99f432",
+  "implementation": [
+    "1c5acedd729bb774981b8d8b9eb06a09a6493611",
+    "c97f51bb54bb8e724eb7d66678deeff23dc1d56e",
+    "781000d481ba702e715e71109bf25b931488233f"
+  ],
+  "frozenEvidence": {
+    "v15kD2": "V15K_D2_PERSISTENT_IMPACT_SIGNAL_PRESENT",
+    "v15l": "V15L_CAUSAL_NEURAL_TRACE_REMEDIATION_FAIL",
+    "v15lD1": "V15L_D1_DECISION_RELEVANT_ALIASING_PRESENT"
+  },
+  "representation": {
+    "type": "CAUSAL_EXPONENTIAL_DN_TRACE_PCA32_PLUS_RECURRENT_BELIEF",
+    "frameMilliseconds": 100,
+    "dnCount": 1316,
+    "traceHalfLifeSeconds": 2,
+    "traceDecay": 0.9659363289248456,
+    "pcaComponents": 32,
+    "preprocessingSha256": "83cd6fa437c7cb526fc59bbb19285d7af7c7f2e397a97f7ac3b422409bccda99",
+    "policyParamsSha256": "6a334c271953e05734ce3990c67f6ad168890cc9303ff90ddae93a45078740e2"
+  },
+  "candidate": {
+    "rawDecay": 0.8222938531633556,
+    "decay": 0.6947230444025038,
+    "actionFeedback": 2.1236043062720955,
+    "bias": 0.719800325569074
+  },
+  "trainingEndpoint": {
+    "survivalRate": 0.8333333333333334,
+    "meanTerminalHp": 77.08333333333333,
+    "meanUses": 7.583333333333333,
+    "fitness": 8296.666666666668
+  },
+  "ecology": {
+    "pass": true,
+    "threeKillEpisodeRate": 1,
+    "obstacleClearRate": 0.9787234042553191,
+    "targetKillRate": 0.9234042553191489,
+    "leftTargetKillRate": 0.9396551724137931,
+    "rightTargetKillRate": 0.907563025210084,
+    "attackHitPrecision": 0.6014492753623188,
+    "airborneAttackFraction": 0.14130434782608695,
+    "postClearJumpEncounterRate": 0.01276595744680851,
+    "preClearAttackEncounterRate": 0.06382978723404255
+  },
+  "full": {
+    "survivalRate": 0.16666666666666666,
+    "minSeedSurvivalRate": 0.125,
+    "meanUses": 1.875,
+    "meanExcessUses": 3.5,
+    "wastedHealingPerDrink": 2.6666666666666665
+  },
+  "controls": {
+    "memoryOff": {
+      "survivalRate": 0.25,
+      "meanExcessUses": 1.6666666666666667,
+      "contribution": false
+    },
+    "actionFeedbackOff": {
+      "survivalRate": 0.16666666666666666,
+      "meanExcessUses": 3,
+      "contribution": false
+    },
+    "neuralOff": {
+      "survivalRate": 1,
+      "meanUses": 10,
+      "meanExcessUses": 4,
+      "contribution": false
+    },
+    "episodeShift1": {
+      "survivalRate": 0.16666666666666666,
+      "meanExcessUses": 4,
+      "contribution": true
+    },
+    "decisionMeanNeural": {
+      "survivalRate": 0,
+      "meanUses": 0,
+      "contribution": true
+    }
+  },
+  "gateChecks": {
+    "tapeValidity": true,
+    "survivalRate": false,
+    "minSeedSurvival": false,
+    "meanExcessUses": false,
+    "wastedHealingPerDrink": true,
+    "memoryContribution": false,
+    "actionFeedbackContribution": false,
+    "neuralContribution": false,
+    "episodeShift1Contribution": true,
+    "decisionMeanNeuralContribution": true
+  },
+  "trainEvalSurvivalDrop": 0.6666666666666667,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "CROSS_COHORT_CAUSAL_TRACE_PCA_STABILITY_DIAGNOSTIC_AUTHORIZED"
+}
