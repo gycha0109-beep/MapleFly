@@ -1,0 +1,82 @@
+name: Diagnose MapleFly v15N-D5 Multiscale Injury Memory
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs"
+      - "history/prereg_v15n_d5.md"
+      - ".github/workflows/diagnose-v15n-d5-multiscale-injury-memory.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  multiscale-injury-memory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+      - name: Verify frozen v15N-D5 contract
+        run: |
+          set -euo pipefail
+          grep -q '189e0bdb15c73ea1f1ec4e1e6daa86805008725b' scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+          grep -q 'V15N_D5_HOLDOUT_BASE_SEEDS = \[4291000, 4301000, 4311000\]' scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+          grep -q 'V15N_D5_HALF_LIVES = \[0.5, 2.0, 8.0, 32.0\]' scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+          grep -q 'V15N_D5_PCA_SEED = 4338000' scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+          grep -q 'V15N_D5_MULTISCALE_CUMULATIVE_INJURY_MEMORY_PRESENT' scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+          grep -q 'diagnosticDamageProbeWeightsDeployable: false' scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+          ! grep -q 'const trained = trainCem' scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2"
+          test "$head_sha" = "d3e434fc5a9f9a8b9e83d96637b25e2058398274"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+          echo "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4  .cache/v15n-artifact/v15n_training.json" | sha256sum -c -
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15N-D5 multiscale injury-memory audit
+        env:
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d5-multiscale-injury-memory.mjs
+      - name: Upload v15N-D5 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d5-multiscale-injury-memory-${{ github.run_id }}
+          path: results/v15n-d5-multiscale-injury-memory
+          if-no-files-found: warn
+          retention-days: 30
