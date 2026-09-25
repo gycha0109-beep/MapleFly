@@ -99,5 +99,13 @@
   "deployment": "BLOCKED",
   "deployedPotion": "v15D",
   "v16c": "BLOCKED",
-  "next": "FROZEN_V15L_FAILURE_DIAGNOSTIC_AUTHORIZED"
+  "next": "FROZEN_V15L_FAILURE_DIAGNOSTIC_AUTHORIZED",
+  "trainingEndpoint": {
+    "survivalRate": 0.8333333333333334,
+    "meanTerminalHp": 78.75,
+    "meanUses": 7.666666666666667,
+    "fitness": 8297.083333333334,
+    "evalSurvivalRate": 0.125,
+    "survivalGeneralizationDrop": 0.7083333333333334
+  }
 }
