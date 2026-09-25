@@ -2580,51 +2580,6 @@ async function main() {
       outcome,
   );
 
-  console.log(
-    "[v15L] FULL survival=" +
-      (full.survivalRate * 100).toFixed(1) +
-      "% minSeed=" +
-      (full.minSeedSurvivalRate * 100).toFixed(1) +
-      "% uses=" +
-      full.meanUses.toFixed(3) +
-      " excess=" +
-      full.meanExcessUses.toFixed(3) +
-      " waste=" +
-      full.wastedHealingPerDrink.toFixed(3),
-  );
-  console.log(
-    "[v15L] LONG_HISTORY_OFF survival=" +
-      (longNeuralHistoryOff.survivalRate * 100).toFixed(1) +
-      "% excess=" +
-      Number(longNeuralHistoryOff.meanExcessUses).toFixed(3) +
-      " ALL_NEURAL_OFF survival=" +
-      (allNeuralOff.survivalRate * 100).toFixed(1) +
-      "% excess=" +
-      Number(allNeuralOff.meanExcessUses).toFixed(3),
-  );
-  console.log(
-    "[v15L] SHIFT1 survival=" +
-      (episodeShift1.survivalRate * 100).toFixed(1) +
-      "% excess=" +
-      Number(episodeShift1.meanExcessUses).toFixed(3) +
-      " contributes=" +
-      shiftContribution.contributes +
-      " MEAN survival=" +
-      (decisionMeanNeural.survivalRate * 100).toFixed(1) +
-      "% excess=" +
-      Number(decisionMeanNeural.meanExcessUses).toFixed(3) +
-      " contributes=" +
-      meanContribution.contributes,
-  );
-  console.log(
-    "[v15L] params=" +
-      JSON.stringify(Array.from(params)) +
-      " sha256=" +
-      paramsSha256 +
-      " outcome=" +
-      outcome,
-  );
-
   const output = {
     schema: "maplefly.v15l.causal-neural-trace-remediation.1",
     brainRepository: SOURCE.repository,
@@ -2756,11 +2711,11 @@ async function main() {
   };
 
   const outDir = resolve(
-    "results/v15k-reward-only-terminal-health",
+    "results/v15l-causal-neural-trace-remediation",
   );
   await mkdir(outDir, { recursive: true });
   await writeFile(
-    resolve(outDir, "v15k_training.json"),
+    resolve(outDir, "v15l_training.json"),
     JSON.stringify(output, null, 2) + "\n",
   );
 
