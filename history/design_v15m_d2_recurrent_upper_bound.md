@@ -1,8 +1,8 @@
-# design_v15m_d2 — recurrent decision-state oracle upper-bound audit
+# design_v15m_d2 — scalar recurrent action-state upper-bound audit
 
 ## Purpose
 
-The frozen chain now isolates the unresolved failure more tightly:
+The frozen chain now isolates the unresolved failure:
 
 ```text
 v15K-D2
@@ -19,221 +19,238 @@ v15M-D1
   the exact v15M causal trace and PCA32 retain a stable cross-cohort RECENT_IMPACT_2S signal
 ```
 
-The next question is therefore not whether the biological signal exists.
+The next question is:
 
-It is:
+> Is one exponentially persistent scalar of the agent's own POTION history even capable of separating
+> the oracle-required WAIT/DRINK decisions created by different reachable action histories?
 
-> Can the frozen v15M one-dimensional recurrent decision-state architecture represent the oracle-required
-> WAIT/DRINK boundary at all, if optimization is given diagnostic oracle supervision?
+This diagnostic deliberately gives the scalar architecture an advantage: for every tape/decision pair it
+allows an independently optimal threshold. The real v15M policy does not have that freedom; its threshold
+must be generated from the shared neural weights and bias.
 
-This is an upper-bound diagnostic only. No resulting weights are deployable.
+Therefore this is an **optimistic representational upper bound**.
+
+If even this upper bound is poor, the scalar recurrent action state is structurally insufficient and no
+reward optimizer can repair it without changing the state family.
 
 ---
 
-## 1. exact counterfactual state set
+## 1. fresh counterfactual cohort
+
+Collect 24 new tapes.
 
 For each tape and each decision index t:
 
-1. enumerate every binary prior own-action history of length t;
-2. replay the frozen potion economics exactly;
-3. discard histories that are already dead before decision t;
-4. retain the current hidden HP only inside the evaluator;
-5. classify the current decision using an exact remaining-horizon minimum-use oracle.
+1. enumerate all binary prior own-POTION histories of length t;
+2. replay frozen potion economics exactly;
+3. discard histories dead before t;
+4. compute the exact minimum-use immediate oracle class.
 
-The runtime feature vector never receives HP.
-
-This exposes the architecture to the same counterfactual distinction that produced v15L-D1 aliasing rather
-than only one policy trajectory per tape.
+No replacement policy is trained.
 
 ---
 
-## 2. exact oracle class
+## 2. oracle classes
 
-For a reachable state, compute the minimum additional potion uses needed to survive if the current action
-is forced to WAIT and if it is forced to DRINK.
-
-```text
-WAIT cost
-  minimum remaining uses among surviving sequences beginning WAIT
-
-DRINK cost
-  1 + minimum remaining uses among surviving sequences beginning DRINK
-```
-
-Class:
+For every reachable state:
 
 ```text
 FORCED_WAIT
-  WAIT cost < DRINK cost
-
 FORCED_DRINK
-  DRINK cost < WAIT cost
-
 EITHER
-  equal finite minimum cost
-
 UNSURVIVABLE
-  neither action permits survival
 ```
 
-Primary supervised fitting and balanced accuracy use only FORCED_WAIT and FORCED_DRINK states.
+Use the same exact remaining-horizon minimum-use definition as v15L-D1.
 
-EITHER and UNSURVIVABLE counts are reported but not used as labels.
+The primary separability audit uses only FORCED_WAIT and FORCED_DRINK.
 
 ---
 
-## 3. exact v15M recurrent family
+## 3. scalar recurrent action state
 
-For a fixed recurrent decay r:
-
-```text
-belief_t =
-  r * belief_(t-1)
-  + neuralWeights dot PCA32_t
-  + actionFeedback * previousOwnAction
-
-score_t =
-  belief_t + bias
-```
-
-For any fixed r, this can be rewritten exactly as a linear classifier over:
+For each fixed decay r:
 
 ```text
-discountedNeural32_t(r)
-discountedOwnAction_t(r)
-bias
+u_0 = 0
+
+u_t =
+  r * u_(t-1)
+  + previousOwnAction
 ```
 
-where:
+This is exactly the own-action component available to the v15M one-dimensional recurrent belief for a
+fixed recurrent decay, up to multiplication by the shared actionFeedback parameter.
 
-```text
-discountedNeural_t =
-  r * discountedNeural_(t-1) + PCA32_t
-
-discountedOwnAction_t =
-  r * discountedOwnAction_(t-1) + previousOwnAction
-```
-
-Therefore the fixed-r supervised problem is convex logistic classification.
-
-This lets the diagnostic test the recurrent architecture without relying on reward-only CEM.
+No HP, contact, damage, potion count, decision index, or time is included.
 
 ---
 
-## 4. decay grid
+## 4. frozen decay grid
 
-The learned v15M decay is not reused as a privileged value.
-
-Use the frozen grid:
+Audit:
 
 ```text
 0.00
 0.05
 0.10
-...
+0.15
+0.20
+0.25
+0.30
+0.35
+0.40
+0.45
+0.50
+0.55
+0.60
+0.65
+0.70
+0.75
+0.80
+0.85
+0.90
 0.95
 0.99
 ```
 
-21 candidates total.
+This includes the neighborhood of the v15M learned decay 0.6947 but does not privilege it.
 
-For each candidate:
-
-- construct the exact recurrent features;
-- fit the same deterministic weighted logistic probe on TRAIN only;
-- choose the decay with the lowest TRAIN weighted logistic loss;
-- freeze it before EVAL/HOLDOUT scoring.
-
-The grid is an oracle diagnostic search and is not a deployable hyperparameter search.
+No decay is added after seeing results.
 
 ---
 
-## 5. supervised diagnostic probe
+## 5. optimistic per-group threshold upper bound
 
-For each fixed decay:
+Within each exact:
 
 ```text
-features
-  32 discounted neural dimensions
-  1 discounted own-action dimension
-  1 bias
-
-labels
-  FORCED_WAIT=0
-  FORCED_DRINK=1
+(tape seed, decision index)
 ```
 
-Use inverse-class-frequency weights so TRAIN FORCED_WAIT and FORCED_DRINK contribute equal total weight.
+group, neural evidence is identical across counterfactual action histories.
 
-Use deterministic full-batch logistic regression with fixed L2 regularization.
-
-No HP/contact/damage/time/decision index enters the feature vector.
-
----
-
-## 6. cohorts
-
-Fit only on the frozen v15M TRAIN cohort.
-
-Evaluate unchanged on:
+For a scalar recurrent action state, the action-history contribution to the score is monotonic in u_t:
 
 ```text
-v15M EVAL
-fresh v15M-D1 HOLDOUT
+score =
+  group-specific neural offset
+  + actionFeedback * u_t
 ```
 
-Use the exact v15M-D1 frozen preprocessing/PCA recipe.
+The real model has one shared actionFeedback sign.
 
----
-
-## 7. biological-alignment controls
-
-For the selected frozen diagnostic classifier:
-
-### NEURAL_OFF
-
-Zero the 32 discounted neural features while retaining discounted own-action state.
-
-This measures how much of the oracle boundary can be solved by action history alone.
-
-### EPISODE_SHIFT_1
-
-For each target tape, use the next episode's complete PCA32 neural sequence while retaining:
-
-- target tape oracle labels;
-- target prior action history.
-
-This breaks episode-specific neural alignment without changing the action-history state.
-
-No retraining.
-
----
-
-## 8. interpretation
-
-The audit is not a deployment test.
-
-A high oracle-supervised upper bound would mean:
+For each decay, evaluate both possible global signs:
 
 ```text
-the v15M recurrent family can represent the required decision boundary;
-the reward-only v15M failure is primarily an optimization/objective-discovery problem
+positive sign
+  larger u favors DRINK
+
+negative sign
+  smaller u favors DRINK
 ```
 
-A low upper bound despite stable v15M-D1 neural information would mean:
+For each sign and each tape/decision group, allow the threshold to be chosen independently to maximize
+correct FORCED_WAIT/FORCED_DRINK classifications.
 
-```text
-one scalar recurrent state is itself too restrictive for the counterfactual potion economy
-```
+This arbitrary group-specific threshold is more powerful than the real shared neural model and therefore
+forms an optimistic upper bound.
 
-If action-only performance is already near FULL, the diagnostic instead indicates a schedule/action-history
-shortcut and does not establish useful MaleCNS dependence.
+Report:
+
+- forced-state balanced accuracy;
+- forced-state ordinary accuracy;
+- number of groups containing both forced classes;
+- number of mixed groups that cannot be perfectly threshold-separated;
+- errors by decision index.
+
+Select the decay/sign with maximum global balanced accuracy. Ties resolve by lower decay, then negative
+sign before positive sign.
 
 ---
 
-## 9. deployment boundary
+## 6. exact impossibility witness
 
-No classifier or decay selected here may be deployed.
+For every mixed group that is not perfectly threshold-separable under the selected decay/sign, preserve at
+least one minimal ordered witness:
+
+```text
+state A
+  scalar u
+  prior actions
+  oracle class
+  hidden HP (evaluator only)
+
+state B
+  scalar u
+  prior actions
+  oracle class
+
+state C if required
+  scalar u
+  prior actions
+  oracle class
+```
+
+The witness demonstrates a non-monotonic oracle boundary that a single scalar action contribution cannot
+represent even with a free neural threshold for that exact tape/decision.
+
+Hidden HP is evidence only and is never a runtime feature.
+
+---
+
+## 7. interpretation
+
+Because the threshold is independently optimized for every tape/decision, this audit cannot prove the real
+v15M architecture is sufficient.
+
+It can prove a necessary-condition failure.
+
+### Strong scalar bottleneck
+
+If the best optimistic upper bound has either:
+
+```text
+balanced accuracy < 90%
+OR
+>=10% of mixed groups are not perfectly threshold-separable
+```
+
+then:
+
+```text
+V15M_D2_SCALAR_ACTION_STATE_BOTTLENECK
+```
+
+### Necessary condition passes
+
+If:
+
+```text
+balanced accuracy >= 95%
+AND
+<2% of mixed groups are non-separable
+```
+
+then:
+
+```text
+V15M_D2_SCALAR_ACTION_STATE_NOT_RULED_OUT
+```
+
+This does not claim sufficiency. It authorizes a later global neural-threshold supervised audit.
+
+Otherwise:
+
+```text
+V15M_D2_SCALAR_ACTION_STATE_INCONCLUSIVE
+```
+
+---
+
+## 8. deployment boundary
+
+No diagnostic state or threshold is deployable.
 
 ```text
 POTION v15D
