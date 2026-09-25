@@ -1,0 +1,103 @@
+{
+  "schema": "maplefly.run-receipt.v15k-d2.1",
+  "phase": "v15K-D2",
+  "outcome": "V15K_D2_PERSISTENT_IMPACT_SIGNAL_PRESENT",
+  "authoritativeRun": {
+    "id": 36075130775,
+    "headSha": "ba5a777119b43c4f58f9b471609b4ed116ff9f95",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10839319406,
+      "name": "maplefly-v15k-d2-impact-retention-36075130775",
+      "digest": "sha256:69b754ed8546a8409d7be0b3384c4b9b20061645342c585a04f6adb93fc38d7e",
+      "sizeInBytes": 2568
+    }
+  },
+  "preregistration": "cf2b221c9002dbf3582f452d3b689415aef048ab",
+  "implementation": "6243b24dba3a33f9a6a4267369af633d56e40f95",
+  "workflow": "ba5a777119b43c4f58f9b471609b4ed116ff9f95",
+  "frozenNeuralCore": {
+    "artifactId": 10793265453,
+    "artifactDigest": "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405",
+    "representationSha256": "244464c8b5e9c7f5871f35cb3acc4ac1e2e0c9b61860c1dd3c267de79d4758db",
+    "modelSha256": "18be00b46303f46d62f8f63f26ca1a280b66f50f0004be6f469c637123077c96"
+  },
+  "preprocessing": {
+    "type": "TRAIN_ONLY_PHASE_48_RESIDUAL",
+    "frameMilliseconds": 100,
+    "dnCount": 1316,
+    "phaseMeanSha256": "1b4b2be3f1d9fbba396dc4adb81d843a3aae66a4befc04bd661b6f2ae940ad49",
+    "evalMeansUsed": false
+  },
+  "ecology": {
+    "pass": true,
+    "threeKillEpisodeRate": 1.0,
+    "obstacleClearRate": 0.971,
+    "targetKillRate": 0.926,
+    "leftTargetKillRate": 0.901,
+    "rightTargetKillRate": 0.950,
+    "attackHitPrecision": 0.638,
+    "airborneAttackFraction": 0.142,
+    "postClearJumpEncounterRate": 0.008,
+    "preClearAttackEncounterRate": 0.058
+  },
+  "headline": {
+    "B0_DIRECT": {
+      "ageMs": [0, 200],
+      "evalPositiveSupport": 1264,
+      "evalNegativeSupport": 2830,
+      "balancedAccuracy": 0.901,
+      "positiveRecall": 0.939,
+      "negativeRecall": 0.863,
+      "scoreSeparation": 0.793,
+      "shiftBalancedAccuracy": 0.550,
+      "alignmentDrop": 0.351,
+      "fullPass": true,
+      "episodeSpecificAlignment": true
+    },
+    "B1_EARLY_POST": {
+      "ageMs": [200, 500],
+      "evalPositiveSupport": 1888,
+      "evalNegativeSupport": 2830,
+      "balancedAccuracy": 0.839,
+      "positiveRecall": 0.860,
+      "negativeRecall": 0.818,
+      "scoreSeparation": 0.581,
+      "shiftBalancedAccuracy": 0.537,
+      "alignmentDrop": 0.302,
+      "fullPass": true,
+      "episodeSpecificAlignment": true
+    },
+    "B2_MID_POST": {
+      "ageMs": [500, 1000],
+      "evalPositiveSupport": 2722,
+      "evalNegativeSupport": 2830,
+      "balancedAccuracy": 0.786,
+      "positiveRecall": 0.838,
+      "negativeRecall": 0.734,
+      "scoreSeparation": 0.395,
+      "shiftBalancedAccuracy": 0.536,
+      "alignmentDrop": 0.250,
+      "fullPass": true,
+      "episodeSpecificAlignment": true
+    },
+    "B3_LATE_POST": {
+      "ageMs": [1000, 2000],
+      "evalPositiveSupport": 2816,
+      "evalNegativeSupport": 2830,
+      "balancedAccuracy": 0.725,
+      "positiveRecall": 0.692,
+      "negativeRecall": 0.758,
+      "scoreSeparation": 0.328,
+      "shiftBalancedAccuracy": 0.515,
+      "alignmentDrop": 0.210,
+      "fullPass": true,
+      "episodeSpecificAlignment": true
+    }
+  },
+  "supervisedProbeDeployment": "FORBIDDEN",
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "CAUSAL_SHORT_WINDOW_OR_DECAYING_NEURAL_TRACE_PREREGISTRATION_AUTHORIZED"
+}
