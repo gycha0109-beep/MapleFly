@@ -1,0 +1,89 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d5.1",
+  "phase": "v15N-D5",
+  "outcome": "V15N_D5_CUMULATIVE_INJURY_MEMORY_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36185790793,
+    "headSha": "5d744d22e4db1106afd320d2f875b82669b6c0f5",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10886652854,
+      "name": "maplefly-v15n-d5-multiscale-injury-memory-36185790793",
+      "digest": "sha256:1d6b24520ac51835223d648359cb3da0b346de92dacc5e61828256774927020b",
+      "evidenceJsonSha256": "4058cb2e363922de466b57cb77f09c933b318fbbf89cd9aeab73eee20ef30684"
+    }
+  },
+  "design": "b22af2c74b548f5a8636c01bf42517a91fd47c63",
+  "preregistration": "189e0bdb15c73ea1f1ec4e1e6daa86805008725b",
+  "implementation": "2dd3a8ccd9d72674b4817886275dcaa55ec6d03c",
+  "workflow": "5d744d22e4db1106afd320d2f875b82669b6c0f5",
+  "support": {
+    "snapshots": {
+      "train": 240,
+      "eval": 240,
+      "holdout": 240
+    },
+    "residualSd": {
+      "train": 16.163766922073307,
+      "eval": 15.33684289545929,
+      "holdout": 15.162888723605553
+    },
+    "pass": true
+  },
+  "traceReproduction": {
+    "twoSecondMaxAbsoluteError": 0,
+    "pass": true
+  },
+  "multiscale": {
+    "train": {
+      "r2": 0.8383376804227975,
+      "mae": 5.186416283484976,
+      "rmse": 6.499006664640129,
+      "pearson": 0.9156078202141722
+    },
+    "eval": {
+      "r2": -0.7312201487907464,
+      "mae": 15.838398681563921,
+      "rmse": 20.179579762060794,
+      "pearson": 0.20456364867368595
+    },
+    "holdout": {
+      "r2": -0.26033818439529943,
+      "mae": 13.222132489583462,
+      "rmse": 17.022584352989256,
+      "pearson": 0.2763375331667416
+    },
+    "shiftedEvalR2": -0.8852898730774816,
+    "shiftedHoldoutR2": -0.47303297881170003
+  },
+  "single2": {
+    "train": {
+      "r2": 0.7936412122627405,
+      "mae": 5.7787161013239245
+    },
+    "eval": {
+      "r2": -0.7640263414301927,
+      "mae": 16.030625606562158
+    },
+    "holdout": {
+      "r2": -0.24527064895097905,
+      "mae": 13.324176065049105
+    }
+  },
+  "gates": {
+    "supportPass": true,
+    "multiStable": false,
+    "singleStable": false,
+    "multiImproves": false,
+    "episodeSpecific": true,
+    "bothClearlyWeak": true
+  },
+  "ecologyPass": true,
+  "replacementPolicyTrained": false,
+  "diagnosticDamageProbeWeightsDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "MECHANISTIC_RECENT_IMPACT_EVIDENCE_ACCUMULATION_AUDIT"
+}
