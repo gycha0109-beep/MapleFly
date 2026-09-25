@@ -1,0 +1,87 @@
+{
+  "schema": "maplefly.run-receipt.v15n.1",
+  "phase": "v15N",
+  "outcome": "V15N_NONLINEAR_ACTION_RECURRENCE_FAIL",
+  "scientificValidity": "VALID_FAIL",
+  "authoritativeRun": {
+    "id": 36089829819,
+    "headSha": "d3e434fc5a9f9a8b9e83d96637b25e2058398274",
+    "conclusion": "failure",
+    "artifact": {
+      "id": 10846125740,
+      "name": "maplefly-v15n-nonlinear-action-recurrence-36089829819",
+      "digest": "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2",
+      "evidenceJsonSha256": "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4"
+    }
+  },
+  "preregistration": "1db0933739f2a5550ce9c99469933cc07697a9ad",
+  "implementation": "79f7e2d1ac66b4db680d0d0cdcb5fe25caff8308",
+  "workflow": "d3e434fc5a9f9a8b9e83d96637b25e2058398274",
+  "evidenceChain": {
+    "v15mD1": "V15M_D1_TRACE_AND_PCA_SIGNAL_STABLE",
+    "v15mD2": "V15M_D2_SCALAR_ACTION_STATE_BOTTLENECK",
+    "v15mD3": "V15M_D3_TWO_TIMESCALE_STATE_BOTTLENECK"
+  },
+  "trainingEndpoint": {
+    "survivalRate": 0.875,
+    "meanTerminalHp": 84.16666666666667,
+    "meanUses": 8.25,
+    "fitness": 8710.416666666666
+  },
+  "evaluation": {
+    "full": {
+      "survivalRate": 0.625,
+      "minSeedSurvivalRate": 0.5,
+      "meanUses": 5.625,
+      "meanExcessUses": 3.066666666666667,
+      "wastedHealingPerDrink": 3.259259259259259
+    },
+    "actionStateOff": {
+      "survivalRate": 0.5833333333333334,
+      "meanExcessUses": 3.2857142857142856,
+      "contribution": false
+    },
+    "neuralOff": {
+      "survivalRate": 1,
+      "meanUses": 10,
+      "meanExcessUses": 4.208333333333333,
+      "contribution": true
+    },
+    "episodeShift1": {
+      "survivalRate": 0.5833333333333334,
+      "meanExcessUses": 3.2142857142857144,
+      "contribution": false
+    },
+    "decisionMeanNeural": {
+      "survivalRate": 0.9583333333333334,
+      "minSeedSurvivalRate": 0.875,
+      "meanUses": 7.666666666666667,
+      "meanExcessUses": 2.217391304347826,
+      "wastedHealingPerDrink": 0.21739130434782608,
+      "contribution": false
+    }
+  },
+  "gateChecks": {
+    "tapeValidity": true,
+    "survivalRate": false,
+    "minSeedSurvival": false,
+    "meanExcessUses": false,
+    "wastedHealingPerDrink": true,
+    "actionStateContribution": false,
+    "neuralContribution": true,
+    "episodeShift1Contribution": false,
+    "decisionMeanNeuralContribution": false
+  },
+  "policy": {
+    "parameterCount": 41,
+    "paramsSha256": "c3a2a2516296fb907834c3f6556afca1ea2f127a09e1b64d5ad46e4b00cbc5e5",
+    "preprocessingSha256": "977aa76306c4aa387585c7cdea9a96de26296764ef98962565bd49935d6ccc83",
+    "recurrentBias": false
+  },
+  "trainEvalSurvivalDrop": 0.25,
+  "replacementPolicyTrained": true,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "FROZEN_CANDIDATE_DECISION_SCORE_AND_ORACLE_AGREEMENT_DIAGNOSTIC"
+}
