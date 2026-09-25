@@ -1,0 +1,62 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d2.1",
+  "phase": "v15N-D2",
+  "outcome": "V15N_D2_INCONCLUSIVE",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36093619022,
+    "headSha": "80786c0cfbdf52beb81d94a48d3d4ef46657b4b2",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10846579620,
+      "name": "maplefly-v15n-d2-exhaustive-score-audit-36093619022",
+      "digest": "sha256:b16e382ae59534ed038398b7b0af89cf98a9e0b76f8c39c74b926aea076f4c29",
+      "evidenceJsonSha256": "147518a4bc007f43a0bb2e9419a7d5ac374de4bb94187464dc99e78244308126"
+    }
+  },
+  "preregistration": "32ed074bbd49128fdb0af2932da704750b2c92c0",
+  "implementation": "056e5db27df41c2651b75891808dc5f59b6564cb",
+  "workflow": "80786c0cfbdf52beb81d94a48d3d4ef46657b4b2",
+  "support": {
+    "requiredPerClass": 500,
+    "eval": {
+      "forcedWait": 3355,
+      "forcedDrink": 2277,
+      "mixedTapes": 24
+    },
+    "holdout": {
+      "forcedWait": 2446,
+      "forcedDrink": 2005,
+      "mixedTapes": 24
+    },
+    "pass": true
+  },
+  "eval": {
+    "residualAuc": 0.5110582269268202,
+    "fullBA": 0.48498959660755814,
+    "meanBA": 0.5009726631964693,
+    "neuralOffBA": 0.5,
+    "actionStateOffBA": 0.4851386279041304
+  },
+  "holdout": {
+    "residualAuc": 0.5104990997567406,
+    "fullBA": 0.5368364656633151,
+    "meanBA": 0.5011815310456483,
+    "neuralOffBA": 0.5,
+    "actionStateOffBA": 0.5566448759540233
+  },
+  "gains": {
+    "evalMeanGain": 0.015983066588911132,
+    "holdoutMeanGain": -0.03565493461766678,
+    "evalNeuralOffGain": 0.015010403392441862,
+    "holdoutNeuralOffGain": -0.03683646566331511,
+    "evalStateOffGain": 0.00014903129657228842,
+    "holdoutStateOffGain": 0.019808410290708234
+  },
+  "ecologyPass": true,
+  "replacementPolicyTrained": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "SUPERVISED_DIAGNOSTIC_LINEAR_SEPARABILITY_OF_FROZEN_PCA32_PLUS_H2"
+}
