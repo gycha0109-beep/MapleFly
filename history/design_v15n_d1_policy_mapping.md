@@ -176,25 +176,27 @@ No threshold is fit.
 
 ## 6. decision-mean flip audit
 
-Replay the frozen candidate twice:
+Use the FULL candidate trajectory as the common causal state.
 
-```text
-FULL
-DECISION_MEAN_NEURAL
-```
+At each FULL-reachable decision, preserve the same hidden evaluator state and the same recurrent action state,
+then replace only the current episode-specific neural term with the frozen TRAIN decision-position mean
+neural term.
 
-For every candidate-reachable forced state report by decision index:
+Report by decision index:
 
 ```text
 FULL oracle agreement
-MEAN oracle agreement
+one-step MEAN oracle agreement
 WAIT -> DRINK flips
 DRINK -> WAIT flips
 flips correcting an oracle error
 flips creating an oracle error
 ```
 
-This localizes why the decision-mean control improves survival.
+Also reproduce the original endogenous DECISION_MEAN_NEURAL replay as a provenance check, but do not use
+different endogenous trajectories for the paired flip comparison.
+
+This localizes whether the neural deviation itself helps or hurts at the same reached state.
 
 ---
 
