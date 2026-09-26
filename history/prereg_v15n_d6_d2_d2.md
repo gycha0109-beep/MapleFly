@@ -109,7 +109,7 @@ innovation_t =
   - mean(previous 5 phase-residualized DN frames)
 ```
 
-TRAIN-only standardization + TRAIN-only PCA32.
+TRAIN-only standardization + TRAIN-only PCA32. To keep the PCA fit deterministic and bounded, the PCA basis is fit on exactly 240 eligible TRAIN innovation frames selected by evenly spaced indices over the full eligible TRAIN innovation-frame sequence, independent of labels. PCA uses the existing deterministic power-iteration convention (32 components, 80 iterations, fixed seed 3948000).
 
 No other feature family may be added after outcome.
 
