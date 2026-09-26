@@ -1,0 +1,60 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d1.1",
+  "phase": "v15N-D6-D2-D3-D1",
+  "outcome": "V15N_D6_D2_D3_D1_RISING_EDGE_SUPPRESSION_DOMINANT",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36213174880,
+    "headSha": "41be7be00aaa638a75666d670d673249f1758d01",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10896464244,
+      "name": "maplefly-v15n-d6-d2-d3-d1-rising-edge-failure-36213174880",
+      "digest": "sha256:2b2a84623b5312175d59b4472658979341ae29d771024f49819a8b8668553c60",
+      "evidenceJsonSha256": "4ee2b5acf8feb8ad04f72018afcad953dc7b2584102ee0d335eb3867cb711e16"
+    }
+  },
+  "design": "6a7b2eb7cee73ee340f9083a08928a01cc6009cc",
+  "preregistration": "ba0ad0aedb49cc90136322764c7fc44d38f785d3",
+  "implementation": "0a81c3d06af8a42fc60ab0c240dd90cba9327fcd",
+  "workflow": "41be7be00aaa638a75666d670d673249f1758d01",
+  "supportPass": true,
+  "missedHitAttribution": {
+    "eval": {
+      "missedHits": 487,
+      "frameClassifierMissFraction": 0,
+      "edgeSuppressionFraction": 1,
+      "matchingConflictFraction": 0,
+      "alreadyPositiveFraction": 1
+    },
+    "holdout": {
+      "missedHits": 493,
+      "frameClassifierMissFraction": 0.004056795131845842,
+      "edgeSuppressionFraction": 0.9959432048681541,
+      "matchingConflictFraction": 0,
+      "alreadyPositiveFraction": 1
+    }
+  },
+  "falseEventAttribution": {
+    "axis": "LINGER_DOMINANT",
+    "eval": {
+      "falseEvents": 627,
+      "recentUnmatchedFraction": 0,
+      "lingerFraction": 0.6299840510366826,
+      "backgroundFraction": 0.3700159489633174
+    },
+    "holdout": {
+      "falseEvents": 620,
+      "recentUnmatchedFraction": 0,
+      "lingerFraction": 0.635483870967742,
+      "backgroundFraction": 0.36451612903225805
+    }
+  },
+  "replacementEventizerEvaluated": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D2_CONDITIONAL_REIMPACT_INNOVATION_OBSERVABILITY"
+}
