@@ -1,0 +1,50 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d1.1",
+  "phase": "v15N-D6-D2-D1",
+  "outcome": "V15N_D6_D2_D1_EVENTIZER_LOCKOUT_DOMINANT",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36201795474,
+    "headSha": "18c29cc61e47f88b414ae11c608598e2e213e3f2",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10893121955,
+      "name": "maplefly-v15n-d6-d2-d1-event-timing-lockout-36201795474",
+      "digest": "sha256:42461e3bd2f2582c826840a1425f347986b1e1698c465267b085a4e9685976f7",
+      "evidenceJsonSha256": "89da8a8d4bd77e798cf778f702275c7e4205cc933f7ce3a3341ea5b83a3ea63f"
+    }
+  },
+  "design": "3eaf3eab4650c9391fd52ce8c6ca0eab860f6354",
+  "preregistration": "43a96d18c2f399ebac03dff7eb70546e19cc94dc",
+  "implementation": "ad2ecd5e0015b4dfa86c5c49bf5d65efc2b743da",
+  "workflow": "18c29cc61e47f88b414ae11c608598e2e213e3f2",
+  "attribution": {
+    "eval": {
+      "falseLingerFraction": 0.5061124694376528,
+      "falseBackgroundFraction": 0.4938875305623472,
+      "rawDetectableHitFraction": 1,
+      "suppressionFractionAmongMissed": 1,
+      "interHitMedianSeconds": 1.26
+    },
+    "holdout": {
+      "falseLingerFraction": 0.5272277227722773,
+      "falseBackgroundFraction": 0.47277227722772275,
+      "rawDetectableHitFraction": 1,
+      "suppressionFractionAmongMissed": 1,
+      "interHitMedianSeconds": 1.24
+    }
+  },
+  "gates": {
+    "supportPass": true,
+    "lingerDominated": false,
+    "suppressionDominated": true,
+    "backgroundDominated": false
+  },
+  "replacementPolicyTrained": false,
+  "alternativeEventizerEvaluated": false,
+  "diagnosticImpactDetectorDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D2_REIMPACT_ONSET_OBSERVABILITY_AUDIT"
+}
