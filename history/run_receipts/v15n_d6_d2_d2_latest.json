@@ -1,0 +1,59 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d2.1",
+  "phase": "v15N-D6-D2-D2",
+  "outcome": "V15N_D6_D2_D2_REIMPACT_ONSET_OBSERVABLE_SCALAR",
+  "scientificValidity": "VALID_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36204734622,
+    "headSha": "24d8a9a175a63cb04962fde3e16058895f15644c",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10893084661,
+      "name": "maplefly-v15n-d6-d2-d2-reimpact-onset-36204734622",
+      "digest": "sha256:9873b523751ac109596b70d96d2bbde264ae0a92d2df8abebcce99d9e983b8fe",
+      "evidenceJsonSha256": "51bcb6fbc61e568b6f515660325c45127a9a4f51cf9fe19086abc78b3b3c496d"
+    }
+  },
+  "design": "35538cbef13b8026e0bb404a4f96cfb0e264298b",
+  "preregistration": "d76595c6fa857020e384028cab6628654e117fb4",
+  "implementation": "462e9de42e740e40744e8ff7f44812ed049b96d0",
+  "workflow": "24d8a9a175a63cb04962fde3e16058895f15644c",
+  "supportPass": true,
+  "scalar": {
+    "eval": {
+      "balancedAccuracy": 0.8770827870188593,
+      "positiveRecall": 0.9174917491749175,
+      "negativeRecall": 0.8366738248628013,
+      "suppressedReimpactRecall": 0.935064935064935
+    },
+    "holdout": {
+      "balancedAccuracy": 0.8780709908146898,
+      "positiveRecall": 0.9160063391442155,
+      "negativeRecall": 0.8401356424851641,
+      "suppressedReimpactRecall": 0.9435336976320583
+    },
+    "pass": true
+  },
+  "innovationPca32": {
+    "eval": {
+      "balancedAccuracy": 0.7525100935290379,
+      "positiveRecall": 0.7541254125412541,
+      "negativeRecall": 0.7508947745168217,
+      "suppressedReimpactRecall": 0.7606679035250464
+    },
+    "holdout": {
+      "balancedAccuracy": 0.7482876268649354,
+      "positiveRecall": 0.7448494453248812,
+      "negativeRecall": 0.7517258084049897,
+      "suppressedReimpactRecall": 0.7486338797814208
+    },
+    "pass": false
+  },
+  "replacementPolicyTrained": false,
+  "replacementEventizerEvaluated": false,
+  "diagnosticImpactDetectorDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_CAUSAL_SCALAR_ONSET_EVENTIZER_AUDIT"
+}
