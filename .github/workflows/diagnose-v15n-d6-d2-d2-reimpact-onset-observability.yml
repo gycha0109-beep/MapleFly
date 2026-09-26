@@ -1,0 +1,95 @@
+name: Diagnose MapleFly v15N-D6-D2-D2 Re-impact Onset
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs"
+      - "history/prereg_v15n_d6_d2_d2.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  reimpact-onset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs
+      - name: Verify frozen v15N-D6-D2-D2 contract
+        run: |
+          set -euo pipefail
+          grep -q 'd76595c6fa857020e384028cab6628654e117fb4' scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs
+          grep -q '89da8a8d4bd77e798cf778f702275c7e4205cc933f7ce3a3341ea5b83a3ea63f' scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs
+          grep -q 'V15N_D6_D2_D2_HOLDOUT_BASE_SEEDS = \[4431000, 4441000, 4451000\]' scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs
+          grep -q 'V15N_D6_D2_D2_GATE = 0.75' scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs
+          grep -q 'replacementEventizerEvaluated: false' scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs
+      - name: Fetch authoritative v15N-D6-D2-D1 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-d6-d2-d1-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10893121955" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10893121955" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:42461e3bd2f2582c826840a1425f347986b1e1698c465267b085a4e9685976f7"
+          test "$head_sha" = "18c29cc61e47f88b414ae11c608598e2e213e3f2"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10893121955/zip" > /tmp/v15n-d6-d2-d1.zip
+          unzip -q /tmp/v15n-d6-d2-d1.zip -d .cache/v15n-d6-d2-d1-artifact
+          test -f .cache/v15n-d6-d2-d1-artifact/v15n_d6_d2_d1.json
+          echo "89da8a8d4bd77e798cf778f702275c7e4205cc933f7ce3a3341ea5b83a3ea63f  .cache/v15n-d6-d2-d1-artifact/v15n_d6_d2_d1.json" | sha256sum -c -
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2"
+          test "$head_sha" = "d3e434fc5a9f9a8b9e83d96637b25e2058398274"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+          echo "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4  .cache/v15n-artifact/v15n_training.json" | sha256sum -c -
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15N-D6-D2-D2 re-impact onset observability audit
+        env:
+          V15N_D6_D2_D1_ARTIFACT_FILE: .cache/v15n-d6-d2-d1-artifact/v15n_d6_d2_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d2-reimpact-onset-observability.mjs
+      - name: Upload v15N-D6-D2-D2 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d2-reimpact-onset-${{ github.run_id }}
+          path: results/v15n-d6-d2-d2-reimpact-onset-observability
+          if-no-files-found: warn
+          retention-days: 30
