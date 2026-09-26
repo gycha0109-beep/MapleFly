@@ -1,0 +1,94 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D1 Rising Edge Failure
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  rising-edge-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.mjs
+      - name: Verify frozen v15N-D6-D2-D3-D1 contract
+        run: |
+          set -euo pipefail
+          grep -q 'ba0ad0aedb49cc90136322764c7fc44d38f785d3' scripts/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.mjs
+          grep -q '7aa72195234fd7522217484a835da276a3e2a1a6b4b7be87eb587f838804a36a' scripts/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.mjs
+          grep -q 'V15N_D6_D2_D3_D1_ATTRIBUTION_GATE = 0.60' scripts/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.mjs
+          grep -q 'replacementEventizerEvaluated: false' scripts/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.mjs
+      - name: Fetch authoritative v15N-D6-D2-D3 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-d6-d2-d3-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10895732694" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10895732694" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:64cefd93dbaf61f8a405488f0c45468185851ae2b8f0a9bad8b6dd451bf77066"
+          test "$head_sha" = "5d75a4e2f348781c3fb12f8001a003205e9b5db5"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10895732694/zip" > /tmp/v15n-d6-d2-d3.zip
+          unzip -q /tmp/v15n-d6-d2-d3.zip -d .cache/v15n-d6-d2-d3-artifact
+          test -f .cache/v15n-d6-d2-d3-artifact/v15n_d6_d2_d3.json
+          echo "7aa72195234fd7522217484a835da276a3e2a1a6b4b7be87eb587f838804a36a  .cache/v15n-d6-d2-d3-artifact/v15n_d6_d2_d3.json" | sha256sum -c -
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2"
+          test "$head_sha" = "d3e434fc5a9f9a8b9e83d96637b25e2058398274"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+          echo "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4  .cache/v15n-artifact/v15n_training.json" | sha256sum -c -
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered v15N-D6-D2-D3-D1 rising-edge failure attribution
+        env:
+          V15N_D6_D2_D3_ARTIFACT_FILE: .cache/v15n-d6-d2-d3-artifact/v15n_d6_d2_d3.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d1-rising-edge-failure-attribution.mjs
+      - name: Upload v15N-D6-D2-D3-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d1-rising-edge-failure-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d1-rising-edge-failure-attribution
+          if-no-files-found: warn
+          retention-days: 30
