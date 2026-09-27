@@ -1,0 +1,68 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D1_LATE_WINDOW_RESCUE_DOMINANT",
+  "scientificValidity": "VALID_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 36338712265,
+    "headSha": "1fbef4fb89903db91b12a992a51faf7294dc7d31",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10939890187,
+      "name": "maplefly-v15n-d6-d2-d3-d3-d1-temporal-miss-36338712265",
+      "digest": "sha256:1c3b32cf3266299401d2326ffd7874428e1bdefb50607d74c7d1c3e8855fcd36",
+      "evidenceJsonSha256": "bbc1aac5878949a118fe8c4ea51117695dd2cdea040461c9e4de358fbfdaf57b"
+    }
+  },
+  "design": "e0944fcaccb0bc674c1feffb7fa477596fb15ca3",
+  "preregistration": "22eaa9bdd918bde7fa1750f19358694a6eaeda3d",
+  "implementation": "377390bbeb68e63807668ea194f8f6ad73ad6ad4",
+  "workflow": "1fbef4fb89903db91b12a992a51faf7294dc7d31",
+  "attribution": {
+    "prospectiveA": {
+      "qualifyingHits": 1311,
+      "firstFrameRecalled": 505,
+      "firstFrameMisses": 806,
+      "lateWindowRescue": 604,
+      "lateWindowRescueFraction": 0.749379652605459,
+      "contextDropout": 23,
+      "contextDropoutFraction": 0.028535980148883373,
+      "windowMiss": 179,
+      "windowMissFraction": 0.22208436724565755,
+      "descriptiveWindowRecall": 0.8459191456903128,
+      "medianFirstLatePositiveAgeMs": 100,
+      "overlapWindowHits": 0,
+      "lateRescueWithOverlapBeforePositive": 0
+    },
+    "prospectiveB": {
+      "qualifyingHits": 1346,
+      "firstFrameRecalled": 515,
+      "firstFrameMisses": 831,
+      "lateWindowRescue": 611,
+      "lateWindowRescueFraction": 0.7352587244283996,
+      "contextDropout": 27,
+      "contextDropoutFraction": 0.032490974729241874,
+      "windowMiss": 193,
+      "windowMissFraction": 0.2322503008423586,
+      "descriptiveWindowRecall": 0.836552748885587,
+      "medianFirstLatePositiveAgeMs": 100,
+      "overlapWindowHits": 0,
+      "lateRescueWithOverlapBeforePositive": 0
+    }
+  },
+  "gates": {
+    "supportPass": true,
+    "dominanceGate": 0.6,
+    "lateWindowRescueDominated": true,
+    "contextDropoutDominated": false,
+    "windowMissDominated": false
+  },
+  "replacementEventizerEvaluated": false,
+  "replacementReadoutTrained": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D2_CAUSAL_200MS_DELAYED_MAX_OBSERVABILITY"
+}
