@@ -1,0 +1,104 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D1 Temporal Miss Attribution
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  temporal-miss-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs
+
+      - name: Verify frozen v15N-D6-D2-D3-D3-D1 contract
+        run: |
+          set -euo pipefail
+          grep -q '22eaa9bdd918bde7fa1750f19358694a6eaeda3d' scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs
+          grep -q '6d5164df93e621b497e716235b799b0a2604ef4ed8b582ac6750a4b4b3ed62c8' scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs
+          grep -q 'a341d9747a19bf4a3a0cb625eca5a4ff6a3dd071e1f641a4d8005cd18d21f496' scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs
+          grep -q 'V15N_D6_D2_D3_D3_D1_DOMINANCE_GATE = 0.60' scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs
+          grep -q 'replacementEventizerEvaluated: false' scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs
+
+      - name: Fetch authoritative v15N-D6-D2-D3-D3 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-d6-d2-d3-d3-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10922928955" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10922928955" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:68cf420e639aeb1fd53e8dd0ed809b0713db5aa7c77e9434fcdc7d811d3075dd"
+          test "$head_sha" = "556127852df942b380b9e1007bdc9f395a6900c2"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10922928955/zip" > /tmp/v15n-d6-d2-d3-d3.zip
+          unzip -q /tmp/v15n-d6-d2-d3-d3.zip -d .cache/v15n-d6-d2-d3-d3-artifact
+          test -f .cache/v15n-d6-d2-d3-d3-artifact/v15n_d6_d2_d3_d3.json
+          echo "6d5164df93e621b497e716235b799b0a2604ef4ed8b582ac6750a4b4b3ed62c8  .cache/v15n-d6-d2-d3-d3-artifact/v15n_d6_d2_d3_d3.json" | sha256sum -c -
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2"
+          test "$head_sha" = "d3e434fc5a9f9a8b9e83d96637b25e2058398274"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+          echo "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4  .cache/v15n-artifact/v15n_training.json" | sha256sum -c -
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered v15N-D6-D2-D3-D3-D1 temporal miss attribution
+        env:
+          V15N_D6_D2_D3_D3_ARTIFACT_FILE: .cache/v15n-d6-d2-d3-d3-artifact/v15n_d6_d2_d3_d3.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d1-temporal-miss-attribution.mjs
+
+      - name: Upload v15N-D6-D2-D3-D3-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d1-temporal-miss-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d1-temporal-miss-attribution
+          if-no-files-found: warn
+          retention-days: 30
