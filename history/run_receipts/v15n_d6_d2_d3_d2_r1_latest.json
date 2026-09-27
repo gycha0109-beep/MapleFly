@@ -1,0 +1,61 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d2-r1.1",
+  "phase": "v15N-D6-D2-D3-D2-R1",
+  "outcome": "V15N_D6_D2_D3_D2_R1_CONDITIONAL_REIMPACT_NOT_REPLICATED",
+  "scientificValidity": "VALID_PROSPECTIVE_REPLICATION",
+  "authoritativeRun": {
+    "id": 36286352721,
+    "headSha": "1c501bd3e6a172a6902cc47bc6df80490d643ed9",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10921791405,
+      "name": "maplefly-v15n-d6-d2-d3-d2-r1-frozen-readout-support-36286352721",
+      "digest": "sha256:f31af207cc78cc938c0465e561f0d8f11762dd51830e8785157e6b4f24c9c8b7",
+      "evidenceJsonSha256": "ff70bf5055712b48cc08b1dca3ee0c50ba8836ed2c501342fa5d49713e4f8a42"
+    }
+  },
+  "design": "e45254fd39d6920afa2274e69092f192627ecf74",
+  "preregistration": "cc13947c32c9892a5d748eeaa4977800c1ffae2c",
+  "correctedImplementation": "1c501bd3e6a172a6902cc47bc6df80490d643ed9",
+  "invalidAttempt": {
+    "run": 36282667519,
+    "result": "5eedc200cc892450651e70a59fedd5e9dca6954c",
+    "receipt": "1ff1fae0bf6868f493334c782e5ff0c2e747cd47"
+  },
+  "support": {
+    "replicationA": {
+      "tapes": 64,
+      "positives": 1300,
+      "lingerNegatives": 2005,
+      "backgroundNegatives": 636,
+      "pass": true
+    },
+    "replicationB": {
+      "tapes": 64,
+      "positives": 1341,
+      "lingerNegatives": 2172,
+      "backgroundNegatives": 613,
+      "pass": true
+    }
+  },
+  "frozenModels": {
+    "derivative3ModelSha256": "13f38c51f80d3392e8649a6438154410ba250e78836e02134e2521f24ffd1f82",
+    "scalar4ModelSha256": "fb4e5f955a6362e471ff72604c608ad9e44022eef93d7ec6414cbac8b95610a4",
+    "oldScalarModelSha256": "ee36661675a1f6717d53d2f2af63797704d89194bf78d980f5d4415e3ee4f066",
+    "detectorWeightsSha256": "5dc677cf4c14e398465af72cbcff784e40163cdf702064359e7f4648319c9eb5"
+  },
+  "gates": {
+    "supportPass": true,
+    "derivativePass": false,
+    "scalar4Pass": false,
+    "observabilityGate": 0.75
+  },
+  "routeClosure": "SCALAR_CONDITIONAL_REIMPACT_CLOSED",
+  "replacementEventizerEvaluated": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_CONDITIONAL_DN_INNOVATION_OBSERVABILITY"
+}
