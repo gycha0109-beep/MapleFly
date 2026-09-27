@@ -1,0 +1,39 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d2-r1.attempt1-invalid.1",
+  "phase": "v15N-D6-D2-D3-D2-R1",
+  "outcome": "V15N_D6_D2_D3_D2_R1_IMPLEMENTATION_OR_PROVENANCE_INVALID",
+  "scientificValidity": "INVALID_IMPLEMENTATION_CONTRACT",
+  "authoritativeRun": {
+    "id": 36282667519,
+    "headSha": "de397a54289f6f50d4329061e36c7d23a95e122c",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10920298073,
+      "name": "maplefly-v15n-d6-d2-d3-d2-r1-frozen-readout-support-36282667519",
+      "digest": "sha256:22f2c4e6d94a309631506e6605762fbb304704f105503678ba9c704a51488d70",
+      "evidenceJsonSha256": "1dc937133135d99bb7038114630bbc2a6d04c3669560bc2308adcdfaf65489c1"
+    }
+  },
+  "preregistration": "cc13947c32c9892a5d748eeaa4977800c1ffae2c",
+  "implementation": "4932fdae0645e696caffebe5516a43dcbe702ac3",
+  "workflow": "de397a54289f6f50d4329061e36c7d23a95e122c",
+  "invalidReason": "R1 reused d3d2Support(), which requires tapes===24, while R1 preregistration requires exactly 64 tapes per replication cohort.",
+  "observedSupport": {
+    "replicationA": {
+      "tapes": 64,
+      "positives": 1300,
+      "lingerNegatives": 2005,
+      "backgroundNegatives": 636
+    },
+    "replicationB": {
+      "tapes": 64,
+      "positives": 1341,
+      "lingerNegatives": 2172,
+      "backgroundNegatives": 613
+    }
+  },
+  "correctionScope": "Replace only the inherited 24-tape equality with the preregistered 64-tape equality. Preserve all seeds, features, labels, frozen model hashes, thresholds, numeric support floors, observability gates, and outcome precedence.",
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED"
+}
