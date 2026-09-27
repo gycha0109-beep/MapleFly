@@ -5404,6 +5404,8 @@ async function main() {
     throw new Error("v15N-D6-D2-D3-D3 detector weight SHA mismatch");
   }
 
+  d2AttachEventizer(trainTapes, phase.means, detector);
+
   const oldTrainRows = d2d2Rows(
     trainTapes,
     phase.means,
