@@ -1,0 +1,104 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D3 Causal DN Pulse Eventizer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d3.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  causal-dn-eventizer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs
+
+      - name: Verify frozen v15N-D6-D2-D3-D3-D3 contract
+        run: |
+          set -euo pipefail
+          grep -q '41eeb16da054924ab30f51aa66d9e38ebcc0ce37' scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs
+          grep -q 'da79868d2866bd13f8d6e5b8b34597436979d742fa70a27f7b3ca711621190d6' scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs
+          grep -q 'V15N_D6_D2_D3_D3_D3_REFRACTORY_STEPS = 10' scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs
+          grep -q 'V15N_D6_D2_D3_D3_D3_EVENT_GATE = 0.75' scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs
+          grep -q 'usesPhysicalHitState: false' scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs
+
+      - name: Fetch authoritative v15N-D6-D2-D3-D3-D2-D1 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-d6-d2-d3-d3-d2-d1-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10942941071" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10942941071" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:5a446f379f3322fc6f316d3111681ffee26b27ec985e7cc5212494b95020e7cd"
+          test "$head_sha" = "a655612ef531e22db4808534dbad0336773cd1e1"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10942941071/zip" > /tmp/v15n-d6-d2-d3-d3-d2-d1.zip
+          unzip -q /tmp/v15n-d6-d2-d3-d3-d2-d1.zip -d .cache/v15n-d6-d2-d3-d3-d2-d1-artifact
+          test -f .cache/v15n-d6-d2-d3-d3-d2-d1-artifact/v15n_d6_d2_d3_d3_d2_d1.json
+          echo "da79868d2866bd13f8d6e5b8b34597436979d742fa70a27f7b3ca711621190d6  .cache/v15n-d6-d2-d3-d3-d2-d1-artifact/v15n_d6_d2_d3_d3_d2_d1.json" | sha256sum -c -
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2"
+          test "$head_sha" = "d3e434fc5a9f9a8b9e83d96637b25e2058398274"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+          echo "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4  .cache/v15n-artifact/v15n_training.json" | sha256sum -c -
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          digest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.digest')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453" --jq '.workflow_run.head_sha')"
+          test "$digest" = "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405"
+          test "$head_sha" = "a04fc64f159079a3e51d6e7ed3663fce25cb83bc"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered v15N-D6-D2-D3-D3-D3 causal DN pulse eventizer
+        env:
+          V15N_D6_D2_D3_D3_D2_D1_ARTIFACT_FILE: .cache/v15n-d6-d2-d3-d3-d2-d1-artifact/v15n_d6_d2_d3_d3_d2_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer.mjs
+
+      - name: Upload v15N-D6-D2-D3-D3-D3 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d3-causal-dn-eventizer-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d3-causal-dn-pulse-eventizer
+          if-no-files-found: warn
+          retention-days: 30
