@@ -1,0 +1,71 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d2-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D2-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D2_D1_BACKGROUND_IS_NEAR_FUTURE_HIT_DOMINANT",
+  "scientificValidity": "VALID_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 36348614888,
+    "headSha": "a655612ef531e22db4808534dbad0336773cd1e1",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10942941071,
+      "name": "maplefly-v15n-d6-d2-d3-d3-d2-d1-background-fate-36348614888",
+      "digest": "sha256:5a446f379f3322fc6f316d3111681ffee26b27ec985e7cc5212494b95020e7cd",
+      "evidenceJsonSha256": "da79868d2866bd13f8d6e5b8b34597436979d742fa70a27f7b3ca711621190d6"
+    }
+  },
+  "design": "96b0ad64f710f702752ecbf07738b46a65263bdd",
+  "preregistration": "24a425cd4a3af8f078545fee723a64ef96ba8dfb",
+  "implementation": "dd71c442361c678c73c706328cb04e616ca0de41",
+  "workflow": "a655612ef531e22db4808534dbad0336773cd1e1",
+  "support": {
+    "attributionA": {
+      "tapes": 64,
+      "rawBackgroundAnchors": 608,
+      "pass": true
+    },
+    "attributionB": {
+      "tapes": 64,
+      "rawBackgroundAnchors": 615,
+      "pass": true
+    }
+  },
+  "attribution": {
+    "attributionA": {
+      "futureHitWithin200msFraction": 0.9950657894736842,
+      "hitWithin0To100msFraction": 0.28125,
+      "hitWithin100To200msFraction": 0.7138157894736842,
+      "hitFree200msFraction": 0.004934210526315789,
+      "preHitPositiveFraction": 0.09586776859504133,
+      "postHitOrSameStepPositiveFraction": 0.18512396694214875,
+      "noDnPositive200msFraction": 0.71900826446281,
+      "medianFutureHitAgeMs": 100,
+      "medianSignedPositiveMinusHitLatencyMs": 0
+    },
+    "attributionB": {
+      "futureHitWithin200msFraction": 0.975609756097561,
+      "hitWithin0To100msFraction": 0.2634146341463415,
+      "hitWithin100To200msFraction": 0.7121951219512195,
+      "hitFree200msFraction": 0.024390243902439025,
+      "preHitPositiveFraction": 0.07333333333333333,
+      "postHitOrSameStepPositiveFraction": 0.20166666666666666,
+      "noDnPositive200msFraction": 0.725,
+      "medianFutureHitAgeMs": 100,
+      "medianSignedPositiveMinusHitLatencyMs": 0
+    }
+  },
+  "gates": {
+    "supportPass": true,
+    "futureHitDominant": true,
+    "hitFreeDominant": false,
+    "timingLabel": "MIXED_OR_SILENT"
+  },
+  "structuralConclusion": "Raw D3-D3 BACKGROUND anchors are overwhelmingly near-future-hit states when expanded into a 200ms window; delayed-max background support failure is structural.",
+  "replacementEventizerEvaluated": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D3_CAUSAL_DN_PULSE_EVENTIZER"
+}
