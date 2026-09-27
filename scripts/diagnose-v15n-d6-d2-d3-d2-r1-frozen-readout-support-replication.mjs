@@ -4971,7 +4971,7 @@ function d3d2Support(metrics, tapes) {
     lingerNegatives: metrics.lingerNegatives,
     backgroundNegatives: metrics.backgroundNegatives,
     pass:
-      tapes === 24 &&
+      tapes === V15N_D6_D2_D3_D2_R1_TAPES_PER_REPLICATION &&
       metrics.positives >= V15N_D6_D2_D3_D2_MIN_POSITIVE &&
       metrics.lingerNegatives >= V15N_D6_D2_D3_D2_MIN_LINGER &&
       metrics.backgroundNegatives >= V15N_D6_D2_D3_D2_MIN_BACKGROUND,
