@@ -1,0 +1,59 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3.1",
+  "phase": "v15N-D6-D2-D3-D3",
+  "outcome": "V15N_D6_D2_D3_D3_CONDITIONAL_REIMPACT_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_PROSPECTIVE_DIAGNOSTIC",
+  "authoritativeRun": {
+    "id": 36292221753,
+    "headSha": "556127852df942b380b9e1007bdc9f395a6900c2",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10922928955,
+      "name": "maplefly-v15n-d6-d2-d3-d3-context-balanced-dn-36292221753",
+      "digest": "sha256:68cf420e639aeb1fd53e8dd0ed809b0713db5aa7c77e9434fcdc7d811d3075dd",
+      "evidenceJsonSha256": "6d5164df93e621b497e716235b799b0a2604ef4ed8b582ac6750a4b4b3ed62c8"
+    }
+  },
+  "design": "59cb57620cf5bc03112c4c4cca271b32847bdaff",
+  "preregistration": "47d45be53043af245ebbb690322880fdbda9b8e4",
+  "correctedImplementation": "556127852df942b380b9e1007bdc9f395a6900c2",
+  "failedAttempt": {
+    "run": 36289367631,
+    "failure": "missing d2AttachEventizer(trainTapes, ...) prerequisite before frozen old-scalar reconstruction",
+    "correctionNote": "03e53f491fed001417336c24d27d76d8574123d5"
+  },
+  "support": {
+    "prospectiveA": {
+      "tapes": 64,
+      "positives": 1311,
+      "lingerNegatives": 2087,
+      "backgroundNegatives": 631,
+      "pass": true
+    },
+    "prospectiveB": {
+      "tapes": 64,
+      "positives": 1346,
+      "lingerNegatives": 2104,
+      "backgroundNegatives": 612,
+      "pass": true
+    }
+  },
+  "models": {
+    "detectorWeightsSha256": "5dc677cf4c14e398465af72cbcff784e40163cdf702064359e7f4648319c9eb5",
+    "oldScalarModelSha256": "ee36661675a1f6717d53d2f2af63797704d89194bf78d980f5d4415e3ee4f066",
+    "innovationPcaSha256": "b187f3de9229e14260b8d1464e20fa3b8d26158a715a5372e4696c1bf3b7fb33",
+    "dnModelSha256": "a341d9747a19bf4a3a0cb625eca5a4ff6a3dd071e1f641a4d8005cd18d21f496",
+    "derivativeModelSha256": "6fdbda776c1e39c3ff5ba576cb917de94504ce66c168cc11b154045348d3c11d"
+  },
+  "gates": {
+    "supportPass": true,
+    "dnPass": false,
+    "derivativePass": false,
+    "threshold": 0.75,
+    "subtypeRecallsGated": true
+  },
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D1_TEMPORAL_MISS_ATTRIBUTION"
+}
