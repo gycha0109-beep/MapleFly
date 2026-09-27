@@ -1,0 +1,76 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d2.1",
+  "phase": "v15N-D6-D2-D3-D2",
+  "outcome": "V15N_D6_D2_D3_D2_INSUFFICIENT_CONDITIONAL_SUPPORT",
+  "scientificValidity": "VALID_DIAGNOSTIC_INCONCLUSIVE_SUPPORT",
+  "authoritativeRun": {
+    "id": 36269933164,
+    "headSha": "57c6bda8a8d52025c00e8d0ab5d2bd7fa42b8226",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10915626754,
+      "name": "maplefly-v15n-d6-d2-d3-d2-conditional-reimpact-36269933164",
+      "digest": "sha256:edf821f959746bda8a757e895779d18ac1953fc33457a9635a5d1113facaae5c",
+      "evidenceJsonSha256": "e0d51061e0d32f2bdf373da213e71c4758258c9df236cf9238b604c91c598347"
+    }
+  },
+  "design": "1f25a75cebc4386851b225724bece9a25bc93d83",
+  "preregistration": "c62c85ac624e5d13e66b7be2b015ce4c9fbb4d81",
+  "implementation": "0dd74c0766910a997db06ae90695d9fcc73cadd1",
+  "workflow": "57c6bda8a8d52025c00e8d0ab5d2bd7fa42b8226",
+  "support": {
+    "eval": {
+      "positives": 501,
+      "lingerNegatives": 795,
+      "backgroundNegatives": 237,
+      "pass": false
+    },
+    "holdout": {
+      "positives": 495,
+      "lingerNegatives": 801,
+      "backgroundNegatives": 231,
+      "pass": false
+    }
+  },
+  "frozenModels": {
+    "derivative3ModelSha256": "13f38c51f80d3392e8649a6438154410ba250e78836e02134e2521f24ffd1f82",
+    "scalar4ModelSha256": "fb4e5f955a6362e471ff72604c608ad9e44022eef93d7ec6414cbac8b95610a4"
+  },
+  "descriptive": {
+    "derivative3": {
+      "eval": {
+        "balancedAccuracy": 0.7121860929304182,
+        "positiveRecall": 0.7984031936127745,
+        "negativeRecall": 0.625968992248062,
+        "backgroundNegativeRecall": 0.05485232067510549
+      },
+      "holdout": {
+        "balancedAccuracy": 0.7209742776603242,
+        "positiveRecall": 0.7878787878787878,
+        "negativeRecall": 0.6540697674418605,
+        "backgroundNegativeRecall": 0.03463203463203463
+      }
+    },
+    "scalar4": {
+      "eval": {
+        "balancedAccuracy": 0.7116348697952931,
+        "positiveRecall": 0.7604790419161677,
+        "negativeRecall": 0.6627906976744186,
+        "backgroundNegativeRecall": 0.20675105485232068
+      },
+      "holdout": {
+        "balancedAccuracy": 0.70431935635424,
+        "positiveRecall": 0.7313131313131314,
+        "negativeRecall": 0.6773255813953488,
+        "backgroundNegativeRecall": 0.15584415584415584
+      }
+    }
+  },
+  "replacementEventizerEvaluated": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D2_R1_FROZEN_READOUT_SUPPORT_REPLICATION"
+}
