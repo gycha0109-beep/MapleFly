@@ -1,0 +1,65 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d2.1",
+  "phase": "v15N-D6-D2-D3-D3-D2",
+  "outcome": "V15N_D6_D2_D3_D3_D2_INSUFFICIENT_DELAYED_MAX_SUPPORT",
+  "scientificValidity": "VALID_PROSPECTIVE_DIAGNOSTIC_INCONCLUSIVE_SUPPORT",
+  "authoritativeRun": {
+    "id": 36342783894,
+    "headSha": "464f6979baf3348e9da0ed3c767fc5559627c220",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10939579823,
+      "name": "maplefly-v15n-d6-d2-d3-d3-d2-delayed-max-36342783894",
+      "digest": "sha256:102a5308585a923f0134fb26cc202038fa6c553072969a4e08a393561bafd1d3",
+      "evidenceJsonSha256": "5273efaf28c24415ae3372f9a9380f2821ba0de017bc57bf8e9baf0daa5fd1da"
+    }
+  },
+  "design": "8b4c733c7c570686a716ac789c0bb6c93d2418a5",
+  "preregistration": "e2817b8b20b40d38cb08e891b75fcdcdc979624e",
+  "implementation": "35aa6cfbf20b873c6716e537bcfb56ca3d0f0176",
+  "workflow": "464f6979baf3348e9da0ed3c767fc5559627c220",
+  "support": {
+    "prospectiveA": {
+      "tapes": 64,
+      "positiveWindows": 1334,
+      "lingerNegativeWindows": 1573,
+      "backgroundNegativeWindows": 3,
+      "pass": false
+    },
+    "prospectiveB": {
+      "tapes": 64,
+      "positiveWindows": 1328,
+      "lingerNegativeWindows": 1407,
+      "backgroundNegativeWindows": 15,
+      "pass": false
+    }
+  },
+  "descriptiveMetrics": {
+    "prospectiveA": {
+      "balancedAccuracy": 0.8291130450003426,
+      "positiveRecall": 0.8320839580209896,
+      "negativeRecall": 0.8261421319796954,
+      "lingerNegativeRecall": 0.8258105530832803,
+      "backgroundNegativeRecall": 1,
+      "firstFrameRecall": 0.36656671664167917,
+      "delayedMaxRecallGain": 0.4655172413793104
+    },
+    "prospectiveB": {
+      "balancedAccuracy": 0.844053958449833,
+      "positiveRecall": 0.8456325301204819,
+      "negativeRecall": 0.8424753867791842,
+      "lingerNegativeRecall": 0.8422174840085288,
+      "backgroundNegativeRecall": 0.8666666666666667,
+      "firstFrameRecall": 0.39006024096385544,
+      "delayedMaxRecallGain": 0.45557228915662645
+    }
+  },
+  "supportConclusion": "BACKGROUND delayed-max negative windows are structurally rare under the preregistered no-hit-within-200ms rule; observability remains inconclusive.",
+  "replacementEventizerEvaluated": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D2_D1_BACKGROUND_WINDOW_FATE_ATTRIBUTION"
+}
