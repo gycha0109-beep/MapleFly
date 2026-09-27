@@ -154,7 +154,7 @@ No feature family may be added after outcome.
 For each family independently:
 
 ```text
-TRAIN-only feature standardization
+TRAIN-only feature standardization using the unweighted mean/std over all eligible TRAIN conditional rows
 deterministic ridge least squares
 lambda = 1e-3
 threshold = 0.5
