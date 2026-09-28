@@ -1,0 +1,78 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d3.1",
+  "phase": "v15N-D6-D2-D3-D3-D3",
+  "outcome": "V15N_D6_D2_D3_D3_D3_CAUSAL_DN_EVENT_STREAM_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_PROSPECTIVE_EVENT_STREAM_TEST",
+  "authoritativeRun": {
+    "id": 36360419550,
+    "headSha": "5e117ed527a839f5f92af203150ba8f45ec23411",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10947295144,
+      "name": "maplefly-v15n-d6-d2-d3-d3-d3-causal-dn-eventizer-36360419550",
+      "digest": "sha256:c139ef3b61721c2a3704fddca8a0c644bfe8c0d8fee3e4d54b406681b0ac80df",
+      "evidenceJsonSha256": "5d18c3bd453024f8281e20bc5c33921528b40c5f43f1cab8db6c7565e2db1247"
+    }
+  },
+  "design": "60790839c103f1bdc6cd1694dfec720ce2bfa0af",
+  "preregistration": "41eeb16da054924ab30f51aa66d9e38ebcc0ce37",
+  "implementation": "dc89684c4a354e47399a3c343e2c3306aa53c52a",
+  "workflow": "5e117ed527a839f5f92af203150ba8f45ec23411",
+  "support": {
+    "prospectiveA": {
+      "tapes": 64,
+      "physicalHits": 1680,
+      "neuralEvents": 2129,
+      "pass": true
+    },
+    "prospectiveB": {
+      "tapes": 64,
+      "physicalHits": 1719,
+      "neuralEvents": 2174,
+      "pass": true
+    }
+  },
+  "metrics": {
+    "prospectiveA": {
+      "precision": 0.5918271488961954,
+      "recall": 0.75,
+      "f1": 0.6615909687582043,
+      "countRatio": 1.2672619047619047,
+      "meanTapeAbsoluteCountError": 7.015625,
+      "medianMatchedLatencyMs": 100,
+      "p90MatchedLatencyMs": 160,
+      "unmatchedEvents": 869,
+      "unmatchedHits": 420,
+      "preHitUnmatchedWithin200ms": 140,
+      "closeHitPairFraction": 0
+    },
+    "prospectiveB": {
+      "precision": 0.5910763569457221,
+      "recall": 0.7475276323443862,
+      "f1": 0.6601592602106343,
+      "countRatio": 1.2646887725421756,
+      "meanTapeAbsoluteCountError": 7.109375,
+      "medianMatchedLatencyMs": 100,
+      "p90MatchedLatencyMs": 160,
+      "unmatchedEvents": 889,
+      "unmatchedHits": 434,
+      "preHitUnmatchedWithin200ms": 164,
+      "closeHitPairFraction": 0
+    }
+  },
+  "gates": {
+    "supportPass": true,
+    "eventStreamPass": false,
+    "precisionRecallF1": 0.75,
+    "countRatioMin": 0.8,
+    "countRatioMax": 1.2,
+    "countMaeMax": 5
+  },
+  "eventizerUsesPhysicalHitState": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D3_D1_EVENT_STREAM_FAILURE_ATTRIBUTION"
+}
