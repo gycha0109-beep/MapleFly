@@ -1,0 +1,84 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d3-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D3-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D3_D1_EVENT_STREAM_FAILURE_ATTRIBUTED",
+  "scientificValidity": "VALID_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 36367096063,
+    "headSha": "94895409ecddc98766de403ef5b34df8952bb0d3",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10949191838,
+      "name": "maplefly-v15n-d6-d2-d3-d3-d3-d1-failure-attribution-36367096063",
+      "digest": "sha256:f6219beffaa53c85a09358af683a47ab5099e7b7f1785e7a6db8ac4d0dafc6fb",
+      "evidenceJsonSha256": "394775a56818a37c29d3136fe2e15bef9730b33006fd1f6e6db3358df5267ba9"
+    }
+  },
+  "design": "6ca417aefde9052ed879dd9edba797d1755d9735",
+  "preregistration": "cf88b0e88499deaff8903f172bb4ec9872b6fa35",
+  "implementation": "a03f9cb791f7d18d3493ecdc753e5de3f0b0ac65",
+  "workflow": "94895409ecddc98766de403ef5b34df8952bb0d3",
+  "support": {
+    "attributionA": {
+      "tapes": 64,
+      "unmatchedEvents": 869,
+      "unmatchedHits": 420,
+      "pass": true
+    },
+    "attributionB": {
+      "tapes": 64,
+      "unmatchedEvents": 889,
+      "unmatchedHits": 434,
+      "pass": true
+    }
+  },
+  "axes": {
+    "falseEventAxis": "BACKGROUND_DOMINANT",
+    "missAxis": "NO_CANDIDATE_DOMINANT"
+  },
+  "attribution": {
+    "attributionA": {
+      "falseEvents": {
+        "preHit": 140,
+        "postHit": 0,
+        "background": 729
+      },
+      "misses": {
+        "noCandidate": 394,
+        "refractory": 26,
+        "matchConflict": 0,
+        "other": 0
+      },
+      "refractorySuppressorMatched": 0,
+      "refractorySuppressorUnmatched": 26,
+      "medianSuppressorSignedLatencyMs": -20
+    },
+    "attributionB": {
+      "falseEvents": {
+        "preHit": 164,
+        "postHit": 0,
+        "background": 725
+      },
+      "misses": {
+        "noCandidate": 416,
+        "refractory": 18,
+        "matchConflict": 0,
+        "other": 0
+      },
+      "refractorySuppressorMatched": 0,
+      "refractorySuppressorUnmatched": 18,
+      "medianSuppressorSignedLatencyMs": -40
+    }
+  },
+  "conclusion": "The frozen old-scalar-context AND DN>=0.5 conjunction is simultaneously insufficiently specific in true background and insufficiently sensitive for most missed hits; refractory/matching are secondary.",
+  "thresholdTuned": false,
+  "refractoryTuned": false,
+  "replacementEventizerEvaluated": false,
+  "cumulativeInjuryModelEvaluated": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D3_D1_D1_GATE_COMPONENT_AND_SCORE_SEPARABILITY"
+}
