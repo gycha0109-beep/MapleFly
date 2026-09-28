@@ -1,0 +1,68 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d3-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D3-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D3_D1_D1_COMPONENT_AND_SCORE_ATTRIBUTED",
+  "scientificValidity": "VALID_FAILURE_COMPONENT_AND_SCORE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 36470915285,
+    "headSha": "f8c6aa860d7a259a96410e809aac706595c3bd58",
+    "conclusion": "success",
+    "artifact": {
+      "id": 10993630636,
+      "name": "maplefly-v15n-d6-d2-d3-d3-d3-d1-d1-gate-score-36470915285",
+      "digest": "sha256:d5e74ac8f50cd44087dbd947ab72f5309706546a25d3906c0b4212e841108f08",
+      "evidenceJsonSha256": "778ef1d800af2a6f8e14e3f86ded08ad91ee571b6ba60257da714f914daef3f0"
+    }
+  },
+  "design": "9aed4424517988876b55846244b9bedcb8443c87",
+  "preregistration": "c9eef1e76433c6058c2ee0c65c604eb45f0c98e6",
+  "implementation": "39d74c82a52a717cea6efaef9d558772aed8c563",
+  "workflow": "f8c6aa860d7a259a96410e809aac706595c3bd58",
+  "support": {
+    "attributionA": {
+      "noCandidateHits": 394,
+      "matchedEvents": 1260,
+      "backgroundFalseEvents": 729,
+      "pass": true
+    },
+    "attributionB": {
+      "noCandidateHits": 416,
+      "matchedEvents": 1285,
+      "backgroundFalseEvents": 725,
+      "pass": true
+    }
+  },
+  "axes": {
+    "missComponentAxis": "DN_SUBTHRESHOLD_DOMINANT",
+    "scoreSeparabilityLabels": [
+      "NO_SINGLE_SCORE_SEPARABILITY"
+    ]
+  },
+  "attribution": {
+    "attributionA": {
+      "contextAbsentFraction": 0.30456852791878175,
+      "dnSubthresholdUnderContextFraction": 0.6954314720812182,
+      "contextAbsentDnPositiveWithoutContextFraction": 0.925,
+      "dnAuc": 0.5981013347268491,
+      "oldScalarAuc": 0.3803242101596011
+    },
+    "attributionB": {
+      "contextAbsentFraction": 0.2644230769230769,
+      "dnSubthresholdUnderContextFraction": 0.7355769230769231,
+      "contextAbsentDnPositiveWithoutContextFraction": 0.8818181818181818,
+      "dnAuc": 0.6040177109888636,
+      "oldScalarAuc": 0.36975499798738765
+    }
+  },
+  "conclusion": "Simple threshold repair is not justified. The dominant miss component is DN subthreshold under available context, while neither frozen DN score nor old-scalar score separates matched events from true-background false events at AUC >= 0.70.",
+  "thresholdTuned": false,
+  "refractoryTuned": false,
+  "replacementEventizerEvaluated": false,
+  "cumulativeInjuryModelEvaluated": false,
+  "replacementPolicyTrained": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_CAUSAL_PCA32_TEMPORAL_SHAPE_OBSERVABILITY"
+}
