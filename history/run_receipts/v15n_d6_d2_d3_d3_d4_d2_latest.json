@@ -1,0 +1,51 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_CAUSAL_DELAYED_EVENT_STREAM_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_FROZEN_PROSPECTIVE_FAIL",
+  "authoritativeRun": {
+    "id": 36514263944,
+    "headSha": "45298bb59896472d65b06e2e091ac66c83bb7fa1",
+    "artifactId": 11011816687,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:59289ee82b5d8502074b38c58974dde25ac1d6568f5183d24d6209d87e1b1ab0",
+  "evidenceJsonSha256": "53dce522441c32080a83339b91cff5a02c4eea24585662c2f9766d8320da9ab4",
+  "design": "8cae6ffffbf261f3ebd0849eb88edf15e87537f7",
+  "preregistration": "e138e292e90fd3c239ad2f69a7497e7c2cdefbdb",
+  "implementation": "78b52d739a3c6f8a2d0cb1900c5a09602ff023d7",
+  "workflow": "45298bb59896472d65b06e2e091ac66c83bb7fa1",
+  "result": "12c516bd48278804917ac14b77d171587face5a3",
+  "supportPass": true,
+  "eventPass": false,
+  "metrics": {
+    "A": {
+      "precision": 0.5772321428571429,
+      "recall": 0.7495652173913043,
+      "f1": 0.6522068095838588,
+      "eventCountRatio": 1.298550724637681,
+      "countMae": 8.046875,
+      "medianLatencySeconds": 0.1,
+      "p90LatencySeconds": 0.14,
+      "refractorySuppressed": 0
+    },
+    "B": {
+      "precision": 0.5702031602708804,
+      "recall": 0.7425044091710759,
+      "f1": 0.6450459652706844,
+      "eventCountRatio": 1.30217519106408,
+      "countMae": 8.03125,
+      "medianLatencySeconds": 0.1,
+      "p90LatencySeconds": 0.14,
+      "refractorySuppressed": 0
+    }
+  },
+  "thresholdTuned": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_EVENT_STREAM_FAILURE_ATTRIBUTION"
+}
