@@ -1,0 +1,108 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D4-D2-D1-D1 Scalar Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-temporal3-scalar-separability-audit.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-temporal3-scalar-separability-audit.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  scalar-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-temporal3-scalar-separability-audit.mjs
+
+      - name: Verify frozen D4-D2-D1-D1 contract
+        run: |
+          set -euo pipefail
+          f="scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-temporal3-scalar-separability-audit.mjs"
+          grep -q 'e89f76d1980ad50e448a421ac9fbba3207cf124c' "$f"
+          grep -q '0636c0c4801062d0f2e11f9a30d5a4072d6de474da61f4572d2cf8b24c055862' "$f"
+          grep -q '0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50' "$f"
+          grep -q 'thresholdTuned: false' "$f"
+          grep -q 'runtimeThresholdChanged: false' "$f"
+          grep -q 'temporalDepthTuned: false' "$f"
+          grep -q 'refractoryTuned: false' "$f"
+
+      - name: Fetch authoritative D4-D2-D1 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/d4d2d1-artifact
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11014769432" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "d9a03ab832d93368db01048414b59a936c8bb387"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11014769432/zip" > /tmp/d4d2d1.zip
+          unzip -q /tmp/d4d2d1.zip -d .cache/d4d2d1-artifact
+          test -f .cache/d4d2d1-artifact/v15n_d6_d2_d3_d3_d4_d2_d1.json
+
+      - name: Fetch authoritative D4-D2 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/d4d2-artifact
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11011816687" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "45298bb59896472d65b06e2e091ac66c83bb7fa1"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11011816687/zip" > /tmp/d4d2.zip
+          unzip -q /tmp/d4d2.zip -d .cache/d4d2-artifact
+          test -f .cache/d4d2-artifact/v15n_d6_d2_d3_d3_d4_d2.json
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered scalar separability audit
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_D1_ARTIFACT_FILE: .cache/d4d2d1-artifact/v15n_d6_d2_d3_d3_d4_d2_d1.json
+          V15N_D6_D2_D3_D3_D4_D2_ARTIFACT_FILE: .cache/d4d2-artifact/v15n_d6_d2_d3_d3_d4_d2.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-temporal3-scalar-separability-audit.mjs
+
+      - name: Upload D4-D2-D1-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d4-d2-d1-d1-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-temporal3-scalar-separability-audit
+          if-no-files-found: warn
+          retention-days: 30
