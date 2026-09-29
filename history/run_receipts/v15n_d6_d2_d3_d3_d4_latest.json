@@ -1,0 +1,59 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4.1",
+  "phase": "v15N-D6-D2-D3-D3-D4",
+  "outcome": "V15N_D6_D2_D3_D3_D4_REALIZED_IMPACT_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_PROSPECTIVE_REPRESENTATION_TEST",
+  "authoritativeRun": {
+    "id": 36498259584,
+    "headSha": "7922bb3bf9612e7e2649882400b9a6d0cddf7b14",
+    "conclusion": "success",
+    "artifact": {
+      "id": 11005414896,
+      "name": "maplefly-v15n-d6-d2-d3-d3-d4-temporal-shape-36498259584",
+      "digest": "sha256:8b181324ed47f0253d31b3c582121b6fd3dc314df0ddfa9c94597910f930dff4",
+      "evidenceJsonSha256": "154974f62c014a59a2f0fa2202081a17a9c39665e0c0db8fb879c75b4d232138"
+    }
+  },
+  "design": "ad41b05b2c3a702accfbb547cb6fc00ac085f600",
+  "preregistration": "3186c1c107be4dfca25a59db0a4d70a2016f31b9",
+  "implementation": "a1bdb73031893ddbae5f77f18137aa6fba65a4a2",
+  "workflow": "7922bb3bf9612e7e2649882400b9a6d0cddf7b14",
+  "support": {
+    "prospectiveA": {
+      "tapes": 64,
+      "realizedImpact": 3343,
+      "preHit": 2727,
+      "trueBackground": 24202,
+      "pass": true
+    },
+    "prospectiveB": {
+      "tapes": 64,
+      "realizedImpact": 3375,
+      "preHit": 2756,
+      "trueBackground": 24141,
+      "pass": true
+    }
+  },
+  "gates": {
+    "supportPass": true,
+    "currentPass": false,
+    "temporalPass": false,
+    "threshold": 0.75
+  },
+  "models": {
+    "currentPca32": "63d7272e8c3fa25f114bb78f82ef840c882b86b8fbfdcc140750efe007afa784",
+    "pca32Temporal3": "4cb231aaf0c0f19b89dbc26f202aa2e50890e56452f1971627389cf63a5791a1"
+  },
+  "descriptive": {
+    "temporal3RealizedRecallA": 0.6449297038588094,
+    "temporal3RealizedRecallB": 0.6477037037037037,
+    "currentRealizedRecallA": 0.5183966497158241,
+    "currentRealizedRecallB": 0.5194074074074074
+  },
+  "conclusion": "Temporal3 produces replicated gains but does not pass the frozen realized-impact recall gate. No threshold or temporal-depth tuning is justified on D4 cohorts.",
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D1_REALIZED_IMPACT_AGE_ATTRIBUTION"
+}
