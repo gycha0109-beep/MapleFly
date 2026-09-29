@@ -1,0 +1,27 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D1_REALIZED_IMPACT_AGE_ATTRIBUTED",
+  "scientificValidity": "VALID_FROZEN_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 36507440642,
+    "headSha": "5d0bb5fe959878f2bbb362afe265e99bf590afdb",
+    "artifactId": 11008183466,
+    "conclusion": "success"
+  },
+  "design": "79914daaa58a6351e5dee18f87e082ac0a39bfb8",
+  "preregistration": "a3f9a4074db6a1c3d92b3d3669bef99fae9d3a06",
+  "implementation": "750472b8f2eeee97c12a3aeb7d713b7cc9be5f7e",
+  "workflow": "5d0bb5fe959878f2bbb362afe265e99bf590afdb",
+  "result": "89c0cac3d7b90432333bafa0c4ce8a832be26599",
+  "supportPass": true,
+  "reproductionPass": true,
+  "provenancePass": true,
+  "ageAxis": "EARLY_ONLY_UNRESOLVED",
+  "ageGate": 0.75,
+  "temporal3": {
+    "A": {"earlyRecall":0.4871641791044776,"lateRecall":0.8033573141486811},
+    "B": {"earlyRecall":0.477797513321492,"lateRecall":0.8179122182680901}
+  },
+  "next": "V15N_D6_D2_D3_D3_D4_D2_CAUSAL_DELAYED_EVENTIZATION"
+}
