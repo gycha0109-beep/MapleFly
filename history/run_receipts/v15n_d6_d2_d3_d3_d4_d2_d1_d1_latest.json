@@ -1,0 +1,40 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_TEMPORAL3_SCALAR_SEPARABILITY_AUDITED",
+  "scientificValidity": "VALID_FROZEN_SCALAR_AUDIT",
+  "authoritativeRun": {
+    "id": 36530978516,
+    "headSha": "79e2b1d20926e27db6eb846216f9a870403a0ee8",
+    "artifactId": 11018846070,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:98dcd5d0d2a8e86c9fc46ed318a07405ecc91cacdbc03f72226ba39f63d732aa",
+  "evidenceJsonSha256": "8e100496082be0c38bf66f24b1b0fdfe5e0115486831e7c38fa094a12a404fc9",
+  "design": "0c720cd536689c92120688b12f8473ca4543f470",
+  "preregistration": "e89f76d1980ad50e448a421ac9fbba3207cf124c",
+  "implementation": "f19e7a00c4673461b31afc8e207c3d33ecb3ee95",
+  "workflow": "79e2b1d20926e27db6eb846216f9a870403a0ee8",
+  "result": "e894cb6d4c58b739bc8e789d6aedeec1d1a1651f",
+  "supportPass": true,
+  "reproductionPass": true,
+  "scalarAxis": "PRECISION_RECALL_TRADEOFF",
+  "commonPassingThresholds": [],
+  "bestRecallAtPrecisionGate": {
+    "A": 0.5831884057971014,
+    "B": 0.5873015873015873
+  },
+  "bestPrecisionAtRecallGate": {
+    "A": null,
+    "B": null
+  },
+  "thresholdTuned": false,
+  "runtimeThresholdChanged": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_REPRESENTATION_LEVEL_REPAIR_DESIGN"
+}
