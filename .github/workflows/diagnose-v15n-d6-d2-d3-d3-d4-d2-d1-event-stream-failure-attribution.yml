@@ -1,0 +1,92 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D4-D2-D1 Failure Attribution
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  failure-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs
+
+      - name: Verify frozen D4-D2-D1 contract
+        run: |
+          set -euo pipefail
+          grep -q 'e0f491bdfb1bef223c5829e7a26dc39d748494eb' scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs
+          grep -q '53dce522441c32080a83339b91cff5a02c4eea24585662c2f9766d8320da9ab4' scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs
+          grep -q 'thresholdTuned: false' scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs
+          grep -q 'temporalDepthTuned: false' scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs
+          grep -q 'refractoryTuned: false' scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs
+
+      - name: Fetch authoritative D4-D2 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/d4d2-artifact
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11011816687" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "45298bb59896472d65b06e2e091ac66c83bb7fa1"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11011816687/zip" > /tmp/d4d2.zip
+          unzip -q /tmp/d4d2.zip -d .cache/d4d2-artifact
+          test -f .cache/d4d2-artifact/v15n_d6_d2_d3_d3_d4_d2.json
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered D4-D2-D1 attribution
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_ARTIFACT_FILE: .cache/d4d2-artifact/v15n_d6_d2_d3_d3_d4_d2.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution.mjs
+
+      - name: Upload D4-D2-D1 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d4-d2-d1-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-event-stream-failure-attribution
+          if-no-files-found: warn
+          retention-days: 30
