@@ -285,7 +285,7 @@ const V15N_D6_D2_D3_D3_D4_D2_COUNT_MAE_MAX = 5.0;
 const V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS = 10;
 const V15N_D6_D2_D3_D3_D4_D2_D1_PREREG_COMMIT =
   "e0f491bdfb1bef223c5829e7a26dc39d748494eb";
-const V15N_D6_D2_D3_D3_D4_D2_D1_EVIDENCE_SHA256 =
+const V15N_D6_D2_D3_D3_D4_D2_D1_D4_D2_EVIDENCE_SHA256 =
   "53dce522441c32080a83339b91cff5a02c4eea24585662c2f9766d8320da9ab4";
 const V15N_D6_D2_D3_D3_D4_D2_D1_MIN_FALSE_EVENTS = 500;
 const V15N_D6_D2_D3_D3_D4_D2_D1_MIN_MISSED_IMPACTS = 200;
@@ -6125,7 +6125,7 @@ async function main() {
   const d2Sha256 = createHash("sha256").update(d2Bytes).digest("hex");
   if (
     d2Sha256 !==
-    V15N_D6_D2_D3_D3_D4_D2_D1_EVIDENCE_SHA256
+    V15N_D6_D2_D3_D3_D4_D2_D1_D4_D2_EVIDENCE_SHA256
   ) {
     throw new Error("D4-D2 authoritative evidence SHA mismatch");
   }
