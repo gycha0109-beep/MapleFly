@@ -7753,7 +7753,7 @@ async function main() {
       "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1.json",
     ),
     JSON.stringify(output, null, 2) +
-      "\\n",
+      "\n",
   );
 }
 
