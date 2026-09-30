@@ -1,0 +1,97 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1 Margin-Crossing Failure Attribution
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-margin-crossing-failure-attribution.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-margin-crossing-failure-attribution.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  margin-crossing-failure-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-margin-crossing-failure-attribution.mjs
+
+      - name: Verify frozen failure-attribution contract
+        run: |
+          set -euo pipefail
+          f="scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-margin-crossing-failure-attribution.mjs"
+          grep -q 'd5f9a34107cd90b6a7c9fa58e7bbebd67a37ac80' "$f"
+          grep -q 'f5bdc5e56984083fd7f56c41c230a6a51ecef9ea8377b6bbbcce210406e012c3' "$f"
+          grep -q '0.2378919189622094' "$f"
+          grep -q 'PRE_HIT_ABOVE_THRESHOLD_CARRYOVER' "$f"
+          grep -q 'NO_THRESHOLD_WINDOW' "$f"
+          grep -q 'alternateThresholdEvaluated: false' "$f"
+          grep -q 'thresholdTuned: false' "$f"
+          grep -q 'temporalDepthTuned: false' "$f"
+          grep -q 'refractoryTuned: false' "$f"
+
+      - name: Fetch authoritative margin-crossing evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/margin-crossing
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11091860656" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "702cce06c0e41e1940e91cc095c1207504dff28f"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11091860656/zip" > /tmp/margin-crossing.zip
+          unzip -q /tmp/margin-crossing.zip -d .cache/margin-crossing
+          test -f .cache/margin-crossing/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1.json
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered margin-crossing failure attribution
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_ARTIFACT_FILE: .cache/margin-crossing/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-margin-crossing-failure-attribution.mjs
+
+      - name: Upload margin-crossing failure-attribution evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-margin-crossing-failure-attribution
+          if-no-files-found: warn
+          retention-days: 30
