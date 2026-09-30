@@ -1,0 +1,61 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_THREE_CLASS_EVENT_STREAM_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_FRESH_PROSPECTIVE_FAIL",
+  "authoritativeRun": {
+    "id": 36576316325,
+    "headSha": "10924c03c63dcf23d6cf8dbe15a8796b08bce2f9",
+    "artifactId": 11040692357,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:316acd1aeb8fb08dadd2427182976661c6ef2f48f312cfd5b2ebce147188d28b",
+  "evidenceJsonSha256": "cc1c5fb57b7363fe8e936d5a67854bb4ee754c2472e30071f89888643e9678b7",
+  "design": "c343748d952064741a46203bee7c22a6e4453fe0",
+  "preregistration": "1dcc276e934ad99432938179e9ec5c35096ecca8",
+  "implementation": "0ec7e9b19ea39efd476a4e414b2c44e3d9473199",
+  "workflow": "10924c03c63dcf23d6cf8dbe15a8796b08bce2f9",
+  "result": "2021175bdaa7fce87aa59753a77ebd48ae8688c6",
+  "supportPass": true,
+  "eventPass": false,
+  "threeClassModelSha256": "cf9d38bbb697c1c2b98aa34f51c6ee39626c68763acbfb1c34e145eb738c7144",
+  "frameRecall": {
+    "A": {
+      "REALIZED_IMPACT": 0.7625148986889154,
+      "PRE_HIT": 0.47002574475910264,
+      "TRUE_BACKGROUND": 0.7282720998470885
+    },
+    "B": {
+      "REALIZED_IMPACT": 0.752755436401549,
+      "PRE_HIT": 0.47758496023138103,
+      "TRUE_BACKGROUND": 0.7261170234792331
+    }
+  },
+  "eventMetrics": {
+    "A": {
+      "precision": 0.43160994764397903,
+      "recall": 0.7855866587254318,
+      "f1": 0.5571277719112988,
+      "eventCountRatio": 1.8201310303752234,
+      "countMae": 21.515625,
+      "backgroundFalseFraction": 0.7639608520437536
+    },
+    "B": {
+      "precision": 0.4249430153044611,
+      "recall": 0.7767857142857143,
+      "f1": 0.5493580298884445,
+      "eventCountRatio": 1.8279761904761904,
+      "countMae": 21.734375,
+      "backgroundFalseFraction": 0.7757644394110985
+    }
+  },
+  "thresholdTuned": false,
+  "runtimeThresholdChanged": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_THREE_CLASS_FAILURE_ATTRIBUTION"
+}
