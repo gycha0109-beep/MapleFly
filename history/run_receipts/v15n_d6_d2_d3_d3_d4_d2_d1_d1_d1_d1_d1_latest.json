@@ -1,0 +1,56 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MARGIN_CROSSING_EVENT_STREAM_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_FRESH_PROSPECTIVE_FAIL",
+  "authoritativeRun": {
+    "id": 36699990275,
+    "headSha": "702cce06c0e41e1940e91cc095c1207504dff28f",
+    "artifactId": 11091860656,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:e0d4f25f828343ddaabb4c7e02df5dd05391cfde10daf1ebbfea369c0bc39651",
+  "evidenceJsonSha256": "f5bdc5e56984083fd7f56c41c230a6a51ecef9ea8377b6bbbcce210406e012c3",
+  "design": "dc32192353960ef10f4c57ffe366bb8c6bd2e610",
+  "preregistration": "f0516f629d946871cdf37336cd921eca6287d525",
+  "implementation": "c9f40d17bc2add806f8678a95605b1fbdc880e2f",
+  "workflow": "702cce06c0e41e1940e91cc095c1207504dff28f",
+  "result": "07397cace8c3877d29386f9b4b9ed064c2779ffd",
+  "calibration": {
+    "candidateCount": 5661,
+    "feasibleCount": 131,
+    "selectedThreshold": 0.2378919189622094,
+    "precision": 0.7518539646320593,
+    "recall": 0.7653890824622532,
+    "f1": 0.7585611510791367,
+    "eventCountRatio": 1.0180023228803716,
+    "countMae": 2.296875
+  },
+  "prospective": {
+    "A": {
+      "precision": 0.756198347107438,
+      "recall": 0.7486849795441263,
+      "f1": 0.7524229074889869,
+      "eventCountRatio": 0.9900642898889538,
+      "countMae": 2.640625,
+      "pass": false
+    },
+    "B": {
+      "precision": 0.7516968325791855,
+      "recall": 0.7762850467289719,
+      "f1": 0.7637931034482759,
+      "eventCountRatio": 1.0327102803738317,
+      "countMae": 2.0625,
+      "pass": true
+    }
+  },
+  "runtimeThresholdSelected": true,
+  "thresholdTunedOnProspective": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_MARGIN_CROSSING_FAILURE_ATTRIBUTION"
+}
