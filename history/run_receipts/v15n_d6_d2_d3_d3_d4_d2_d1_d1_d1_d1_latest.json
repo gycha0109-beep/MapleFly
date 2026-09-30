@@ -1,0 +1,43 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_THREE_CLASS_FAILURE_ATTRIBUTED",
+  "scientificValidity": "VALID_FROZEN_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 36666864084,
+    "headSha": "75a8e881bf5dee5272d9ef8ed21cb96ad889dbe7",
+    "artifactId": 11078026076,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:6f044886d2d138c851fabb317eaa2511e79d0ec5ddd5de1bf0ad54ddad53b177",
+  "evidenceJsonSha256": "a39781bedc4cb67da602c758a09b942b5a98b622a1aa9902123b9b0fda410024",
+  "design": "582e51951c46a201f1dd0e272936acf4a7b46a17",
+  "preregistration": "66e1882613b60a89aafed9ff48139fd5474d5b38",
+  "implementation": "65f4daa7fe2d42f8caebfd51ff6807bb1e4a8cd3",
+  "serializationFix": "75a8e881bf5dee5272d9ef8ed21cb96ad889dbe7",
+  "result": "9bf1718d93facc1ada1055594753046da18658b9",
+  "supportPass": true,
+  "reproductionPass": true,
+  "axes": {
+    "entrySourceAxis": "TRUE_BACKGROUND_ENTRY_DOMINANT",
+    "marginAxis": "MARGIN_SEPARABLE",
+    "missAxis": "PRE_HIT_CARRYOVER_DOMINANT"
+  },
+  "marginAuc": {
+    "A": 0.7955902744252028,
+    "B": 0.7921302122661297
+  },
+  "preHitCarryoverMissFraction": {
+    "A": 0.7888888888888889,
+    "B": 0.7413333333333333
+  },
+  "thresholdTuned": false,
+  "marginThresholdTuned": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_TRAIN_CALIBRATED_MARGIN_CROSSING"
+}
