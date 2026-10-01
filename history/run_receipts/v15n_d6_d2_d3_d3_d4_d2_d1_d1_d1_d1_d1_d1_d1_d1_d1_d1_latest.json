@@ -1,0 +1,51 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PCA32_ANCHORED_DELTA3_CONFIRMATORY_REPLICATION_FAIL",
+  "scientificValidity": "VALID_CONFIRMATORY_FAIL",
+  "authoritativeRun": {
+    "id": 36822848365,
+    "headSha": "c3dc7de779e8e73ac1deeb67d6fe33bc51993d67",
+    "artifactId": 11147009045,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:d9b3268afbeae381956a5ad2eba17229cecd50329628dac8695aef9bc97bfdb9",
+  "evidenceJsonSha256": "1e1704f12d094e83c5e6f66e9ba8f589225e4a26a01c505275296e4de6334e99",
+  "design": "7da8d69fefc7d30dcc7735f4ee335615052b10a5",
+  "preregistration": "f74586a76f5f33d8b963d45e620b76455cf74d9a",
+  "implementation": "bb03a9966c7abb647360d67a57b41b92c68853f6",
+  "workflow": "c3dc7de779e8e73ac1deeb67d6fe33bc51993d67",
+  "result": "4440e572859b58a1c70c327172d89601e879cf08",
+  "supportPass": true,
+  "trajectoryModelSha256": "6f2e4c0ec8c7ae438934a1b13db8f062387df3354383b6fab19eac5d8f354105",
+  "threshold": 0.5918989570787438,
+  "confirmation": {
+    "A": {
+      "precision": 0.7739183424741012,
+      "recall": 0.7470588235294118,
+      "f1": 0.760251421730021,
+      "eventCountRatio": 0.9652941176470589,
+      "countMae": 2.203125,
+      "pass": false
+    },
+    "B": {
+      "precision": 0.7680381633870006,
+      "recall": 0.7536571094207138,
+      "f1": 0.7607796810395747,
+      "eventCountRatio": 0.981275599765945,
+      "countMae": 2.3125,
+      "pass": true
+    }
+  },
+  "modelRefit": false,
+  "calibrationRerun": false,
+  "thresholdSearched": false,
+  "thresholdTunedOnConfirmation": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ANCHORED_DELTA3_CONFIRMATORY_FAILURE_ATTRIBUTION"
+}
