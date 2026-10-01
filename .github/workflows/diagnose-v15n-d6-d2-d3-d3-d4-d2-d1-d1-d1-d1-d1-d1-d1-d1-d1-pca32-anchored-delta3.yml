@@ -1,0 +1,99 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1 PCA32 Anchored Delta3
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  pca32-anchored-delta3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3.mjs
+
+      - name: Verify frozen anchored-delta3 contract
+        run: |
+          set -euo pipefail
+          f="scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3.mjs"
+          grep -q 'cac68edb4a2fe669968d7403e574063b2af0336d' "$f"
+          grep -q '956605344594e575ee0bb4bb3c51a4c333e928f2a7f0071666d021d05a891302' "$f"
+          grep -q '6441000, 6451000, 6461000, 6471000' "$f"
+          grep -q '6531000, 6541000, 6551000, 6561000' "$f"
+          grep -q '6621000, 6631000, 6641000, 6651000' "$f"
+          grep -q '6711000, 6721000, 6731000, 6741000' "$f"
+          grep -q 'PCA32_ANCHORED_DELTA3' "$f"
+          grep -q 'horizons: \[1, 3, 5\]' "$f"
+          grep -q 'thresholdTunedOnProspective:' "$f"
+          grep -q 'temporalDepthTuned:' "$f"
+          grep -q 'refractoryTuned:' "$f"
+
+      - name: Fetch authoritative history-utility evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/history-utility
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11132717991" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "c75b5980d4949ab9626db6a1b8e130875ec3087a"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11132717991/zip" > /tmp/history-utility.zip
+          unzip -q /tmp/history-utility.zip -d .cache/history-utility
+          test -f .cache/history-utility/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1.json
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered PCA32_ANCHORED_DELTA3
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE: .cache/history-utility/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3.mjs
+
+      - name: Upload anchored-delta3 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3
+          if-no-files-found: warn
+          retention-days: 30
