@@ -1,0 +1,62 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_PCA32_ANCHORED_DELTA3_EVENT_STREAM_DEMONSTRATED",
+  "scientificValidity": "VALID_FRESH_PROSPECTIVE_DEMONSTRATION",
+  "authoritativeRun": {
+    "id": 36805174578,
+    "headSha": "17e9b338843d24f31c6c5e13347d2d5ba244de41",
+    "artifactId": 11140971672,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:8d3033e52a588c3a1fd99b6bc0f47b85aa097c87f291a94242e2be55be7fe29a",
+  "evidenceJsonSha256": "175b4c4171949442e7dcdcda04ebe18df2642c34097680c8a2776fdc5eda92e4",
+  "design": "2939916f88952eef1e71edd647ed98287f9125fc",
+  "preregistration": "cac68edb4a2fe669968d7403e574063b2af0336d",
+  "implementation": "30c9f3003c009cb041d5e57490a7234ebab364a8",
+  "workflow": "17e9b338843d24f31c6c5e13347d2d5ba244de41",
+  "result": "53408c48d444c6fca11cf4016b9545bef160e664",
+  "supportPass": true,
+  "calibration": {
+    "candidateCount": 25233,
+    "feasibleCount": 303,
+    "selectedThreshold": 0.5918989570787438,
+    "precision": 0.7811934900542495,
+    "recall": 0.7583382094792276,
+    "f1": 0.7695961995249406,
+    "eventCountRatio": 0.970743124634289,
+    "countMae": 2.375
+  },
+  "trajectoryModel": {
+    "sha256": "6f2e4c0ec8c7ae438934a1b13db8f062387df3354383b6fab19eac5d8f354105",
+    "featureFamily": "PCA32_ANCHORED_DELTA3",
+    "width": 128,
+    "horizons": [1, 3, 5]
+  },
+  "prospective": {
+    "A": {
+      "precision": 0.7905982905982906,
+      "recall": 0.7573099415204678,
+      "f1": 0.7735961768219832,
+      "eventCountRatio": 0.9578947368421052,
+      "countMae": 2.875,
+      "pass": true
+    },
+    "B": {
+      "precision": 0.7714113389626055,
+      "recall": 0.7532391048292109,
+      "f1": 0.7622169249106078,
+      "eventCountRatio": 0.9764428739693758,
+      "countMae": 1.9375,
+      "pass": true
+    }
+  },
+  "thresholdTunedOnProspective": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PCA32_ANCHORED_DELTA3_CONFIRMATORY_REPLICATION"
+}
