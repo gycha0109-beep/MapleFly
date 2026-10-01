@@ -1,0 +1,99 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1 Anchored Delta3 Confirmatory Replication
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3-confirmatory-replication.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-confirmatory-replication.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  anchored-delta3-confirmatory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3-confirmatory-replication.mjs
+
+      - name: Verify frozen confirmatory contract
+        run: |
+          set -euo pipefail
+          f="scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3-confirmatory-replication.mjs"
+          grep -q 'f74586a76f5f33d8b963d45e620b76455cf74d9a' "$f"
+          grep -q '175b4c4171949442e7dcdcda04ebe18df2642c34097680c8a2776fdc5eda92e4' "$f"
+          grep -q '6f2e4c0ec8c7ae438934a1b13db8f062387df3354383b6fab19eac5d8f354105' "$f"
+          grep -q '0.5918989570787438' "$f"
+          grep -q '6801000, 6811000, 6821000, 6831000' "$f"
+          grep -q '6891000, 6901000, 6911000, 6921000' "$f"
+          grep -q 'calibrationRerun: false' "$f"
+          grep -q 'thresholdSearched: false' "$f"
+          grep -q 'thresholdTunedOnConfirmation: false' "$f"
+          grep -q 'temporalDepthTuned: false' "$f"
+          grep -q 'refractoryTuned: false' "$f"
+
+      - name: Fetch authoritative anchored-delta3 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/anchored-delta3
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11140971672" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "17e9b338843d24f31c6c5e13347d2d5ba244de41"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11140971672/zip" > /tmp/anchored-delta3.zip
+          unzip -q /tmp/anchored-delta3.zip -d .cache/anchored-delta3
+          test -f .cache/anchored-delta3/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered confirmatory replication
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE: .cache/anchored-delta3/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3-confirmatory-replication.mjs
+
+      - name: Upload confirmatory evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3-confirmatory-replication
+          if-no-files-found: warn
+          retention-days: 30
