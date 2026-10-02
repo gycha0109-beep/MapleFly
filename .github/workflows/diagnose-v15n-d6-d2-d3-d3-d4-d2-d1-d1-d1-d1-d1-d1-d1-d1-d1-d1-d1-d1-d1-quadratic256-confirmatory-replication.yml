@@ -1,0 +1,88 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1 Quadratic256 Confirmatory Replication
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-quadratic256-confirmatory-replication.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-quadratic256-confirmatory-replication.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  quadratic256-confirmatory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-quadratic256-confirmatory-replication.mjs
+      - name: Verify frozen confirmatory contract
+        run: |
+          set -euo pipefail
+          f="scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-quadratic256-confirmatory-replication.mjs"
+          grep -q 'ace688eeba4b1df6bb259066dad182a0d52025bf' "$f"
+          grep -q 'd7e1633ca5e9df1b0c96641919a887af86ea55a16dd7eb4fb49ae43644d2beac' "$f"
+          grep -q '6f72c6c5070b0a8bd9e3d64627614790fdb8c1c97b21b1f408ed1852ec5aaff7' "$f"
+          grep -q '0.6097593618468664' "$f"
+          grep -q '7341000, 7351000, 7361000, 7371000' "$f"
+          grep -q '7431000, 7441000, 7451000, 7461000' "$f"
+          grep -q 'calibrationRerun:false' "$f"
+          grep -q 'thresholdSearched:false' "$f"
+          grep -q 'featureChanged:false' "$f"
+      - name: Fetch authoritative quadratic256 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/q256
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11217152053" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "795381f0324b01321f80d3fbd5b8a5133fbebe86"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11217152053/zip" > /tmp/q256.zip
+          unzip -q /tmp/q256.zip -d .cache/q256
+          test -f .cache/q256/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+      - name: Run preregistered quadratic256 confirmatory replication
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE: .cache/q256/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-quadratic256-confirmatory-replication.mjs
+      - name: Upload quadratic256 confirmatory evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-quadratic256-confirmatory-replication
+          if-no-files-found: warn
+          retention-days: 30
