@@ -1,0 +1,97 @@
+name: Diagnose MapleFly v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1 Anchored Delta3 Confirmatory Failure Attribution
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-confirmatory-failure-attribution.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.md"
+      - ".github/workflows/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-confirmatory-failure-attribution.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  anchored-delta3-confirmatory-failure-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-confirmatory-failure-attribution.mjs
+
+      - name: Verify frozen attribution contract
+        run: |
+          set -euo pipefail
+          f="scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-confirmatory-failure-attribution.mjs"
+          grep -q '436a8a40019240bbcdaadadb5dfd45858a0452ef' "$f"
+          grep -q '1e1704f12d094e83c5e6f66e9ba8f589225e4a26a01c505275296e4de6334e99' "$f"
+          grep -q '6f2e4c0ec8c7ae438934a1b13db8f062387df3354383b6fab19eac5d8f354105' "$f"
+          grep -q '0.5918989570787438' "$f"
+          grep -q 'NO_THRESHOLD_WINDOW' "$f"
+          grep -q 'PRE_HIT_ABOVE_THRESHOLD_CARRYOVER' "$f"
+          grep -q 'thresholdSearched:false' "$f"
+          grep -q 'featureSearched:false' "$f"
+          grep -q 'horizonSearched:false' "$f"
+
+      - name: Fetch authoritative confirmatory evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/confirmatory
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11147009045" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "c3dc7de779e8e73ac1deeb67d6fe33bc51993d67"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11147009045/zip" > /tmp/confirmatory.zip
+          unzip -q /tmp/confirmatory.zip -d .cache/confirmatory
+          test -f .cache/confirmatory/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered confirmatory failure attribution
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE: .cache/confirmatory/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-confirmatory-failure-attribution.mjs
+
+      - name: Upload confirmatory failure-attribution evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-confirmatory-failure-attribution
+          if-no-files-found: warn
+          retention-days: 30
