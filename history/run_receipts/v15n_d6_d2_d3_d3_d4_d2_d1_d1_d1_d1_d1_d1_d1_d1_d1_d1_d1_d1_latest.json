@@ -1,0 +1,72 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ANCHORED_DELTA3_QUADRATIC256_EVENT_STREAM_DEMONSTRATED",
+  "scientificValidity": "VALID_PROSPECTIVE_DEMONSTRATION",
+  "authoritativeRun": {
+    "id": 36974010880,
+    "headSha": "795381f0324b01321f80d3fbd5b8a5133fbebe86",
+    "artifactId": 11217152053,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:99feb39b45a6cdaf722a9cdc618e7037126b2fbb9f67c7a7594bf98973c650e4",
+  "evidenceJsonSha256": "d7e1633ca5e9df1b0c96641919a887af86ea55a16dd7eb4fb49ae43644d2beac",
+  "design": "79ccffa291a6dc707fc3c4b667adcebff21fe94f",
+  "preregistration": "a14c87c44df31f0d5a349ae1ccc023c6485f1b86",
+  "implementation": "ee07c07a43aee7fb948dea4b40e7cb9d3a9e7851",
+  "workflow": "795381f0324b01321f80d3fbd5b8a5133fbebe86",
+  "result": "6eb800192827e95fb55d50e32f166dae9356ccb2",
+  "supportPass": true,
+  "quadraticModelSha256": "6f72c6c5070b0a8bd9e3d64627614790fdb8c1c97b21b1f408ed1852ec5aaff7",
+  "selectedThreshold": 0.6097593618468664,
+  "calibration": {
+    "candidateCount": 24154,
+    "feasibleCount": 711,
+    "precision": 0.8204182041820418,
+    "recall": 0.785167745732784,
+    "f1": 0.8024060150375939,
+    "eventCountRatio": 0.9570335491465568,
+    "countMae": 2.203125
+  },
+  "prospective": {
+    "A": {
+      "precision": 0.8077388149939541,
+      "recall": 0.7767441860465116,
+      "f1": 0.7919383521043272,
+      "eventCountRatio": 0.9616279069767442,
+      "countMae": 2.125,
+      "pass": true
+    },
+    "B": {
+      "precision": 0.8020035356511491,
+      "recall": 0.7803899082568807,
+      "f1": 0.7910491136297587,
+      "eventCountRatio": 0.9730504587155964,
+      "countMae": 2.609375,
+      "pass": true
+    }
+  },
+  "frozenLinearComparator": {
+    "A": {
+      "precision": 0.7775746496039001,
+      "recall": 0.7418604651162791,
+      "f1": 0.7592978280273729
+    },
+    "B": {
+      "precision": 0.8096992019643954,
+      "recall": 0.7563073394495413,
+      "f1": 0.7820930922027869
+    }
+  },
+  "thresholdTunedOnProspective": false,
+  "degreeTuned": false,
+  "crossProductsUsed": false,
+  "horizonSearched": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_QUADRATIC256_CONFIRMATORY_REPLICATION"
+}
