@@ -1,0 +1,54 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ANCHORED_DELTA3_CONFIRMATORY_FAILURE_ATTRIBUTED",
+  "scientificValidity": "VALID_FROZEN_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 36946779676,
+    "headSha": "8e28d38c6b1a777c96894773c99ae8f49ac1e7cf",
+    "artifactId": 11205110870,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:4cc65f58cdfad2306c6e95f3dd71559f66982db9051d6ec705740d6a26078671",
+  "evidenceJsonSha256": "e17825f01a6f1b61ea8035c7c1779c8499a5f08b85aed1da0e7ddbd236ff9764",
+  "design": "28a902b71e3aed80cccae20d8b5faa0941dacc12",
+  "preregistration": "436a8a40019240bbcdaadadb5dfd45858a0452ef",
+  "implementation": "c207a2c46f222cdd4b942edfbfaec9c87e709a2b",
+  "workflow": "8e28d38c6b1a777c96894773c99ae8f49ac1e7cf",
+  "result": "49ae3072627f41aa71534114aa89c31f6ce0d9bf",
+  "supportPass": true,
+  "reproductionPass": true,
+  "missAxis": "NO_THRESHOLD_DOMINANT",
+  "missFractions": {
+    "A": {
+      "NO_THRESHOLD_WINDOW": 0.9255813953488372,
+      "PRE_HIT_ABOVE_THRESHOLD_CARRYOVER": 0.07441860465116279,
+      "REFRACTORY_SUPPRESSED_CROSSING": 0,
+      "MATCH_CONFLICT": 0,
+      "ABOVE_THRESHOLD_NO_EVENT_OTHER": 0
+    },
+    "B": {
+      "NO_THRESHOLD_WINDOW": 0.9216152019002375,
+      "PRE_HIT_ABOVE_THRESHOLD_CARRYOVER": 0.07838479809976247,
+      "REFRACTORY_SUPPRESSED_CROSSING": 0,
+      "MATCH_CONFLICT": 0,
+      "ABOVE_THRESHOLD_NO_EVENT_OTHER": 0
+    }
+  },
+  "medianThresholdGap": {
+    "A": 0.07354423148791972,
+    "B": 0.07805322334121922
+  },
+  "modelRefit": false,
+  "calibrationRerun": false,
+  "thresholdSearched": false,
+  "featureSearched": false,
+  "horizonSearched": false,
+  "temporalDepthTuned": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ANCHORED_DELTA3_DUAL_CONTRAST_READOUT"
+}
