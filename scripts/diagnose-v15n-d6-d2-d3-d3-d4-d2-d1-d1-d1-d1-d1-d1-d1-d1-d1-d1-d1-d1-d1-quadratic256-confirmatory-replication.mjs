@@ -1,0 +1,9133 @@
+#!/usr/bin/env node
+// v15N: reward-only terminal-health shaping on long frozen neural history.
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import {
+  SOURCE,
+  ConnectomeBrain,
+  cells,
+  cellsWithPrefix,
+  loadConnectome,
+} from "../src/headless/connectome-runtime.mjs";
+import "../src/brain/fly-skill-v7.js";
+import "../src/brain/fly-skill-v10-attack.js";
+import "../src/brain/fly-skill-v11h2-jump.js";
+import "../src/brain/fly-interruption-v14b.js";
+import "../src/brain/fly-skill-v15-potion.js";
+
+const STEP_SECONDS = 0.02;
+const SETTLE_STEPS = 26;
+const BASELINE_STEPS = 26;
+const MOVE_WINDOW_STEPS = 26;
+const ATTACK_WINDOW_STEPS = 5;
+const JUMP_WINDOW_STEPS = 5;
+const MAX_STEPS = 2400;
+const ATTACK_COOLDOWN_STEPS = 21;
+const DN_COUNT = 1316;
+const POTION_FRAME_STEPS = 5;
+const POTION_HISTORY_FRAMES = 48;
+const IMPACT_DRIVE = 0.7;
+const IMPACT_PULSE_STEPS = 6;
+const TASTE_DRIVE = 0.8;
+const RESPAWN_GAP_STEPS = 35;
+const TIME_BIN_STEPS = 400;
+const TIME_BIN_COUNT = 6;
+const MAX_HP = 100;
+const CONTACT_DAMAGE = 10;
+const POTION_HEAL = 30;
+const POTION_COST = 15;
+
+const WORLD_WIDTH = 1000;
+const GROUND_Y = 530;
+const GRAVITY = 1400;
+const MOVE_SPEED = 280;
+const JUMP_VELOCITY = 600;
+const PLAYER_WIDTH = 34;
+const PLAYER_HEIGHT = 46;
+const OBSTACLE_WIDTH = 38;
+const OBSTACLE_HEIGHT = 54;
+const OBSTACLE_VISUAL_RADIUS = 280;
+const TARGET_OFFSET = 160;
+const TARGET_WIDTH = 56;
+const TARGET_HEIGHT = 62;
+const TARGET_HP = 30;
+const ATTACK_DAMAGE = 10;
+const ATTACK_RANGE = 76;
+
+const DISTANCES = [155, 195, 235, 275];
+const PRACTICE_BASE_SEEDS = [2601000, 2611000, 2621000];
+const FINAL_SEEDS = [3101000, 3111000, 3121000];
+const V15G_TRAIN_BASE_SEEDS = [3231000, 3241000, 3251000];
+const V15G_EVAL_BASE_SEEDS = [3261000, 3271000, 3281000];
+const V15N_TRAIN_BASE_SEEDS = [4081000, 4091000, 4101000];
+const V15N_EVAL_BASE_SEEDS = [4111000, 4121000, 4131000];
+const V15N_PREREG_COMMIT =
+  "1db0933739f2a5550ce9c99469933cc07697a9ad";
+const V15N_CEM_SEED = 4168000;
+const V15N_GENERATIONS = 100;
+const V15N_POPULATION = 256;
+const V15N_ELITES = 32;
+const V15N_OLD_WEIGHT = 0.20;
+const V15N_ELITE_WEIGHT = 0.80;
+const V15N_MIN_STD = 0.05;
+const V15N_PARAM_CLAMP = 8;
+const V15N_TRACE_HALF_LIFE_SECONDS = 2.0;
+const V15N_TRACE_DECAY = 0.9659363289248456;
+const V15N_PCA_COMPONENTS = 32;
+const V15N_PCA_ITERATIONS = 80;
+const V15N_PCA_SEED = 3948000;
+const V15N_POLICY_PARAMS = 41;
+const V15N_D1_PREREG_COMMIT =
+  "9d85eb371bc8b8f58aedb62fbb718ff4b7b9b8c4";
+const V15N_D1_ARTIFACT_ID = 10846125740;
+const V15N_D1_EVIDENCE_SHA256 =
+  "103e3ebc84e7d062394ec22608b533cfc135c89eedc766f7f7c682a6dcdcd1a4";
+const V15N_D1_PARAMS_SHA256 =
+  "c3a2a2516296fb907834c3f6556afca1ea2f127a09e1b64d5ad46e4b00cbc5e5";
+const V15N_D1_PREPROCESSING_SHA256 =
+  "977aa76306c4aa387585c7cdea9a96de26296764ef98962565bd49935d6ccc83";
+const V15N_D1_MIN_FORCED_SUPPORT = 30;
+const V15N_D2_PREREG_COMMIT =
+  "32ed074bbd49128fdb0af2932da704750b2c92c0";
+const V15N_D2_HOLDOUT_BASE_SEEDS = [4171000, 4181000, 4191000];
+const V15N_D2_HOLDOUT_INTERRUPTION_SEED = 4207000;
+const V15N_D2_MIN_FORCED_SUPPORT = 500;
+const V15N_D2_MIN_MIXED_TAPES = 12;
+const V15N_D3_PREREG_COMMIT =
+  "73d6f01a0db369525ebe31bc3875211a22c51ecd";
+const V15N_D3_HOLDOUT_BASE_SEEDS = [4211000, 4221000, 4231000];
+const V15N_D3_HOLDOUT_INTERRUPTION_SEED = 4247000;
+const V15N_D3_MIN_CLASS_SUPPORT = 500;
+const V15N_D3_MIN_MIXED_TAPES = 12;
+const V15N_D3_RIDGE_LAMBDA = 1e-3;
+const V15N_D4_PREREG_COMMIT =
+  "b8d0e6b946412c8269597865b122b49f16599ee6";
+const V15N_D4_HOLDOUT_BASE_SEEDS = [4251000, 4261000, 4271000];
+const V15N_D4_HOLDOUT_INTERRUPTION_SEED = 4287000;
+const V15N_D4_MIN_STATES = 3000;
+const V15N_D4_MIN_HP_SD = 15;
+const V15N_D4_RIDGE_LAMBDA = 1e-3;
+const V15N_D5_PREREG_COMMIT =
+  "189e0bdb15c73ea1f1ec4e1e6daa86805008725b";
+const V15N_D5_HOLDOUT_BASE_SEEDS = [4291000, 4301000, 4311000];
+const V15N_D5_HOLDOUT_INTERRUPTION_SEED = 4327000;
+const V15N_D5_HALF_LIVES = [0.5, 2.0, 8.0, 32.0];
+const V15N_D5_TRACE_DECAYS = V15N_D5_HALF_LIVES.map(
+  (halfLife) => 2 ** (-0.1 / halfLife),
+);
+const V15N_D5_PCA_SEED = 4338000;
+const V15N_D5_PCA_COMPONENTS = 32;
+const V15N_D5_PCA_ITERATIONS = 80;
+const V15N_D5_RIDGE_LAMBDA = 1e-3;
+const V15N_D5_MIN_RESIDUAL_SD = 5;
+const V15N_D6_PREREG_COMMIT =
+  "d7c7e6b2d3ad87bd94ec4713bc825d18b6ede155";
+const V15N_D6_HOLDOUT_BASE_SEEDS = [4351000, 4361000, 4371000];
+const V15N_D6_HOLDOUT_INTERRUPTION_SEED = 4387000;
+const V15N_D6_POSITIVE_MAX_AGE_STEPS = 10;
+const V15N_D6_NEGATIVE_MIN_AGE_STEPS = 100;
+const V15N_D6_MIN_POSITIVE_SUPPORT = 500;
+const V15N_D6_MIN_NEGATIVE_SUPPORT = 2000;
+const V15N_D6_MIN_POSITIVE_TAPES = 20;
+const V15N_D6_MIN_RESIDUAL_SD = 5;
+const V15N_D6_RIDGE_LAMBDA = 1e-3;
+const V15N_D6_D1_PREREG_COMMIT =
+  "20edf4db027b1e91ced7038eff895969a08b2d60";
+const V15N_D6_D1_EVIDENCE_SHA256 =
+  "4d83e773948a98f234b2e14e7145914007c3584277064f4440153b0489b94285";
+const V15N_D6_D1_WEIGHTS_SHA256 =
+  "5dc677cf4c14e398465af72cbcff784e40163cdf702064359e7f4648319c9eb5";
+const V15N_D6_D1_BACKGROUND_FRACTION_GATE = 0.25;
+const V15N_D6_D1_DUPLICATE_FRACTION_GATE = 0.50;
+const V15N_D6_D1_MEDIAN_POSITIVE_FRAMES_GATE = 2;
+const V15N_D6_D1_AMPLITUDE_CV_GATE = 0.75;
+const V15N_D6_D1_AMPLITUDE_RATIO_LOW = 0.80;
+const V15N_D6_D1_AMPLITUDE_RATIO_HIGH = 1.25;
+const V15N_D6_D2_PREREG_COMMIT =
+  "4f2d707620f0010efa431cb1d66828d7590e6920";
+const V15N_D6_D2_D1_EVIDENCE_SHA256 =
+  "90fdd058e87d380140aeade0cb4e7a172bb8f4848308969b0c1f9903a100c177";
+const V15N_D6_D2_HOLDOUT_BASE_SEEDS = [4391000, 4401000, 4411000];
+const V15N_D6_D2_HOLDOUT_INTERRUPTION_SEED = 4427000;
+const V15N_D6_D2_REARM_NEGATIVE_FRAMES = 3;
+const V15N_D6_D2_MATCH_MAX_AGE_STEPS = 10;
+const V15N_D6_D2_MIN_PHYSICAL_HITS = 500;
+const V15N_D6_D2_MIN_NEURAL_EVENTS = 300;
+const V15N_D6_D2_D1_PREREG_COMMIT =
+  "43a96d18c2f399ebac03dff7eb70546e19cc94dc";
+const V15N_D6_D2_D1_D2_EVIDENCE_SHA256 =
+  "475d612723d48f89224bedbde903431235f0ae4555d38742ccaaaa7dae81f2a5";
+const V15N_D6_D2_D1_ATTRIBUTION_GATE = 0.60;
+const V15N_D6_D2_D1_MIN_FALSE_EVENTS = 200;
+const V15N_D6_D2_D1_MIN_MISSED_HITS = 200;
+const V15N_D6_D2_D1_MIN_INTER_HIT_INTERVALS = 400;
+const V15N_D6_D2_D2_PREREG_COMMIT =
+  "d76595c6fa857020e384028cab6628654e117fb4";
+const V15N_D6_D2_D2_D1_EVIDENCE_SHA256 =
+  "89da8a8d4bd77e798cf778f702275c7e4205cc933f7ce3a3341ea5b83a3ea63f";
+const V15N_D6_D2_D2_HOLDOUT_BASE_SEEDS = [4431000, 4441000, 4451000];
+const V15N_D6_D2_D2_HOLDOUT_INTERRUPTION_SEED = 4467000;
+const V15N_D6_D2_D2_HISTORY_FRAMES = 5;
+const V15N_D6_D2_D2_PCA_FIT_ROWS = 240;
+const V15N_D6_D2_D2_RIDGE_LAMBDA = 1e-3;
+const V15N_D6_D2_D2_THRESHOLD = 0.5;
+const V15N_D6_D2_D2_MIN_POSITIVE = 500;
+const V15N_D6_D2_D2_MIN_LINGER = 1000;
+const V15N_D6_D2_D2_MIN_BACKGROUND = 1000;
+const V15N_D6_D2_D2_MIN_SUPPRESSED = 400;
+const V15N_D6_D2_D2_GATE = 0.75;
+const V15N_D6_D2_D3_PREREG_COMMIT =
+  "f4259d5ea071d0bb1686e78ce1b2e3c2d863b539";
+const V15N_D6_D2_D3_D2_EVIDENCE_SHA256 =
+  "51bcb6fbc61e568b6f515660325c45127a9a4f51cf9fe19086abc78b3b3c496d";
+const V15N_D6_D2_D3_HOLDOUT_BASE_SEEDS = [4471000, 4481000, 4491000];
+const V15N_D6_D2_D3_HOLDOUT_INTERRUPTION_SEED = 4507000;
+const V15N_D6_D2_D3_MIN_PHYSICAL_HITS = 500;
+const V15N_D6_D2_D3_MIN_NEURAL_EVENTS = 100;
+const V15N_D6_D2_D3_EVENT_GATE = 0.75;
+const V15N_D6_D2_D3_COUNT_RATIO_MIN = 0.80;
+const V15N_D6_D2_D3_COUNT_RATIO_MAX = 1.20;
+const V15N_D6_D2_D3_COUNT_MAE_MAX = 5.0;
+const V15N_D6_D2_D3_D1_PREREG_COMMIT =
+  "ba0ad0aedb49cc90136322764c7fc44d38f785d3";
+const V15N_D6_D2_D3_D1_D3_EVIDENCE_SHA256 =
+  "7aa72195234fd7522217484a835da276a3e2a1a6b4b7be87eb587f838804a36a";
+const V15N_D6_D2_D3_D1_SCALAR_MODEL_SHA256 =
+  "ee36661675a1f6717d53d2f2af63797704d89194bf78d980f5d4415e3ee4f066";
+const V15N_D6_D2_D3_D1_ATTRIBUTION_GATE = 0.60;
+const V15N_D6_D2_D3_D1_MIN_MISSED_HITS = 400;
+const V15N_D6_D2_D3_D1_MIN_FALSE_EVENTS = 500;
+const V15N_D6_D2_D3_D1_MIN_INTER_HIT_INTERVALS = 500;
+const V15N_D6_D2_D3_D2_PREREG_COMMIT =
+  "c62c85ac624e5d13e66b7be2b015ce4c9fbb4d81";
+const V15N_D6_D2_D3_D2_D1_EVIDENCE_SHA256 =
+  "4ee2b5acf8feb8ad04f72018afcad953dc7b2584102ee0d335eb3867cb711e16";
+const V15N_D6_D2_D3_D2_HOLDOUT_BASE_SEEDS = [4511000, 4521000, 4531000];
+const V15N_D6_D2_D3_D2_HOLDOUT_INTERRUPTION_SEED = 4547000;
+const V15N_D6_D2_D3_D2_MIN_POSITIVE = 400;
+const V15N_D6_D2_D3_D2_MIN_LINGER = 500;
+const V15N_D6_D2_D3_D2_MIN_BACKGROUND = 500;
+const V15N_D6_D2_D3_D2_GATE = 0.75;
+const V15N_D6_D2_D3_D3_PREREG_COMMIT =
+  "47d45be53043af245ebbb690322880fdbda9b8e4";
+const V15N_D6_D2_D3_D3_R1_EVIDENCE_SHA256 =
+  "ff70bf5055712b48cc08b1dca3ee0c50ba8836ed2c501342fa5d49713e4f8a42";
+const V15N_D6_D2_D3_D3_INNOVATION_PCA_SHA256 =
+  "b187f3de9229e14260b8d1464e20fa3b8d26158a715a5372e4696c1bf3b7fb33";
+const V15N_D6_D2_D3_D3_PROSPECTIVE_A_BASE_SEEDS = [
+  4731000, 4741000, 4751000, 4761000,
+  4771000, 4781000, 4791000, 4801000,
+];
+const V15N_D6_D2_D3_D3_PROSPECTIVE_B_BASE_SEEDS = [
+  4821000, 4831000, 4841000, 4851000,
+  4861000, 4871000, 4881000, 4891000,
+];
+const V15N_D6_D2_D3_D3_PROSPECTIVE_A_INTERRUPTION_SEED = 4817000;
+const V15N_D6_D2_D3_D3_PROSPECTIVE_B_INTERRUPTION_SEED = 4907000;
+const V15N_D6_D2_D3_D3_TAPES_PER_PROSPECTIVE = 64;
+const V15N_D6_D2_D3_D3_MIN_POSITIVE = 400;
+const V15N_D6_D2_D3_D3_MIN_LINGER = 500;
+const V15N_D6_D2_D3_D3_MIN_BACKGROUND = 500;
+const V15N_D6_D2_D3_D3_GATE = 0.75;
+const V15N_D6_D2_D3_D3_D4_PREREG_COMMIT =
+  "3186c1c107be4dfca25a59db0a4d70a2016f31b9";
+const V15N_D6_D2_D3_D3_D4_D1_D1_EVIDENCE_SHA256 =
+  "778ef1d800af2a6f8e14e3f86ded08ad91ee571b6ba60257da714f914daef3f0";
+const V15N_D6_D2_D3_D3_D4_PROSPECTIVE_A_BASE_SEEDS = [
+  5271000, 5281000, 5291000, 5301000,
+  5311000, 5321000, 5331000, 5341000,
+];
+const V15N_D6_D2_D3_D3_D4_PROSPECTIVE_B_BASE_SEEDS = [
+  5361000, 5371000, 5381000, 5391000,
+  5401000, 5411000, 5421000, 5431000,
+];
+const V15N_D6_D2_D3_D3_D4_PROSPECTIVE_A_INTERRUPTION_SEED = 5357000;
+const V15N_D6_D2_D3_D3_D4_PROSPECTIVE_B_INTERRUPTION_SEED = 5447000;
+const V15N_D6_D2_D3_D3_D4_TAPES_PER_PROSPECTIVE = 64;
+const V15N_D6_D2_D3_D3_D4_MIN_REALIZED = 1000;
+const V15N_D6_D2_D3_D3_D4_MIN_PRE_HIT = 500;
+const V15N_D6_D2_D3_D3_D4_MIN_BACKGROUND = 500;
+const V15N_D6_D2_D3_D3_D4_GATE = 0.75;
+const V15N_D6_D2_D3_D3_D4_D1_PREREG_COMMIT =
+  "a3f9a4074db6a1c3d92b3d3669bef99fae9d3a06";
+const V15N_D6_D2_D3_D3_D4_D1_D4_EVIDENCE_SHA256 =
+  "154974f62c014a59a2f0fa2202081a17a9c39665e0c0db8fb879c75b4d232138";
+const V15N_D6_D2_D3_D3_D4_D1_CURRENT_MODEL_SHA256 =
+  "63d7272e8c3fa25f114bb78f82ef840c882b86b8fbfdcc140750efe007afa784";
+const V15N_D6_D2_D3_D3_D4_D1_TEMPORAL_MODEL_SHA256 =
+  "4cb231aaf0c0f19b89dbc26f202aa2e50890e56452f1971627389cf63a5791a1";
+const V15N_D6_D2_D3_D3_D4_D1_MIN_AGE_ROWS = 500;
+const V15N_D6_D2_D3_D3_D4_D1_AGE_GATE = 0.75;
+const V15N_D6_D2_D3_D3_D4_D2_PREREG_COMMIT =
+  "e138e292e90fd3c239ad2f69a7497e7c2cdefbdb";
+const V15N_D6_D2_D3_D3_D4_D2_D1_EVIDENCE_SHA256 =
+  "4ff97795d030f668a43a99104247564d09e4831715dab3b2e13af76fb5512755";
+const V15N_D6_D2_D3_D3_D4_D2_TEMPORAL_MODEL_SHA256 =
+  "4cb231aaf0c0f19b89dbc26f202aa2e50890e56452f1971627389cf63a5791a1";
+const V15N_D6_D2_D3_D3_D4_D2_PROSPECTIVE_A_BASE_SEEDS = [
+  5451000, 5461000, 5471000, 5481000,
+  5491000, 5501000, 5511000, 5521000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_PROSPECTIVE_B_BASE_SEEDS = [
+  5541000, 5551000, 5561000, 5571000,
+  5581000, 5591000, 5601000, 5611000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_PROSPECTIVE_A_INTERRUPTION_SEED = 5537000;
+const V15N_D6_D2_D3_D3_D4_D2_PROSPECTIVE_B_INTERRUPTION_SEED = 5627000;
+const V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE = 64;
+const V15N_D6_D2_D3_D3_D4_D2_MIN_PHYSICAL_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_MIN_NEURAL_EVENTS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE = 0.75;
+const V15N_D6_D2_D3_D3_D4_D2_COUNT_RATIO_MIN = 0.80;
+const V15N_D6_D2_D3_D3_D4_D2_COUNT_RATIO_MAX = 1.20;
+const V15N_D6_D2_D3_D3_D4_D2_COUNT_MAE_MAX = 5.0;
+const V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS = 10;
+const V15N_D6_D2_D3_D3_D4_D2_D1_PREREG_COMMIT =
+  "e0f491bdfb1bef223c5829e7a26dc39d748494eb";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D4_D2_EVIDENCE_SHA256 =
+  "53dce522441c32080a83339b91cff5a02c4eea24585662c2f9766d8320da9ab4";
+const V15N_D6_D2_D3_D3_D4_D2_D1_MIN_FALSE_EVENTS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_MIN_MISSED_IMPACTS = 200;
+const V15N_D6_D2_D3_D3_D4_D2_D1_DOMINANCE = 0.50;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_PREREG_COMMIT =
+  "e89f76d1980ad50e448a421ac9fbba3207cf124c";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_ATTRIBUTION_EVIDENCE_SHA256 =
+  "0636c0c4801062d0f2e11f9a30d5a4072d6de474da61f4572d2cf8b24c055862";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_THRESHOLD_GRID = Object.freeze([
+  0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+  0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90,
+]);
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_MIN_PHYSICAL_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_PREREG_COMMIT =
+  "1dcc276e934ad99432938179e9ec5c35096ecca8";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_SCALAR_AUDIT_SHA256 =
+  "8e100496082be0c38bf66f24b1b0fdfe5e0115486831e7c38fa094a12a404fc9";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_PROSPECTIVE_A_BASE_SEEDS = [
+  5631000, 5641000, 5651000, 5661000,
+  5671000, 5681000, 5691000, 5701000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_PROSPECTIVE_B_BASE_SEEDS = [
+  5721000, 5731000, 5741000, 5751000,
+  5761000, 5771000, 5781000, 5791000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_PROSPECTIVE_A_INTERRUPTION_SEED = 5717000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_PROSPECTIVE_B_INTERRUPTION_SEED = 5807000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_PHYSICAL_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_NEURAL_EVENTS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_REALIZED_ROWS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_PREHIT_ROWS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_BACKGROUND_ROWS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES = Object.freeze([
+  "REALIZED_IMPACT",
+  "PRE_HIT",
+  "TRUE_BACKGROUND",
+]);
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_PREREG_COMMIT =
+  "66e1882613b60a89aafed9ff48139fd5474d5b38";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_EVIDENCE_SHA256 =
+  "cc1c5fb57b7363fe8e936d5a67854bb4ee754c2472e30071f89888643e9678b7";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_UNMATCHED = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_BACKGROUND_FALSE = 800;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_MISSED = 250;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_MATCHED = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_DOMINANCE = 0.50;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_AUC_GATE = 0.75;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_PREREG_COMMIT =
+  "f0516f629d946871cdf37336cd921eca6287d525";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_ATTRIBUTION_SHA256 =
+  "a39781bedc4cb67da602c758a09b942b5a98b622a1aa9902123b9b0fda410024";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_CALIBRATION_BASE_SEEDS = [
+  5811000, 5821000, 5831000, 5841000,
+  5851000, 5861000, 5871000, 5881000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_CALIBRATION_INTERRUPTION_SEED = 5897000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_PROSPECTIVE_A_BASE_SEEDS = [
+  5901000, 5911000, 5921000, 5931000,
+  5941000, 5951000, 5961000, 5971000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_PROSPECTIVE_A_INTERRUPTION_SEED = 5987000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_PROSPECTIVE_B_BASE_SEEDS = [
+  5991000, 6001000, 6011000, 6021000,
+  6031000, 6041000, 6051000, 6061000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_PROSPECTIVE_B_INTERRUPTION_SEED = 6077000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_CALIBRATION_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_THRESHOLD_CANDIDATES = 100;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_EVENTS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_PREREG_COMMIT =
+  "4c68906e0fb675bd607dbdf0f234f824cb512d33";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_ATTRIBUTION_SHA256 =
+  "21f2b96ff0f94534b88aa329ae34c11441d42123226953da3884bedf394041f7";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_BASELINE_THRESHOLD =
+  0.2378919189622094;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_DYNAMICS_TRAIN_BASE_SEEDS = [
+  6081000, 6091000, 6101000, 6111000,
+  6121000, 6131000, 6141000, 6151000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_DYNAMICS_TRAIN_INTERRUPTION_SEED = 6167000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_CALIBRATION_BASE_SEEDS = [
+  6171000, 6181000, 6191000, 6201000,
+  6211000, 6221000, 6231000, 6241000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_CALIBRATION_INTERRUPTION_SEED = 6257000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_A_BASE_SEEDS = [
+  6261000, 6271000, 6281000, 6291000,
+  6301000, 6311000, 6321000, 6331000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_A_INTERRUPTION_SEED = 6347000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_B_BASE_SEEDS = [
+  6351000, 6361000, 6371000, 6381000,
+  6391000, 6401000, 6411000, 6421000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_B_INTERRUPTION_SEED = 6437000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_POSITIVE_TRAIN_ROWS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_NEGATIVE_TRAIN_ROWS = 5000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_CALIBRATION_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_THRESHOLD_CANDIDATES = 100;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_EVENTS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_PREREG_COMMIT =
+  "cac68edb4a2fe669968d7403e574063b2af0336d";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_HISTORY_ATTRIBUTION_SHA256 =
+  "956605344594e575ee0bb4bb3c51a4c333e928f2a7f0071666d021d05a891302";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_BASELINE_THRESHOLD =
+  0.2378919189622094;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_BASE_SEEDS = [
+  6441000, 6451000, 6461000, 6471000,
+  6481000, 6491000, 6501000, 6511000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_INTERRUPTION_SEED = 6527000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_CALIBRATION_BASE_SEEDS = [
+  6531000, 6541000, 6551000, 6561000,
+  6571000, 6581000, 6591000, 6601000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_CALIBRATION_INTERRUPTION_SEED = 6617000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_A_BASE_SEEDS = [
+  6621000, 6631000, 6641000, 6651000,
+  6661000, 6671000, 6681000, 6691000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_A_INTERRUPTION_SEED = 6707000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_B_BASE_SEEDS = [
+  6711000, 6721000, 6731000, 6741000,
+  6751000, 6761000, 6771000, 6781000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_B_INTERRUPTION_SEED = 6797000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_REALIZED_ROWS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_PRE_HIT_ROWS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_BACKGROUND_ROWS = 5000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_CALIBRATION_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_THRESHOLD_CANDIDATES = 100;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_IMPACTS = 1000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_EVENTS = 500;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PREREG_COMMIT =
+  "a14c87c44df31f0d5a349ae1ccc023c6485f1b86";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ATTRIBUTION_SHA256 =
+  "e17825f01a6f1b61ea8035c7c1779c8499a5f08b85aed1da0e7ddbd236ff9764";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_LINEAR_MODEL_SHA256 =
+  "6f2e4c0ec8c7ae438934a1b13db8f062387df3354383b6fab19eac5d8f354105";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_LINEAR_THRESHOLD =
+  0.5918989570787438;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_BASE_SEEDS = [
+  6981000, 6991000, 7001000, 7011000,
+  7021000, 7031000, 7041000, 7051000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_INTERRUPTION_SEED = 7067000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CALIBRATION_BASE_SEEDS = [
+  7071000, 7081000, 7091000, 7101000,
+  7111000, 7121000, 7131000, 7141000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CALIBRATION_INTERRUPTION_SEED = 7157000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_A_BASE_SEEDS = [
+  7161000, 7171000, 7181000, 7191000,
+  7201000, 7211000, 7221000, 7231000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_A_INTERRUPTION_SEED = 7247000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_B_BASE_SEEDS = [
+  7251000, 7261000, 7271000, 7281000,
+  7291000, 7301000, 7311000, 7321000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PROSPECTIVE_B_INTERRUPTION_SEED = 7337000;
+
+
+const V15G_POLICY_SEED = 3298000;
+const V15G_EPOCHS = 400;
+const V15G_LEARNING_RATE = 0.05;
+const V15G_L2 = 0.001;
+const V15G_SURVIVAL_BONUS = 165;
+const V15G_EXCESS_USES_MAX = 1.5;
+const V15G_HISTORY_MARGIN_MIN = 10;
+const V15G_NEURAL_MARGIN_MIN = 20;
+const V15G_PREREG_COMMIT =
+  "2a4c80560fa772dcf0caa974443912bac71476cc";
+const PRACTICE_BLOCKS = 4;
+const TRAINER_SEED = 914002;
+
+const GAMMA = 0.97;
+const LEARNING_RATE = 0.02;
+const L2 = 0.0005;
+const WEIGHT_CLAMP = 4;
+
+const GATE = Object.freeze({
+  survivalRateMin: 0.75,
+  minSeedSurvivalMin: 0.625,
+  threeKillEpisodeRateMin: 0.75,
+  encounterObstacleClearMin: 0.85,
+  encounterTargetKillMin: 0.70,
+  leftEncounterTargetKillMin: 0.65,
+  rightEncounterTargetKillMin: 0.65,
+  attackHitPrecisionMin: 0.45,
+  airborneAttackActionFractionMax: 0.22,
+  postClearJumpEncounterMax: 0.25,
+  preClearAttackEncounterMax: 0.30,
+  survivorPotionDecisions: 10,
+  offDeathRateStressMin: 0.25,
+  survivalBenefitMin: 0.15,
+  meanKillBenefitMin: 0.5,
+  meanValueImprovementMin: 5,
+  wastedHealingPerDrinkMax: 10,
+});
+
+const movementApi = globalThis.MapleFlySkillV7;
+const movementSkill = movementApi.BUNDLED_STATE;
+const attackApi = globalThis.MapleFlyAttackSkillV10;
+const attackSkill = attackApi.BUNDLED_STATE;
+const jumpApi = globalThis.MapleFlyJumpSkillV11H2;
+const jumpSkill = jumpApi.BUNDLED_STATE;
+const interruptionApi = globalThis.MapleFlyInterruptionV14B;
+const potionApi = globalThis.MapleFlyPotionSkillV15;
+const potionSkill = potionApi.loadState();
+
+const V15E2_ARTIFACT_ID = 10793265453;
+const V15E2_ARTIFACT_DIGEST =
+  "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405";
+const V15E2_REPRESENTATION_SHA256 =
+  "244464c8b5e9c7f5871f35cb3acc4ac1e2e0c9b61860c1dd3c267de79d4758db";
+const V15E2_MODEL_SHA256 =
+  "18be00b46303f46d62f8f63f26ca1a280b66f50f0004be6f469c637123077c96";
+const V15F_PREREG_COMMIT =
+  "2d916ac4797d4175bb0f497d6c1050551fcedadf";
+
+let remediationPotion = null;
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function mean(values) {
+  return values.length
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : 0;
+}
+
+function stimulate(brain, inputGroups, drive) {
+  for (const [name, amount] of Object.entries(drive)) {
+    if (!amount) continue;
+    const indices = inputGroups.get(name);
+    if (indices?.length) brain.stimulate(indices, amount);
+  }
+}
+
+function buildDnSlot(meta) {
+  const allDn = cells(
+    meta,
+    ["descending_neuron", "descending_neuron_tbc"],
+  );
+  if (allDn.length !== DN_COUNT) {
+    throw new Error("DN contract mismatch " + allDn.length);
+  }
+  const slot = new Int16Array(meta.n).fill(-1);
+  allDn.forEach((neuron, index) => {
+    slot[neuron] = index;
+  });
+  return slot;
+}
+
+function collectDn(brain, dnSlot, counts) {
+  for (let fired = 0; fired < brain.firedCount; fired += 1) {
+    const dn = dnSlot[brain.fired[fired]];
+    if (dn >= 0) counts[dn] += 1;
+  }
+}
+
+function rate(counts, steps) {
+  const seconds = steps * STEP_SECONDS;
+  return Float64Array.from(counts, (count) => count / seconds);
+}
+
+async function loadRemediationPotion() {
+  const artifactPath = resolve(
+    process.env.V15E2_ARTIFACT_FILE ??
+      ".cache/v15e2-artifact/v15e2_training.json",
+  );
+  const raw = await readFile(artifactPath, "utf8");
+  const parsed = JSON.parse(raw);
+
+  if (
+    parsed.schema !== "maplefly.v15e2.phase-invariant-pooled-dn.1" ||
+    parsed.brainCommit !==
+      "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e" ||
+    parsed.preregistration?.commit !==
+      "749dbe369248277033aee6fdc9a334dfc6c3b081" ||
+    parsed.outcome !== "V15E2_PHASE_INVARIANT_POOLED_DN_PASS" ||
+    parsed.pass !== true ||
+    parsed.representation?.sha256 !== V15E2_REPRESENTATION_SHA256 ||
+    parsed.frozenModelSha256 !== V15E2_MODEL_SHA256
+  ) {
+    throw new Error("v15E2 artifact provenance mismatch");
+  }
+
+  const rep = parsed.representation;
+  const dnIds = Array.isArray(rep.dnIds)
+    ? rep.dnIds
+    : Object.keys(rep.dnIds ?? {})
+        .sort((a, b) => Number(a) - Number(b))
+        .map((key) => rep.dnIds[key]);
+  if (
+    rep.type !== "MEAN_POOLED_ALL_DN" ||
+    rep.dnCount !== DN_COUNT ||
+    rep.historyFrames !== POTION_HISTORY_FRAMES ||
+    rep.means?.length !== DN_COUNT ||
+    rep.scales?.length !== DN_COUNT ||
+    dnIds.length !== DN_COUNT
+  ) {
+    throw new Error("v15E2 representation contract mismatch");
+  }
+
+  const repObject = {
+    type: rep.type,
+    dnCount: rep.dnCount,
+    historyFrames: rep.historyFrames,
+    pooling: rep.pooling,
+    standardization: rep.standardization,
+    scaleFloor: rep.scaleFloor,
+    dnIds: rep.dnIds,
+    means: rep.means,
+    scales: rep.scales,
+  };
+  const repHash = createHash("sha256")
+    .update(JSON.stringify(repObject))
+    .digest("hex");
+  if (repHash !== V15E2_REPRESENTATION_SHA256) {
+    throw new Error("v15E2 representation hash mismatch " + repHash);
+  }
+
+  const modelHash = createHash("sha256")
+    .update(JSON.stringify(parsed.frozenModel))
+    .digest("hex");
+  if (modelHash !== V15E2_MODEL_SHA256) {
+    throw new Error("v15E2 model hash mismatch " + modelHash);
+  }
+
+  const model = parsed.frozenModel;
+  if (
+    model.type !== "LINEAR_TWO_HEAD_ACTION_VALUE" ||
+    model.featureCount !== DN_COUNT ||
+    model.wait?.weights?.length !== DN_COUNT ||
+    model.drink?.weights?.length !== DN_COUNT
+  ) {
+    throw new Error("v15E2 model contract mismatch");
+  }
+
+  return {
+    artifactId: V15E2_ARTIFACT_ID,
+    artifactDigest: V15E2_ARTIFACT_DIGEST,
+    representationSha256: repHash,
+    modelSha256: modelHash,
+    dnIds,
+    means: Float64Array.from(rep.means),
+    scales: Float64Array.from(rep.scales),
+    wait: {
+      bias: model.wait.bias,
+      weights: Float64Array.from(model.wait.weights),
+    },
+    drink: {
+      bias: model.drink.bias,
+      weights: Float64Array.from(model.drink.weights),
+    },
+  };
+}
+
+function remediationQ(head, feature) {
+  let value = head.bias;
+  for (let i = 0; i < DN_COUNT; i += 1) {
+    value += head.weights[i] * feature[i];
+  }
+  if (!Number.isFinite(value)) {
+    throw new Error("v15E2 non-finite Q value");
+  }
+  return value;
+}
+
+function remediationPotionDecision(state) {
+  if (!remediationPotion) throw new Error("v15E2 candidate not loaded");
+  const feature = new Float64Array(DN_COUNT);
+  for (let dn = 0; dn < DN_COUNT; dn += 1) {
+    const pooled =
+      state.potionPooledSum[dn] / POTION_HISTORY_FRAMES;
+    feature[dn] = clamp(
+      (pooled - remediationPotion.means[dn]) /
+        remediationPotion.scales[dn],
+      -5,
+      5,
+    );
+  }
+  const qWait = remediationQ(remediationPotion.wait, feature);
+  const qDrink = remediationQ(remediationPotion.drink, feature);
+  return {
+    action: qDrink > qWait ? "DRINK" : "WAIT",
+    qWait,
+    qDrink,
+  };
+}
+
+function movementChoice(currentRate, baselineRate) {
+  const feature = new Float64Array(movementSkill.sparseFeatureCount);
+  let normSquared = 0;
+  for (let slot = 0; slot < movementSkill.featureIndices.length; slot += 1) {
+    const dnIndex = movementSkill.featureIndices[slot];
+    const delta = (currentRate[dnIndex] - baselineRate[dnIndex]) / 50;
+    feature[slot] = delta;
+    normSquared += delta * delta;
+  }
+  const norm = Math.sqrt(normSquared);
+  if (norm <= 1e-9) {
+    return { action: "IDLE", leftScore: 0, rightScore: 0 };
+  }
+  for (let slot = 0; slot < feature.length; slot += 1) {
+    feature[slot] /= norm;
+  }
+  return movementApi.choose(feature, movementSkill);
+}
+
+function attackChoice(currentRate, baselineRate) {
+  const feature = Float64Array.from(
+    attackSkill.selectedIndices,
+    (dnIndex) =>
+      clamp((currentRate[dnIndex] - baselineRate[dnIndex]) / 50, -1, 1),
+  );
+  return attackApi.chooseSparseCurrent(feature, attackSkill);
+}
+
+function jumpFeature(currentRate, baselineRate) {
+  return Float64Array.from(
+    jumpSkill.runtimeDnIndices,
+    (dnIndex) =>
+      clamp((currentRate[dnIndex] - baselineRate[dnIndex]) / 50, -1, 1),
+  );
+}
+
+class BrowserVisualEncoder {
+  constructor() {
+    this.lastTargetDistance = null;
+  }
+
+  reset() {
+    this.lastTargetDistance = null;
+  }
+
+  encode({
+    playerX,
+    grounded,
+    targetX,
+    targetHp,
+    targetActive,
+    obstacle,
+    obstacleActive,
+    visualEnabled = true,
+    impactActive = false,
+    impactSide = null,
+    tasteActive = false,
+  }) {
+    const drive = {
+      SNta_L: grounded ? 0.05 : 0,
+      SNta_R: grounded ? 0.05 : 0,
+    };
+
+    if (
+      impactActive &&
+      (impactSide === "L" || impactSide === "R")
+    ) {
+      drive["LgLG_" + impactSide] = IMPACT_DRIVE;
+    }
+
+    if (tasteActive) {
+      drive.taste_L = TASTE_DRIVE;
+      drive.taste_R = TASTE_DRIVE;
+    }
+
+    if (!visualEnabled) {
+      this.reset();
+      return drive;
+    }
+
+    if (targetActive && targetHp > 0) {
+      const playerCenterX = playerX + PLAYER_WIDTH / 2;
+      const dx = targetX - playerCenterX;
+      const side = dx < 0 ? "L" : "R";
+      const distance = Math.abs(dx);
+      const closeness = clamp(1 - distance / 620, 0, 1);
+      let approaching = 0;
+
+      if (Number.isFinite(this.lastTargetDistance)) {
+        approaching = clamp(
+          (this.lastTargetDistance - distance) / 45,
+          0,
+          1,
+        );
+      }
+      this.lastTargetDistance = distance;
+
+      drive["LC10a_" + side] = clamp(
+        0.12 + closeness * 0.68,
+        0,
+        0.8,
+      );
+      drive["LPLC1_" + side] = clamp(
+        closeness * 0.12 + approaching * 0.32,
+        0,
+        0.55,
+      );
+      drive["LPLC2_" + side] = clamp(
+        closeness * 0.24 + approaching * 0.38,
+        0,
+        0.8,
+      );
+
+      if (distance < 175) {
+        drive["LC4_" + side] = clamp(
+          ((175 - distance) / 175) * 0.72 +
+            approaching * 0.18,
+          0,
+          0.8,
+        );
+      }
+    } else {
+      this.lastTargetDistance = null;
+    }
+
+    if (obstacleActive) {
+      const playerFront =
+        obstacle.side === "R" ? playerX + PLAYER_WIDTH : playerX;
+      const obstacleFront =
+        obstacle.side === "R"
+          ? obstacle.x
+          : obstacle.x + obstacle.width;
+      const frontDistance =
+        obstacle.side === "R"
+          ? obstacleFront - playerFront
+          : playerFront - obstacleFront;
+      const passed =
+        obstacle.side === "R"
+          ? playerX > obstacle.x + obstacle.width
+          : playerX + PLAYER_WIDTH < obstacle.x;
+
+      if (!passed) {
+        const obstacleDrive = clamp(
+          ((OBSTACLE_VISUAL_RADIUS - Math.max(0, frontDistance)) /
+            OBSTACLE_VISUAL_RADIUS) *
+            0.8,
+          0,
+          0.8,
+        );
+        for (const type of ["LC6", "LC16", "LC22", "LPLC4"]) {
+          drive[type + "_" + obstacle.side] = obstacleDrive;
+        }
+      }
+    }
+
+    return drive;
+  }
+}
+
+function geometryFromPlayer(playerX, side, startDistance) {
+  const playerCenter = playerX + PLAYER_WIDTH / 2;
+  let obstacle;
+  let targetX;
+
+  if (side === "R") {
+    const front = playerX + PLAYER_WIDTH + startDistance;
+    obstacle = {
+      side,
+      x: front,
+      y: GROUND_Y - OBSTACLE_HEIGHT,
+      width: OBSTACLE_WIDTH,
+      height: OBSTACLE_HEIGHT,
+    };
+    targetX = obstacle.x + obstacle.width + TARGET_OFFSET;
+  } else {
+    const front = playerX - startDistance;
+    obstacle = {
+      side,
+      x: front - OBSTACLE_WIDTH,
+      y: GROUND_Y - OBSTACLE_HEIGHT,
+      width: OBSTACLE_WIDTH,
+      height: OBSTACLE_HEIGHT,
+    };
+    targetX = obstacle.x - TARGET_OFFSET;
+  }
+
+  return {
+    playerCenter,
+    side,
+    startDistance,
+    obstacle,
+    targetX,
+  };
+}
+
+function geometryFits(geometry) {
+  return (
+    geometry.obstacle.x >= 0 &&
+    geometry.obstacle.x + geometry.obstacle.width <= WORLD_WIDTH &&
+    geometry.targetX - TARGET_WIDTH / 2 >= 0 &&
+    geometry.targetX + TARGET_WIDTH / 2 <= WORLD_WIDTH
+  );
+}
+
+function makeInitialGeometry(side, startDistance) {
+  const playerX = WORLD_WIDTH / 2 - PLAYER_WIDTH / 2;
+  const geometry = geometryFromPlayer(playerX, side, startDistance);
+  return {
+    playerX,
+    playerY: GROUND_Y - PLAYER_HEIGHT,
+    ...geometry,
+  };
+}
+
+function makeContinuousGeometry(playerX, sampledSide, sampledDistance) {
+  const startIndex = DISTANCES.indexOf(sampledDistance);
+  if (startIndex < 0) {
+    throw new Error("unknown sampled distance " + sampledDistance);
+  }
+
+  for (let index = startIndex; index >= 0; index -= 1) {
+    const distance = DISTANCES[index];
+    for (const side of [
+      sampledSide,
+      sampledSide === "L" ? "R" : "L",
+    ]) {
+      const geometry = geometryFromPlayer(playerX, side, distance);
+      if (geometryFits(geometry)) {
+        return {
+          ...geometry,
+          sampledSide,
+          sampledDistance,
+          fitAdjusted:
+            side !== sampledSide || distance !== sampledDistance,
+        };
+      }
+    }
+  }
+
+  throw new Error("v16B impossible geometry after frozen fit rule");
+}
+
+function makeBlock(baseSeed) {
+  const rows = [];
+  DISTANCES.forEach((startDistance, distanceIndex) => {
+    for (const side of ["L", "R"]) {
+      const sideIndex = side === "L" ? 0 : 1;
+      rows.push({
+        brainSeed: baseSeed + distanceIndex * 10 + sideIndex,
+        baseSeed,
+        side,
+        startDistance,
+      });
+    }
+  });
+  return rows;
+}
+
+function mulberry32(seed) {
+  let value = seed >>> 0;
+  return function random() {
+    value += 0x6d2b79f5;
+    let t = value;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function obstacleCleared(state) {
+  if (!state.obstacleActive) return false;
+  return state.obstacle.side === "R"
+    ? state.playerX > state.obstacle.x + state.obstacle.width
+    : state.playerX + PLAYER_WIDTH < state.obstacle.x;
+}
+
+function moveDirection(action) {
+  return action === "LEFT" ? -1 : action === "RIGHT" ? 1 : 0;
+}
+
+function applyPhysics(state) {
+  const direction = moveDirection(state.moveAction);
+  if (direction !== 0) state.facing = direction;
+
+  const nextX = clamp(
+    state.playerX + direction * MOVE_SPEED * STEP_SECONDS,
+    0,
+    WORLD_WIDTH - PLAYER_WIDTH,
+  );
+
+  state.vy += GRAVITY * STEP_SECONDS;
+  let nextY = state.playerY + state.vy * STEP_SECONDS;
+
+  if (nextY + PLAYER_HEIGHT >= GROUND_Y) {
+    nextY = GROUND_Y - PLAYER_HEIGHT;
+    state.vy = 0;
+    state.grounded = true;
+  } else {
+    state.grounded = false;
+  }
+
+  let resolvedX = nextX;
+  if (state.obstacleActive) {
+    const overlapsVertically =
+      nextY < state.obstacle.y + state.obstacle.height &&
+      nextY + PLAYER_HEIGHT > state.obstacle.y;
+    const overlapsHorizontally =
+      nextX < state.obstacle.x + state.obstacle.width &&
+      nextX + PLAYER_WIDTH > state.obstacle.x;
+
+    if (overlapsVertically && overlapsHorizontally) {
+      if (direction > 0) {
+        resolvedX = state.obstacle.x - PLAYER_WIDTH;
+      } else if (direction < 0) {
+        resolvedX = state.obstacle.x + state.obstacle.width;
+      } else {
+        resolvedX = state.playerX;
+      }
+    }
+  }
+
+  state.playerX = resolvedX;
+  state.playerY = nextY;
+}
+
+function rectanglesOverlap(a, b) {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+}
+
+function playerBodyHitbox(state) {
+  return {
+    x: state.playerX + 3,
+    y: state.playerY + 3,
+    width: PLAYER_WIDTH - 6,
+    height: PLAYER_HEIGHT - 3,
+  };
+}
+
+function targetHitbox(state) {
+  return {
+    x: state.targetX - TARGET_WIDTH / 2,
+    y: GROUND_Y - TARGET_HEIGHT,
+    width: TARGET_WIDTH,
+    height: TARGET_HEIGHT,
+  };
+}
+
+function attackWouldHit(state) {
+  if (!state.targetActive || state.targetHp <= 0) return false;
+
+  const attackX =
+    state.facing > 0
+      ? state.playerX + PLAYER_WIDTH - 2
+      : state.playerX - ATTACK_RANGE + 2;
+
+  const attackBox = {
+    x: attackX,
+    y: state.playerY + 4,
+    width: ATTACK_RANGE,
+    height: PLAYER_HEIGHT - 8,
+  };
+
+  return rectanglesOverlap(attackBox, targetHitbox(state));
+}
+
+function makeTimeBins() {
+  return Array.from({ length: TIME_BIN_COUNT }, (_, index) => ({
+    index,
+    startStep: index * TIME_BIN_STEPS + 1,
+    endStep: (index + 1) * TIME_BIN_STEPS,
+    kills: 0,
+    clears: 0,
+    attacks: 0,
+    hits: 0,
+    airborneAttacks: 0,
+    jumps: 0,
+    contacts: 0,
+    damage: 0,
+    potionWait: 0,
+    potionDrink: 0,
+    qWait: [],
+    qDrink: [],
+    acceptedAttack: 0,
+    interruptedAttack: 0,
+    acceptedJump: 0,
+    interruptedJump: 0,
+    dnFired: 0,
+    hpEnd: null,
+  }));
+}
+
+function binForStep(state, step) {
+  const index = Math.min(
+    TIME_BIN_COUNT - 1,
+    Math.floor((step - 1) / TIME_BIN_STEPS),
+  );
+  return state.timeBins[index];
+}
+
+function makeEncounter(index, geometry, spawnStep) {
+  return {
+    index,
+    spawnStep,
+    side: geometry.side,
+    distance: geometry.startDistance,
+    sampledSide: geometry.sampledSide ?? geometry.side,
+    sampledDistance:
+      geometry.sampledDistance ?? geometry.startDistance,
+    fitAdjusted: Boolean(geometry.fitAdjusted),
+    clearStep: null,
+    killStep: null,
+    endStep: null,
+    killed: false,
+    jumps: 0,
+    postClearJumps: 0,
+    attacks: 0,
+    preClearAttacks: 0,
+    hits: 0,
+    whiffs: 0,
+    airborneAttacks: 0,
+    contacts: 0,
+    damage: 0,
+  };
+}
+
+function finalizeEncounter(state, step, killed) {
+  if (!state.currentEncounter) return;
+  state.currentEncounter.endStep = step;
+  state.currentEncounter.killed = Boolean(killed);
+  state.encounters.push({ ...state.currentEncounter });
+  state.currentEncounter = null;
+}
+
+function spawnNextEncounter(state, step) {
+  const sampledSide = state.ecologyRandom() < 0.5 ? "L" : "R";
+  const sampledDistance =
+    DISTANCES[
+      Math.floor(state.ecologyRandom() * DISTANCES.length)
+    ];
+  const geometry = makeContinuousGeometry(
+    state.playerX,
+    sampledSide,
+    sampledDistance,
+  );
+
+  state.obstacle = geometry.obstacle;
+  state.targetX = geometry.targetX;
+  state.targetHp = TARGET_HP;
+  state.targetActive = true;
+  state.obstacleActive = true;
+  state.touchingTarget = false;
+  state.currentEncounter = makeEncounter(
+    state.nextEncounterIndex,
+    geometry,
+    step,
+  );
+  state.nextEncounterIndex += 1;
+  state.respawnAtStep = null;
+  state.encoder.reset();
+}
+
+function updateContactAfterPhysics(state, step) {
+  if (!state.targetActive || state.targetHp <= 0) {
+    state.touchingTarget = false;
+    return;
+  }
+
+  const touching = rectanglesOverlap(
+    playerBodyHitbox(state),
+    targetHitbox(state),
+  );
+
+  if (touching && !state.touchingTarget) {
+    const playerCenterX = state.playerX + PLAYER_WIDTH / 2;
+    const impactSide = state.targetX < playerCenterX ? "L" : "R";
+    state.hp = Math.max(0, state.hp - CONTACT_DAMAGE);
+    state.damageTaken += CONTACT_DAMAGE;
+    state.contacts += 1;
+    state.impactSide = impactSide;
+    state.impactPulseRemaining = IMPACT_PULSE_STEPS;
+    state.damageEvents.push({
+      step,
+      amount: CONTACT_DAMAGE,
+      side: impactSide,
+      hpAfter: state.hp,
+      encounterIndex: state.currentEncounter?.index ?? null,
+    });
+
+    const bin = binForStep(state, step);
+    bin.contacts += 1;
+    bin.damage += CONTACT_DAMAGE;
+
+    if (state.currentEncounter) {
+      state.currentEncounter.contacts += 1;
+      state.currentEncounter.damage += CONTACT_DAMAGE;
+    }
+
+    if (state.hp === 0 && state.deathStep === null) {
+      state.deathStep = step;
+    }
+  }
+
+  state.touchingTarget = touching;
+}
+
+async function initializeEpisode(connectome, dnSlot, episode) {
+  const geometry = makeInitialGeometry(
+    episode.side,
+    episode.startDistance,
+  );
+  const brain = new ConnectomeBrain(
+    connectome.weights,
+    connectome.meta.params,
+    episode.brainSeed,
+  );
+  const encoder = new BrowserVisualEncoder();
+  const state = {
+    brain,
+    encoder,
+    playerX: geometry.playerX,
+    playerY: geometry.playerY,
+    obstacle: geometry.obstacle,
+    targetX: geometry.targetX,
+    targetHp: TARGET_HP,
+    targetActive: true,
+    obstacleActive: true,
+    grounded: true,
+    vy: 0,
+    facing: episode.side === "L" ? -1 : 1,
+    moveAction: "IDLE",
+    moveScore: 0,
+    moveCounts: new Float64Array(DN_COUNT),
+    moveSteps: 0,
+    attackCounts: new Float64Array(DN_COUNT),
+    attackSteps: 0,
+    jumpCounts: new Float64Array(DN_COUNT),
+    jumpSteps: 0,
+    potionCounts: new Float64Array(DN_COUNT),
+    potionSteps: 0,
+    jumpRuntime: jumpApi.createRuntime(),
+    potionPooledSum: new Float64Array(DN_COUNT),
+    potionFrameCount: 0,
+    potionTrace: new Float64Array(DN_COUNT),
+    potionMultiTraces: V15N_D5_HALF_LIVES.map(
+      () => new Float64Array(DN_COUNT),
+    ),
+    nextJumpStep: 0,
+    nextAttackStep: 0,
+    hp: MAX_HP,
+    damageTaken: 0,
+    contacts: 0,
+    impactActive: false,
+    impactSide: null,
+    impactPulseRemaining: 0,
+    tasteActive: false,
+    touchingTarget: false,
+    deathStep: null,
+    potionAction: "WAIT",
+    potionQWait: 0,
+    potionQDrink: 0,
+    potionDecisionStep: null,
+    potionDecisions: 0,
+    potionUses: 0,
+    totalHealed: 0,
+    wastedHealing: 0,
+    potionEvents: [],
+    potionFrameEvents: [],
+    actualJumps: 0,
+    actualAttacks: 0,
+    attackProposals: 0,
+    acceptedAttackProposals: 0,
+    interruptedAttackProposals: 0,
+    jumpProposals: 0,
+    acceptedJumpProposals: 0,
+    interruptedJumpProposals: 0,
+    airborneAttacks: 0,
+    hits: 0,
+    whiffs: 0,
+    gapAttacks: 0,
+    gapJumps: 0,
+    history: interruptionApi.createHistory(),
+    previousDidJump: false,
+    previousDidAttack: false,
+    attackTrajectory: [],
+    jumpTrajectory: [],
+    ecologyRandom: mulberry32(episode.brainSeed + 700000),
+    encounters: [],
+    currentEncounter: makeEncounter(
+      0,
+      {
+        side: episode.side,
+        startDistance: episode.startDistance,
+      },
+      1,
+    ),
+    nextEncounterIndex: 1,
+    respawnAtStep: null,
+    damageEvents: [],
+    killEvents: [],
+    timeBins: makeTimeBins(),
+  };
+
+  for (let step = 0; step < SETTLE_STEPS; step += 1) {
+    stimulate(
+      brain,
+      connectome.inputGroups,
+      encoder.encode({ ...state, visualEnabled: false }),
+    );
+    brain.step();
+  }
+
+  const baselineCounts = new Float64Array(DN_COUNT);
+  for (let step = 0; step < BASELINE_STEPS; step += 1) {
+    stimulate(
+      brain,
+      connectome.inputGroups,
+      encoder.encode({ ...state, visualEnabled: false }),
+    );
+    brain.step();
+    collectDn(brain, dnSlot, baselineCounts);
+  }
+
+  encoder.reset();
+  state.baselineRate = rate(baselineCounts, BASELINE_STEPS);
+  return state;
+}
+
+function updateMovement(state, dnSlot) {
+  collectDn(state.brain, dnSlot, state.moveCounts);
+  state.moveSteps += 1;
+  if (state.moveSteps < MOVE_WINDOW_STEPS) return;
+
+  if (state.targetActive && state.targetHp > 0) {
+    const proposal = movementChoice(
+      rate(state.moveCounts, state.moveSteps),
+      state.baselineRate,
+    );
+    state.moveAction = proposal.action;
+    state.moveScore = proposal.leftScore;
+  } else {
+    state.moveAction = "IDLE";
+    state.moveScore = 0;
+  }
+  state.moveCounts.fill(0);
+  state.moveSteps = 0;
+}
+
+function collectDecisionWindows(state, dnSlot) {
+  collectDn(state.brain, dnSlot, state.attackCounts);
+  collectDn(state.brain, dnSlot, state.jumpCounts);
+  collectDn(state.brain, dnSlot, state.potionCounts);
+  state.attackSteps += 1;
+  state.jumpSteps += 1;
+  state.potionSteps += 1;
+}
+
+function makeTransition(feature, choice) {
+  return {
+    feature: Array.from(feature),
+    accept: choice.accept,
+    probability: choice.probability,
+    reward: 0,
+  };
+}
+
+function addReward(trajectory, value) {
+  if (!trajectory.length) return;
+  trajectory[trajectory.length - 1].reward += value;
+}
+
+function executeAttack(state, brainStep) {
+  state.actualAttacks += 1;
+  state.nextAttackStep = brainStep + ATTACK_COOLDOWN_STEPS;
+
+  if (!state.targetActive || state.targetHp <= 0) {
+    state.gapAttacks += 1;
+    return 0;
+  }
+
+  const encounter = state.currentEncounter;
+  encounter.attacks += 1;
+  const bin = binForStep(state, brainStep);
+  bin.attacks += 1;
+
+  if (encounter.clearStep === null) {
+    encounter.preClearAttacks += 1;
+  }
+  if (!state.grounded) {
+    state.airborneAttacks += 1;
+    encounter.airborneAttacks += 1;
+    bin.airborneAttacks += 1;
+  }
+
+  if (attackWouldHit(state)) {
+    state.hits += 1;
+    encounter.hits += 1;
+    bin.hits += 1;
+    state.targetHp = Math.max(0, state.targetHp - ATTACK_DAMAGE);
+
+    if (state.targetHp === 0) {
+      encounter.killStep = brainStep;
+      state.killEvents.push({
+        step: brainStep,
+        encounterIndex: encounter.index,
+      });
+      bin.kills += 1;
+      finalizeEncounter(state, brainStep, true);
+      state.targetActive = false;
+      state.obstacleActive = false;
+      state.touchingTarget = false;
+      state.respawnAtStep = brainStep + RESPAWN_GAP_STEPS;
+      return 3.5;
+    }
+    return 1.5;
+  }
+
+  state.whiffs += 1;
+  encounter.whiffs += 1;
+  return -1.0;
+}
+
+function decisionBoundary({
+  state,
+  brainStep,
+  attackPolicy,
+  jumpPolicy,
+  random,
+  deterministic,
+}) {
+  if (
+    state.attackSteps !== ATTACK_WINDOW_STEPS ||
+    state.jumpSteps !== JUMP_WINDOW_STEPS
+  ) {
+    throw new Error("v16B v14C decision window alignment mismatch");
+  }
+
+  const attack = attackChoice(
+    rate(state.attackCounts, state.attackSteps),
+    state.baselineRate,
+  );
+  state.attackCounts.fill(0);
+  state.attackSteps = 0;
+
+  const jumpAvailable =
+    state.grounded && brainStep >= state.nextJumpStep;
+  const jump = jumpApi.observeSparseWindow(
+    jumpFeature(
+      rate(state.jumpCounts, state.jumpSteps),
+      state.baselineRate,
+    ),
+    jumpAvailable,
+    jumpSkill,
+    state.jumpRuntime,
+  );
+  state.jumpCounts.fill(0);
+  state.jumpSteps = 0;
+
+  const frame = interruptionApi.makeFrame(
+    Math.abs(Math.tanh(Number(state.moveScore) || 0)),
+    attack.attackProbability,
+    jump.jumpProbability,
+    jump.waitProbability,
+    state.previousDidJump,
+    state.previousDidAttack,
+  );
+  interruptionApi.pushFrame(state.history, frame);
+  const temporalFeature = interruptionApi.concatHistory(state.history);
+
+  let didJump = false;
+  let didAttack = false;
+  const bin = binForStep(state, brainStep);
+
+  if (jump.action === "JUMP" && jumpAvailable) {
+    state.jumpProposals += 1;
+    const choice = interruptionApi.choose(
+      jumpPolicy,
+      temporalFeature,
+      random,
+      deterministic,
+    );
+    const transition = makeTransition(temporalFeature, choice);
+    state.jumpTrajectory.push(transition);
+
+    if (choice.accept) {
+      state.acceptedJumpProposals += 1;
+      bin.acceptedJump += 1;
+      transition.reward -= 0.35;
+      state.vy = -JUMP_VELOCITY;
+      state.grounded = false;
+      state.nextJumpStep =
+        brainStep + jumpSkill.cooldownBrainSteps;
+      state.actualJumps += 1;
+      bin.jumps += 1;
+
+      if (state.currentEncounter) {
+        state.currentEncounter.jumps += 1;
+        if (state.currentEncounter.clearStep !== null) {
+          state.currentEncounter.postClearJumps += 1;
+        }
+      } else {
+        state.gapJumps += 1;
+      }
+
+      jumpApi.onActuatedJump(state.jumpRuntime);
+      didJump = true;
+    } else {
+      state.interruptedJumpProposals += 1;
+      bin.interruptedJump += 1;
+    }
+  }
+
+  if (
+    attack.action === "ATTACK" &&
+    brainStep >= state.nextAttackStep
+  ) {
+    state.attackProposals += 1;
+    const choice = interruptionApi.choose(
+      attackPolicy,
+      temporalFeature,
+      random,
+      deterministic,
+    );
+    const transition = makeTransition(temporalFeature, choice);
+    state.attackTrajectory.push(transition);
+
+    if (choice.accept) {
+      state.acceptedAttackProposals += 1;
+      bin.acceptedAttack += 1;
+      transition.reward += executeAttack(state, brainStep);
+      didAttack = true;
+    } else {
+      state.interruptedAttackProposals += 1;
+      bin.interruptedAttack += 1;
+    }
+  }
+
+  if (state.potionSteps !== POTION_FRAME_STEPS) {
+    throw new Error("v15N POTION frame alignment mismatch");
+  }
+
+  const potionRate = rate(
+    state.potionCounts,
+    state.potionSteps,
+  );
+  const normalizedFrame = new Float32Array(DN_COUNT);
+  for (let dn = 0; dn < DN_COUNT; dn += 1) {
+    const frameValue = clamp(
+      (potionRate[dn] - state.baselineRate[dn]) / 50,
+      -1,
+      1,
+    );
+    normalizedFrame[dn] = frameValue;
+    state.potionTrace[dn] =
+      V15N_TRACE_DECAY * state.potionTrace[dn] +
+      (1 - V15N_TRACE_DECAY) * frameValue;
+    for (
+      let scaleIndex = 0;
+      scaleIndex < V15N_D5_TRACE_DECAYS.length;
+      scaleIndex += 1
+    ) {
+      const decay = V15N_D5_TRACE_DECAYS[scaleIndex];
+      state.potionMultiTraces[scaleIndex][dn] =
+        decay * state.potionMultiTraces[scaleIndex][dn] +
+        (1 - decay) * frameValue;
+    }
+  }
+  state.potionFrameEvents.push({
+    step: brainStep,
+    frameIndex: state.potionFrameEvents.length,
+    values: normalizedFrame,
+  });
+  state.potionFrameCount += 1;
+  state.potionCounts.fill(0);
+  state.potionSteps = 0;
+
+  if (state.potionFrameCount === POTION_HISTORY_FRAMES) {
+    state.potionDecisions += 1;
+    state.potionEvents.push({
+      step: brainStep,
+      trace: Array.from(state.potionTrace),
+      multiTraces: state.potionMultiTraces.map(
+        (trace) => Array.from(trace),
+      ),
+    });
+    state.potionFrameCount = 0;
+  }
+
+  state.tasteActive =
+    state.potionFrameCount === POTION_HISTORY_FRAMES - 1;
+
+  state.previousDidJump = didJump;
+  state.previousDidAttack = didAttack;
+}
+
+function updatePolicies(attackPolicy, jumpPolicy, state) {
+  const options = {
+    gamma: GAMMA,
+    learningRate: LEARNING_RATE,
+    l2: L2,
+    weightClamp: WEIGHT_CLAMP,
+  };
+  interruptionApi.updatePolicy(
+    attackPolicy,
+    state.attackTrajectory,
+    options,
+  );
+  interruptionApi.updatePolicy(
+    jumpPolicy,
+    state.jumpTrajectory,
+    options,
+  );
+}
+
+async function runEpisode({
+  connectome,
+  dnSlot,
+  episode,
+  attackPolicy,
+  jumpPolicy,
+  random,
+  deterministic,
+}) {
+  const state = await initializeEpisode(connectome, dnSlot, episode);
+  let liveSteps = 0;
+
+  for (let liveStep = 1; liveStep <= MAX_STEPS; liveStep += 1) {
+    liveSteps = liveStep;
+
+    if (
+      !state.targetActive &&
+      state.respawnAtStep === liveStep
+    ) {
+      spawnNextEncounter(state, liveStep);
+    }
+
+    state.impactActive = state.impactPulseRemaining > 0;
+
+    stimulate(
+      state.brain,
+      connectome.inputGroups,
+      state.encoder.encode({ ...state, visualEnabled: true }),
+    );
+    state.brain.step();
+    binForStep(state, liveStep).dnFired += state.brain.firedCount;
+
+    if (state.impactPulseRemaining > 0) {
+      state.impactPulseRemaining -= 1;
+      if (state.impactPulseRemaining === 0) {
+        state.impactSide = null;
+      }
+    }
+
+    updateMovement(state, dnSlot);
+    collectDecisionWindows(state, dnSlot);
+
+    if (liveStep % ATTACK_WINDOW_STEPS === 0) {
+      decisionBoundary({
+        state,
+        brainStep: liveStep,
+        attackPolicy,
+        jumpPolicy,
+        random,
+        deterministic,
+      });
+    }
+
+    applyPhysics(state);
+
+    if (
+      state.currentEncounter &&
+      state.currentEncounter.clearStep === null &&
+      obstacleCleared(state)
+    ) {
+      state.currentEncounter.clearStep = liveStep;
+      binForStep(state, liveStep).clears += 1;
+    }
+
+    updateContactAfterPhysics(state, liveStep);
+
+    if (liveStep % TIME_BIN_STEPS === 0) {
+      binForStep(state, liveStep).hpEnd = state.hp;
+    }
+
+  }
+
+  if (state.currentEncounter) {
+    finalizeEncounter(state, liveSteps, false);
+  }
+
+  return summarizeEpisode(state, episode, liveSteps);
+}
+
+function summarizeEpisode(state, episode, liveSteps) {
+  const survived = state.hp > 0 && liveSteps === MAX_STEPS;
+  const offDeathEvent = state.damageEvents[9] ?? null;
+  const offDeathStep = offDeathEvent?.step ?? null;
+  const offSurvived = offDeathStep === null;
+  const offKills = state.killEvents.filter(
+    (event) =>
+      offDeathStep === null || event.step < offDeathStep,
+  ).length;
+  const offTerminalHp = Math.max(
+    0,
+    MAX_HP - CONTACT_DAMAGE * state.damageEvents.length,
+  );
+  const fullCostAdjustedValue =
+    state.hp - POTION_COST * state.potionUses;
+
+  for (const bin of state.timeBins) {
+    if (bin.hpEnd === null && bin.startStep <= liveSteps) {
+      bin.hpEnd = state.hp;
+    }
+    bin.attackPrecision =
+      bin.attacks > 0 ? bin.hits / bin.attacks : 0;
+    bin.meanQWait = mean(bin.qWait);
+    bin.meanQDrink = mean(bin.qDrink);
+    delete bin.qWait;
+    delete bin.qDrink;
+  }
+
+  return {
+    seed: episode.brainSeed,
+    baseSeed: episode.baseSeed,
+    initialSide: episode.side,
+    initialDistance: episode.startDistance,
+    survived,
+    deathStep: state.deathStep,
+    liveSteps,
+    finalHp: state.hp,
+    contacts: state.contacts,
+    damageTaken: state.damageTaken,
+    kills: state.killEvents.length,
+    actualJumps: state.actualJumps,
+    actualAttacks: state.actualAttacks,
+    airborneAttacks: state.airborneAttacks,
+    hits: state.hits,
+    whiffs: state.whiffs,
+    gapAttacks: state.gapAttacks,
+    gapJumps: state.gapJumps,
+    attackProposals: state.attackProposals,
+    acceptedAttackProposals: state.acceptedAttackProposals,
+    interruptedAttackProposals: state.interruptedAttackProposals,
+    jumpProposals: state.jumpProposals,
+    acceptedJumpProposals: state.acceptedJumpProposals,
+    interruptedJumpProposals: state.interruptedJumpProposals,
+    potionDecisions: state.potionDecisions,
+    potionUses: state.potionUses,
+    totalHealed: state.totalHealed,
+    wastedHealing: state.wastedHealing,
+    wastedHealingPerDrink:
+      state.potionUses > 0
+        ? state.wastedHealing / state.potionUses
+        : 0,
+    potionEvents: state.potionEvents,
+    potionFrameEvents: state.potionFrameEvents,
+    encounters: state.encounters,
+    damageEvents: state.damageEvents,
+    killEvents: state.killEvents,
+    timeBins: state.timeBins,
+    offSurvived,
+    offDeathStep,
+    offKills,
+    offTerminalHp,
+    fullCostAdjustedValue,
+    valueImprovement:
+      fullCostAdjustedValue - offTerminalHp,
+  };
+}
+
+function aggregate(rows) {
+  const encounters = rows.flatMap((row) => row.encounters);
+  const leftEncounters = encounters.filter(
+    (row) => row.side === "L",
+  );
+  const rightEncounters = encounters.filter(
+    (row) => row.side === "R",
+  );
+  const encounterAttacks = encounters.reduce(
+    (sum, row) => sum + row.attacks,
+    0,
+  );
+  const encounterHits = encounters.reduce(
+    (sum, row) => sum + row.hits,
+    0,
+  );
+  const encounterAirborne = encounters.reduce(
+    (sum, row) => sum + row.airborneAttacks,
+    0,
+  );
+  const survivors = rows.filter((row) => row.survived);
+  const totalPotionUses = rows.reduce(
+    (sum, row) => sum + row.potionUses,
+    0,
+  );
+  const totalWasted = rows.reduce(
+    (sum, row) => sum + row.wastedHealing,
+    0,
+  );
+
+  return {
+    episodes: rows.length,
+    encounters: encounters.length,
+    survivalRate: mean(
+      rows.map((row) => Number(row.survived)),
+    ),
+    threeKillEpisodeRate: mean(
+      rows.map((row) => Number(row.kills >= 3)),
+    ),
+    meanKills: mean(rows.map((row) => row.kills)),
+    encounterObstacleClearRate: mean(
+      encounters.map((row) => Number(row.clearStep !== null)),
+    ),
+    encounterTargetKillRate: mean(
+      encounters.map((row) => Number(row.killed)),
+    ),
+    leftEncounterTargetKillRate: mean(
+      leftEncounters.map((row) => Number(row.killed)),
+    ),
+    rightEncounterTargetKillRate: mean(
+      rightEncounters.map((row) => Number(row.killed)),
+    ),
+    attackHitPrecision:
+      encounterAttacks > 0
+        ? encounterHits / encounterAttacks
+        : 0,
+    airborneAttackActionFraction:
+      encounterAttacks > 0
+        ? encounterAirborne / encounterAttacks
+        : 0,
+    postClearJumpEncounterRate: mean(
+      encounters.map((row) =>
+        Number(row.postClearJumps > 0),
+      ),
+    ),
+    preClearAttackEncounterRate: mean(
+      encounters.map((row) =>
+        Number(row.preClearAttacks > 0),
+      ),
+    ),
+    survivorPotionDecisionExactRate:
+      survivors.length > 0
+        ? mean(
+            survivors.map((row) =>
+              Number(
+                row.potionDecisions ===
+                  GATE.survivorPotionDecisions,
+              ),
+            ),
+          )
+        : 0,
+    offDeathRate: mean(
+      rows.map((row) => Number(!row.offSurvived)),
+    ),
+    offSurvivalRate: mean(
+      rows.map((row) => Number(row.offSurvived)),
+    ),
+    survivalBenefit:
+      mean(rows.map((row) => Number(row.survived))) -
+      mean(rows.map((row) => Number(row.offSurvived))),
+    offMeanKills: mean(rows.map((row) => row.offKills)),
+    meanKillBenefit:
+      mean(rows.map((row) => row.kills)) -
+      mean(rows.map((row) => row.offKills)),
+    meanFullCostAdjustedValue: mean(
+      rows.map((row) => row.fullCostAdjustedValue),
+    ),
+    meanOffTerminalHp: mean(
+      rows.map((row) => row.offTerminalHp),
+    ),
+    meanValueImprovement: mean(
+      rows.map((row) => row.valueImprovement),
+    ),
+    meanPotionDecisions: mean(
+      rows.map((row) => row.potionDecisions),
+    ),
+    meanPotionUses: mean(rows.map((row) => row.potionUses)),
+    wastedHealingPerDrink:
+      totalPotionUses > 0 ? totalWasted / totalPotionUses : 0,
+    totalPotionUses,
+    totalWastedHealing: totalWasted,
+    meanContacts: mean(rows.map((row) => row.contacts)),
+    meanDamageTaken: mean(
+      rows.map((row) => row.damageTaken),
+    ),
+    gapAttacks: rows.reduce(
+      (sum, row) => sum + row.gapAttacks,
+      0,
+    ),
+    gapJumps: rows.reduce(
+      (sum, row) => sum + row.gapJumps,
+      0,
+    ),
+  };
+}
+
+async function verifyStaticContract() {
+  const controller = await readFile(
+    new URL("../src/brain/fly-controller.js", import.meta.url),
+    "utf8",
+  );
+  const interruptionSource = await readFile(
+    new URL("../src/brain/fly-interruption-v14b.js", import.meta.url),
+    "utf8",
+  );
+  const potionSource = await readFile(
+    new URL("../src/brain/fly-skill-v15-potion.js", import.meta.url),
+    "utf8",
+  );
+
+  const required = [
+    "movementWindowSteps: 26",
+    "attackWindowSteps: 5",
+    "jumpWindowSteps: 5",
+    "attackCooldownMs: 420",
+    "jumpCooldownSteps: 38",
+    "const distance = Math.abs(dx);",
+    "attackSkillApi.chooseSparseCurrent",
+    "jumpSkillApi.observeSparseWindow",
+  ];
+  for (const token of required) {
+    if (!controller.includes(token)) {
+      throw new Error("frozen browser contract missing: " + token);
+    }
+  }
+
+  if (
+    movementSkill.originalFeatureCount !== DN_COUNT ||
+    attackSkill.version !== "v10f-after-run-35516619170" ||
+    attackSkill.attackThreshold !== 0.5 ||
+    jumpSkill.deploymentStatus !== "DEPLOYED" ||
+    jumpSkill.provenance.h2.runId !== 35748844599 ||
+    jumpSkill.sensory.obstacleUsesLC4 !== false ||
+    jumpSkill.sparseFeatureCount !== 96 ||
+    jumpSkill.temporalWindows !== 4 ||
+    jumpSkill.threshold !== 0.5 ||
+    jumpSkill.persistenceWindows !== 2 ||
+    jumpSkill.cooldownBrainSteps !== 38
+  ) {
+    throw new Error("frozen lower-level skill mismatch");
+  }
+
+  if (
+    interruptionApi.FRAME_SIZE !== 8 ||
+    interruptionApi.HISTORY_FRAMES !== 12 ||
+    interruptionApi.FEATURE_COUNT !== 96 ||
+    interruptionApi.makeFrame.length !== 6
+  ) {
+    throw new Error("v14B interruption interface mismatch");
+  }
+
+  if (
+    potionSkill.status !== "V15D_DEPLOYED" ||
+    potionSkill.deploymentAllowed !== true ||
+    potionSkill.representationSha256 !==
+      "33fc31f636e1cde215841dd33b0a93b24d4571cdabd32e9a1edc8fa2e696c847" ||
+    potionSkill.policySha256 !==
+      "47088bcb15ed2cd96f64d67a20169934bd7a866dcd56bacffea70b1f42537a59" ||
+    potionSkill.historyFrames !== POTION_HISTORY_FRAMES ||
+    potionSkill.frameSteps !== POTION_FRAME_STEPS ||
+    potionSkill.runtimeDnIndices.length !== 24 ||
+    potionSkill.featureCount !== 256
+  ) {
+    throw new Error("v15D frozen POTION contract mismatch");
+  }
+
+  const forbidden = [
+    "player",
+    "target",
+    "obstacle",
+    "grounded",
+    "airborne",
+    "distance",
+    "collision",
+    "hittable",
+    "seed",
+  ];
+  for (const token of forbidden) {
+    if (interruptionSource.toLowerCase().includes(token)) {
+      throw new Error(
+        "v14B pure interruption module contains forbidden game-state token: " +
+          token,
+      );
+    }
+  }
+
+  for (const token of [
+    "missinghp",
+    "damagetaken",
+    "impact count",
+    "correct action",
+    "wastedhealing",
+  ]) {
+    if (potionSource.toLowerCase().includes(token)) {
+      throw new Error(
+        "v15D POTION module contains forbidden oracle token: " +
+          token,
+      );
+    }
+  }
+}
+
+
+function sigmoid(value) {
+  if (value >= 0) {
+    const z = Math.exp(-value);
+    return 1 / (1 + z);
+  }
+  const z = Math.exp(value);
+  return z / (1 + z);
+}
+
+function simulateSequentialPolicy(
+  tape,
+  theta,
+  {
+    random = null,
+    stochastic = false,
+    historyOff = false,
+    neuralOff = false,
+    fixedActions = null,
+  } = {},
+) {
+  const decisions = new Map(
+    tape.potionEvents.map((event, index) => [
+      event.step,
+      { ...event, index },
+    ]),
+  );
+  if (decisions.size !== 10) {
+    throw new Error("v15G tape must contain exactly 10 decisions");
+  }
+
+  const contacts = new Map();
+  for (const event of tape.damageEvents) {
+    contacts.set(event.step, (contacts.get(event.step) ?? 0) + 1);
+  }
+
+  const steps = [...new Set([
+    ...decisions.keys(),
+    ...contacts.keys(),
+  ])].sort((a, b) => a - b);
+
+  let hp = MAX_HP;
+  let uses = 0;
+  let healed = 0;
+  let wasted = 0;
+  let alive = true;
+  const history = [0, 0, 0, 0];
+  const trajectory = [];
+
+  for (const step of steps) {
+    if (!alive) break;
+
+    const decision = decisions.get(step);
+    if (decision) {
+      const h = historyOff ? [0, 0, 0, 0] : [...history];
+      const baseMargin = neuralOff ? 0 : decision.baseMargin;
+      const score =
+        baseMargin +
+        theta[0] +
+        theta[1] * h[0] +
+        theta[2] * h[1] +
+        theta[3] * h[2] +
+        theta[4] * h[3];
+      const probability = sigmoid(score);
+
+      let action;
+      if (fixedActions) {
+        action = fixedActions[decision.index];
+      } else if (stochastic) {
+        action = random() < probability ? 1 : 0;
+      } else {
+        action = score > 0 ? 1 : 0;
+      }
+
+      const hpBefore = hp;
+      let thisHealed = 0;
+      let thisWasted = 0;
+      if (action === 1) {
+        thisHealed = Math.min(POTION_HEAL, MAX_HP - hp);
+        thisWasted = POTION_HEAL - thisHealed;
+        hp += thisHealed;
+        uses += 1;
+        healed += thisHealed;
+        wasted += thisWasted;
+      }
+
+      trajectory.push({
+        step,
+        baseMargin,
+        history: h,
+        score,
+        probability,
+        action,
+        hpBefore,
+        hpAfterPotion: hp,
+        healed: thisHealed,
+        wasted: thisWasted,
+      });
+
+      history.unshift(action);
+      history.length = 4;
+    }
+
+    const count = contacts.get(step) ?? 0;
+    for (let i = 0; i < count; i += 1) {
+      hp = Math.max(0, hp - CONTACT_DAMAGE);
+      if (hp === 0) {
+        alive = false;
+        break;
+      }
+    }
+  }
+
+  const utility =
+    (alive ? V15G_SURVIVAL_BONUS : 0) -
+    POTION_COST * uses;
+
+  return {
+    seed: tape.seed,
+    baseSeed: tape.baseSeed,
+    survived: alive,
+    finalHp: hp,
+    uses,
+    healed,
+    wasted,
+    utility,
+    decisionsTaken: trajectory.length,
+    trajectory,
+  };
+}
+
+function tapeValidity(rows) {
+  const encounters = rows.flatMap((row) => row.encounters);
+  const left = encounters.filter((row) => row.side === "L");
+  const right = encounters.filter((row) => row.side === "R");
+  const attacks = encounters.reduce((sum, row) => sum + row.attacks, 0);
+  const hits = encounters.reduce((sum, row) => sum + row.hits, 0);
+  const airborne = encounters.reduce(
+    (sum, row) => sum + row.airborneAttacks,
+    0,
+  );
+  return {
+    threeKillEpisodeRate: mean(
+      rows.map((row) => Number(row.killEvents.length >= 3)),
+    ),
+    encounterObstacleClearRate: mean(
+      encounters.map((row) => Number(row.clearStep !== null)),
+    ),
+    encounterTargetKillRate: mean(
+      encounters.map((row) => Number(row.killed)),
+    ),
+    leftEncounterTargetKillRate: mean(
+      left.map((row) => Number(row.killed)),
+    ),
+    rightEncounterTargetKillRate: mean(
+      right.map((row) => Number(row.killed)),
+    ),
+    attackHitPrecision: attacks ? hits / attacks : 0,
+    airborneAttackActionFraction:
+      attacks ? airborne / attacks : 0,
+    postClearJumpEncounterRate: mean(
+      encounters.map((row) => Number(row.postClearJumps > 0)),
+    ),
+    preClearAttackEncounterRate: mean(
+      encounters.map((row) => Number(row.preClearAttacks > 0)),
+    ),
+  };
+}
+
+async function collectTapes({
+  connectome,
+  dnSlot,
+  attackPolicy,
+  jumpPolicy,
+  baseSeeds,
+  interruptionRandom,
+  label,
+}) {
+  const rows = [];
+  for (const baseSeed of baseSeeds) {
+    for (const episode of makeBlock(baseSeed)) {
+      const row = await runEpisode({
+        connectome,
+        dnSlot,
+        episode,
+        attackPolicy,
+        jumpPolicy,
+        random: interruptionRandom,
+        deterministic: true,
+      });
+      if (row.liveSteps !== MAX_STEPS || row.potionEvents.length !== 10) {
+        throw new Error("v15N incomplete trainer tape");
+      }
+      rows.push(row);
+      console.log(
+        "[v15N-" + label + "] seed=" + row.seed +
+          " kills=" + row.killEvents.length +
+          " contacts=" + row.damageEvents.length +
+          " decisions=" + row.potionEvents.length,
+      );
+    }
+  }
+  return rows;
+}
+
+function normalSample(random) {
+  const u1 = Math.max(random(), 1e-12);
+  const u2 = random();
+  return Math.sqrt(-2 * Math.log(u1)) *
+    Math.cos(2 * Math.PI * u2);
+}
+
+
+
+function vectorDot(a, b) {
+  let value = 0;
+  for (let i = 0; i < a.length; i += 1) value += a[i] * b[i];
+  return value;
+}
+
+function normalizeVector(vector) {
+  let norm2 = 0;
+  for (let i = 0; i < vector.length; i += 1) {
+    norm2 += vector[i] * vector[i];
+  }
+  const norm = Math.sqrt(norm2);
+  if (!(norm > 1e-12)) {
+    throw new Error("v15N PCA vector collapsed");
+  }
+  for (let i = 0; i < vector.length; i += 1) vector[i] /= norm;
+  return vector;
+}
+
+function orthogonalize(vector, basis) {
+  for (const prior of basis) {
+    const projection = vectorDot(vector, prior);
+    for (let i = 0; i < vector.length; i += 1) {
+      vector[i] -= projection * prior[i];
+    }
+  }
+  return vector;
+}
+
+function traceSnapshots(tapes) {
+  const rows = [];
+  for (const tape of tapes) {
+    if (tape.potionEvents.length !== 10) {
+      throw new Error("v15N trace snapshot decision count mismatch");
+    }
+    for (const event of tape.potionEvents) {
+      if (!Array.isArray(event.trace) || event.trace.length !== DN_COUNT) {
+        throw new Error("v15N trace snapshot width mismatch");
+      }
+      rows.push(Float64Array.from(event.trace));
+    }
+  }
+  return rows;
+}
+
+function fitTracePreprocessing(trainTapes) {
+  const raw = traceSnapshots(trainTapes);
+  if (raw.length !== 240) {
+    throw new Error("v15N PCA TRAIN snapshot count mismatch " + raw.length);
+  }
+
+  const means = new Float64Array(DN_COUNT);
+  for (const row of raw) {
+    for (let d = 0; d < DN_COUNT; d += 1) means[d] += row[d];
+  }
+  for (let d = 0; d < DN_COUNT; d += 1) means[d] /= raw.length;
+
+  const scales = new Float64Array(DN_COUNT);
+  for (const row of raw) {
+    for (let d = 0; d < DN_COUNT; d += 1) {
+      const delta = row[d] - means[d];
+      scales[d] += delta * delta;
+    }
+  }
+  for (let d = 0; d < DN_COUNT; d += 1) {
+    scales[d] = Math.max(Math.sqrt(scales[d] / raw.length), 1e-6);
+  }
+
+  const standardized = raw.map((row) => {
+    const out = new Float64Array(DN_COUNT);
+    for (let d = 0; d < DN_COUNT; d += 1) {
+      out[d] = (row[d] - means[d]) / scales[d];
+    }
+    return out;
+  });
+
+  const n = standardized.length;
+  const gram = new Float64Array(n * n);
+  for (let i = 0; i < n; i += 1) {
+    for (let j = 0; j <= i; j += 1) {
+      const value = vectorDot(standardized[i], standardized[j]) / n;
+      gram[i * n + j] = value;
+      gram[j * n + i] = value;
+    }
+  }
+
+  const sampleEigenvectors = [];
+  const components = [];
+  const eigenvalues = [];
+  for (let component = 0; component < V15N_PCA_COMPONENTS; component += 1) {
+    const random = mulberry32(V15N_PCA_SEED + component);
+    let u = Float64Array.from(
+      { length: n },
+      () => random() * 2 - 1,
+    );
+    orthogonalize(u, sampleEigenvectors);
+    normalizeVector(u);
+
+    for (let iteration = 0; iteration < V15N_PCA_ITERATIONS; iteration += 1) {
+      const next = new Float64Array(n);
+      for (let i = 0; i < n; i += 1) {
+        let value = 0;
+        const offset = i * n;
+        for (let j = 0; j < n; j += 1) {
+          value += gram[offset + j] * u[j];
+        }
+        next[i] = value;
+      }
+      orthogonalize(next, sampleEigenvectors);
+      normalizeVector(next);
+      u = next;
+    }
+
+    const gu = new Float64Array(n);
+    for (let i = 0; i < n; i += 1) {
+      let value = 0;
+      const offset = i * n;
+      for (let j = 0; j < n; j += 1) {
+        value += gram[offset + j] * u[j];
+      }
+      gu[i] = value;
+    }
+    const eigenvalue = vectorDot(u, gu);
+
+    const loading = new Float64Array(DN_COUNT);
+    for (let i = 0; i < n; i += 1) {
+      const scale = u[i];
+      const row = standardized[i];
+      for (let d = 0; d < DN_COUNT; d += 1) {
+        loading[d] += scale * row[d];
+      }
+    }
+    normalizeVector(loading);
+
+    let maxIndex = 0;
+    for (let d = 1; d < DN_COUNT; d += 1) {
+      if (Math.abs(loading[d]) > Math.abs(loading[maxIndex])) {
+        maxIndex = d;
+      }
+    }
+    if (loading[maxIndex] < 0) {
+      for (let d = 0; d < DN_COUNT; d += 1) loading[d] *= -1;
+      for (let i = 0; i < n; i += 1) u[i] *= -1;
+    }
+
+    sampleEigenvectors.push(u);
+    components.push(loading);
+    eigenvalues.push(eigenvalue);
+  }
+
+  return { means, scales, components, eigenvalues };
+}
+
+function projectTrace(trace, preprocessing) {
+  const z = new Float64Array(DN_COUNT);
+  for (let d = 0; d < DN_COUNT; d += 1) {
+    z[d] = (trace[d] - preprocessing.means[d]) / preprocessing.scales[d];
+  }
+  return preprocessing.components.map((component) => vectorDot(z, component));
+}
+
+function attachTraceFeatures(tapes, preprocessing) {
+  for (const tape of tapes) {
+    tape.neuralFeatures = tape.potionEvents.map((event) =>
+      projectTrace(event.trace, preprocessing),
+    );
+    if (
+      tape.neuralFeatures.length !== 10 ||
+      tape.neuralFeatures.some((row) => row.length !== V15N_PCA_COMPONENTS)
+    ) {
+      throw new Error("v15N projected feature contract mismatch");
+    }
+  }
+}
+
+function policyActions(
+  neuralSequence,
+  params,
+  {
+    actionStateOff = false,
+    neuralOff = false,
+  } = {},
+) {
+  if (
+    neuralSequence.length !== 10 ||
+    params.length !== V15N_POLICY_PARAMS
+  ) {
+    throw new Error("v15N policy contract mismatch");
+  }
+
+  const bias = params[0];
+  const r00 = params[33];
+  const r01 = params[34];
+  const r10 = params[35];
+  const r11 = params[36];
+  const q0 = params[37];
+  const q1 = params[38];
+  const stateWeight0 = params[39];
+  const stateWeight1 = params[40];
+
+  let h0 = 0;
+  let h1 = 0;
+  let previousAction = 0;
+  const actions = [];
+  const scores = [];
+  const states = [];
+
+  for (const rawNeural of neuralSequence) {
+    if (rawNeural.length !== V15N_PCA_COMPONENTS) {
+      throw new Error("v15N neural feature width mismatch");
+    }
+
+    if (actionStateOff) {
+      h0 = 0;
+      h1 = 0;
+    } else {
+      const next0 = Math.tanh(
+        r00 * h0 +
+        r01 * h1 +
+        q0 * previousAction,
+      );
+      const next1 = Math.tanh(
+        r10 * h0 +
+        r11 * h1 +
+        q1 * previousAction,
+      );
+      h0 = next0;
+      h1 = next1;
+    }
+
+    let score = bias;
+    if (!neuralOff) {
+      for (let pc = 0; pc < V15N_PCA_COMPONENTS; pc += 1) {
+        score += params[pc + 1] * rawNeural[pc];
+      }
+    }
+    score += stateWeight0 * h0 + stateWeight1 * h1;
+
+    const action = score > 0 ? 1 : 0;
+    actions.push(action);
+    scores.push(score);
+    states.push([h0, h1]);
+    previousAction = action;
+  }
+
+  return {
+    actions,
+    scores,
+    states,
+  };
+}
+
+function tapeContactSchedule(tape) {
+  const decisions = tape.potionEvents;
+  if (decisions.length !== 10) {
+    throw new Error("v15N tape must contain exactly 10 decisions");
+  }
+  const decisionSteps = decisions.map((event) => event.step);
+  const contactsBeforeFirst = tape.damageEvents.filter(
+    (event) => event.step < decisionSteps[0],
+  ).length;
+  const contactsAfter = [];
+  for (let i = 0; i < 10; i += 1) {
+    const start = decisionSteps[i];
+    const end =
+      i < 9 ? decisionSteps[i + 1] : MAX_STEPS + 1;
+    contactsAfter.push(
+      tape.damageEvents.filter(
+        (event) =>
+          event.step >= start &&
+          event.step < end,
+      ).length,
+    );
+  }
+  return { contactsBeforeFirst, contactsAfter };
+}
+
+function simulateFromActions(tape, actions) {
+  const contact = tapeContactSchedule(tape);
+  let hp = MAX_HP - CONTACT_DAMAGE * contact.contactsBeforeFirst;
+  let uses = 0;
+  let wasted = 0;
+  const trajectory = [];
+  for (let i = 0; i < 10; i += 1) {
+    if (hp <= 0) break;
+    const action = actions[i];
+    const hpBefore = hp;
+    let thisWasted = 0;
+    if (action === 1) {
+      const healed = Math.min(POTION_HEAL, MAX_HP - hp);
+      thisWasted = POTION_HEAL - healed;
+      hp += healed;
+      uses += 1;
+      wasted += thisWasted;
+    }
+    trajectory.push({
+      decisionIndex: i,
+      action,
+      hpBefore,
+      hpAfterPotion: hp,
+      wasted: thisWasted,
+    });
+    hp = Math.max(
+      0,
+      hp - CONTACT_DAMAGE * contact.contactsAfter[i],
+    );
+  }
+  return {
+    seed: tape.seed,
+    baseSeed: tape.baseSeed,
+    survived: hp > 0,
+    finalHp: hp,
+    uses,
+    wasted,
+    utility:
+      (hp > 0 ? V15G_SURVIVAL_BONUS : 0) -
+      POTION_COST * uses,
+    trajectory,
+  };
+}
+
+function tapeNeuralSequence(tape) {
+  if (
+    !Array.isArray(tape.neuralFeatures) ||
+    tape.neuralFeatures.length !== 10
+  ) {
+    throw new Error("v15N neural feature tape mismatch");
+  }
+  return tape.neuralFeatures;
+}
+
+function simulatePolicy(
+  tape,
+  params,
+  options = {},
+  neuralOverride = null,
+) {
+  const neuralSequence = neuralOverride ?? tapeNeuralSequence(tape);
+  const { actions, scores, states } =
+    policyActions(neuralSequence, params, options);
+  const row = simulateFromActions(tape, actions);
+  row.policyActions = actions;
+  row.policyScores = scores;
+  row.policyStates = states;
+  return row;
+}
+
+function evaluatePolicy(
+  tapes,
+  params,
+  options = {},
+  neuralSequences = null,
+) {
+  const rows = tapes.map((tape, index) =>
+    simulatePolicy(
+      tape,
+      params,
+      options,
+      neuralSequences ? neuralSequences[index] : null,
+    ),
+  );
+  const totalUses = rows.reduce((sum, row) => sum + row.uses, 0);
+  const totalWasted = rows.reduce((sum, row) => sum + row.wasted, 0);
+  return {
+    rows,
+    survivalRate: mean(rows.map((row) => Number(row.survived))),
+    meanUses: mean(rows.map((row) => row.uses)),
+    meanUtility: mean(rows.map((row) => row.utility)),
+    wastedHealingPerDrink:
+      totalUses ? totalWasted / totalUses : 0,
+  };
+}
+
+function trainingFitness(tapes, params) {
+  const result = evaluatePolicy(tapes, params);
+  const meanTerminalHp = mean(
+    result.rows.map((row) => row.finalHp),
+  );
+  return {
+    fitness:
+      10000 * result.survivalRate +
+      meanTerminalHp -
+      POTION_COST * result.meanUses,
+    survivalRate: result.survivalRate,
+    meanTerminalHp,
+    meanUses: result.meanUses,
+  };
+}
+
+function trainCem(tapes) {
+  const random = mulberry32(V15N_CEM_SEED);
+  let distributionMean = new Float64Array(V15N_POLICY_PARAMS);
+  let distributionStd = new Float64Array(V15N_POLICY_PARAMS).fill(1);
+  const trace = [];
+
+  for (
+    let generation = 1;
+    generation <= V15N_GENERATIONS;
+    generation += 1
+  ) {
+    const population = [];
+    for (let member = 0; member < V15N_POPULATION; member += 1) {
+      const params = new Float64Array(V15N_POLICY_PARAMS);
+      for (let i = 0; i < V15N_POLICY_PARAMS; i += 1) {
+        params[i] = clamp(
+          distributionMean[i] +
+            distributionStd[i] * normalSample(random),
+          -V15N_PARAM_CLAMP,
+          V15N_PARAM_CLAMP,
+        );
+      }
+      population.push({
+        params,
+        ...trainingFitness(tapes, params),
+      });
+    }
+    population.sort(
+      (a, b) =>
+        b.fitness - a.fitness ||
+        b.survivalRate - a.survivalRate ||
+        a.meanUses - b.meanUses,
+    );
+    const elites = population.slice(0, V15N_ELITES);
+    const eliteMean = new Float64Array(V15N_POLICY_PARAMS);
+    for (const elite of elites) {
+      for (let i = 0; i < V15N_POLICY_PARAMS; i += 1) {
+        eliteMean[i] += elite.params[i];
+      }
+    }
+    for (let i = 0; i < V15N_POLICY_PARAMS; i += 1) {
+      eliteMean[i] /= elites.length;
+    }
+    const eliteStd = new Float64Array(V15N_POLICY_PARAMS);
+    for (const elite of elites) {
+      for (let i = 0; i < V15N_POLICY_PARAMS; i += 1) {
+        eliteStd[i] += (elite.params[i] - eliteMean[i]) ** 2;
+      }
+    }
+    for (let i = 0; i < V15N_POLICY_PARAMS; i += 1) {
+      eliteStd[i] = Math.sqrt(eliteStd[i] / elites.length);
+      distributionMean[i] = clamp(
+        V15N_OLD_WEIGHT * distributionMean[i] +
+          V15N_ELITE_WEIGHT * eliteMean[i],
+        -V15N_PARAM_CLAMP,
+        V15N_PARAM_CLAMP,
+      );
+      distributionStd[i] = Math.max(
+        V15N_MIN_STD,
+        V15N_OLD_WEIGHT * distributionStd[i] +
+          V15N_ELITE_WEIGHT * eliteStd[i],
+      );
+    }
+    if (
+      generation === 1 ||
+      generation % 5 === 0 ||
+      generation === V15N_GENERATIONS
+    ) {
+      const score = trainingFitness(tapes, distributionMean);
+      trace.push({
+        generation,
+        mean: Array.from(distributionMean),
+        std: Array.from(distributionStd),
+        meanFitness: score.fitness,
+        meanSurvivalRate: score.survivalRate,
+        meanTerminalHp: score.meanTerminalHp,
+        meanUses: score.meanUses,
+        bestFitness: population[0].fitness,
+        bestSurvivalRate: population[0].survivalRate,
+        bestMeanTerminalHp: population[0].meanTerminalHp,
+        bestMeanUses: population[0].meanUses,
+      });
+    }
+  }
+  return {
+    params: Float64Array.from(distributionMean),
+    finalStd: Array.from(distributionStd),
+    trace,
+  };
+}
+
+function oracleMinimumUses(tape) {
+  let minimum = Infinity;
+  let bestActions = null;
+  for (let mask = 0; mask < 1024; mask += 1) {
+    const actions = Array.from(
+      { length: 10 },
+      (_, index) => (mask >> index) & 1,
+    );
+    const row = simulateFromActions(tape, actions);
+    if (row.survived && row.uses < minimum) {
+      minimum = row.uses;
+      bestActions = actions;
+    }
+  }
+  if (!Number.isFinite(minimum)) {
+    throw new Error("v15N oracle cannot survive tape " + tape.seed);
+  }
+  return { minimumUses: minimum, bestActions };
+}
+
+function addEconomyMetrics(evaluation, oracle) {
+  const survivors = evaluation.rows.filter((row) => row.survived);
+  const perSeed = V15N_EVAL_BASE_SEEDS.map((baseSeed) => {
+    const rows = evaluation.rows.filter(
+      (row) => row.baseSeed === baseSeed,
+    );
+    return {
+      baseSeed,
+      survivalRate: mean(
+        rows.map((row) => Number(row.survived)),
+      ),
+      meanUses: mean(rows.map((row) => row.uses)),
+    };
+  });
+  return {
+    ...evaluation,
+    meanExcessUses: survivors.length
+      ? mean(
+          survivors.map(
+            (row) => row.uses - oracle.get(row.seed).minimumUses,
+          ),
+        )
+      : Infinity,
+    minSeedSurvivalRate: Math.min(
+      ...perSeed.map((row) => row.survivalRate),
+    ),
+    perSeed,
+  };
+}
+
+function contribution(full, control, excessThreshold) {
+  const survivalDrop = full.survivalRate - control.survivalRate;
+  const excessIncrease =
+    Number.isFinite(control.meanExcessUses)
+      ? control.meanExcessUses - full.meanExcessUses
+      : Infinity;
+  return {
+    survivalDrop,
+    excessIncrease,
+    zeroSurvivorControl:
+      full.survivalRate > 0 && control.survivalRate === 0,
+    contributes:
+      survivalDrop >= 0.125 ||
+      excessIncrease >= excessThreshold ||
+      (full.survivalRate > 0 && control.survivalRate === 0),
+  };
+}
+
+function loadFrozenV15nParams(artifact) {
+  if (
+    artifact.schema !== "maplefly.v15n.nonlinear-action-recurrence.1" ||
+    artifact.outcome !== "V15N_NONLINEAR_ACTION_RECURRENCE_FAIL" ||
+    artifact.policy?.parameterCount !== V15N_POLICY_PARAMS ||
+    artifact.policy?.paramsSha256 !== V15N_D1_PARAMS_SHA256 ||
+    artifact.representation?.preprocessingSha256 !==
+      V15N_D1_PREPROCESSING_SHA256
+  ) {
+    throw new Error("v15N-D1 frozen artifact provenance mismatch");
+  }
+  const p = artifact.policy.parameters;
+  if (
+    !Array.isArray(p.neuralWeights) ||
+    p.neuralWeights.length !== 32 ||
+    !Array.isArray(p.recurrentMatrix) ||
+    p.recurrentMatrix.length !== 2 ||
+    p.recurrentMatrix.some((row) => !Array.isArray(row) || row.length !== 2) ||
+    !Array.isArray(p.actionInput) ||
+    p.actionInput.length !== 2 ||
+    !Array.isArray(p.stateWeights) ||
+    p.stateWeights.length !== 2 ||
+    !Array.isArray(p.recurrentBias) ||
+    p.recurrentBias.some((value) => value !== 0)
+  ) {
+    throw new Error("v15N-D1 candidate shape mismatch");
+  }
+  const params = Float64Array.from([
+    p.bias,
+    ...p.neuralWeights,
+    p.recurrentMatrix[0][0],
+    p.recurrentMatrix[0][1],
+    p.recurrentMatrix[1][0],
+    p.recurrentMatrix[1][1],
+    ...p.actionInput,
+    ...p.stateWeights,
+  ]);
+  const sha = createHash("sha256")
+    .update(JSON.stringify(Array.from(params)))
+    .digest("hex");
+  if (sha !== V15N_D1_PARAMS_SHA256) {
+    throw new Error("v15N-D1 candidate parameter SHA mismatch");
+  }
+  return params;
+}
+
+function approxEqual(a, b, tolerance = 1e-12) {
+  if (Number.isNaN(a) && Number.isNaN(b)) return true;
+  return Math.abs(a - b) <= tolerance;
+}
+
+function verifyAggregate(actual, expected, label) {
+  for (const key of [
+    "survivalRate",
+    "minSeedSurvivalRate",
+    "meanUses",
+    "meanExcessUses",
+    "wastedHealingPerDrink",
+  ]) {
+    if (!approxEqual(actual[key], expected[key])) {
+      throw new Error(
+        "v15N-D1 " + label + " aggregate mismatch for " + key +
+        ": " + actual[key] + " != " + expected[key],
+      );
+    }
+  }
+}
+
+function oracleClassFromReachedState(tape, decisionIndex, hpBefore) {
+  const contact = tapeContactSchedule(tape);
+  const remaining = 10 - decisionIndex;
+  let minimumUses = Infinity;
+  const firstActions = new Set();
+
+  for (let mask = 0; mask < 2 ** remaining; mask += 1) {
+    let hp = hpBefore;
+    let uses = 0;
+    let firstAction = 0;
+    let alive = true;
+    for (let offset = 0; offset < remaining; offset += 1) {
+      if (hp <= 0) {
+        alive = false;
+        break;
+      }
+      const action = (mask >> offset) & 1;
+      if (offset === 0) firstAction = action;
+      if (action === 1) {
+        hp += Math.min(POTION_HEAL, MAX_HP - hp);
+        uses += 1;
+      }
+      hp = Math.max(
+        0,
+        hp -
+          CONTACT_DAMAGE *
+            contact.contactsAfter[decisionIndex + offset],
+      );
+    }
+    if (hp <= 0) alive = false;
+    if (!alive) continue;
+
+    if (uses < minimumUses) {
+      minimumUses = uses;
+      firstActions.clear();
+      firstActions.add(firstAction);
+    } else if (uses === minimumUses) {
+      firstActions.add(firstAction);
+    }
+  }
+
+  if (!Number.isFinite(minimumUses)) return "UNSURVIVABLE";
+  if (firstActions.size === 2) return "EITHER";
+  return firstActions.has(1) ? "FORCED_DRINK" : "FORCED_WAIT";
+}
+
+function neuralTerm(vector, params) {
+  let value = 0;
+  for (let pc = 0; pc < V15N_PCA_COMPONENTS; pc += 1) {
+    value += params[pc + 1] * vector[pc];
+  }
+  return value;
+}
+
+function trainDecisionMeanNeuralScores(trainTapes, params) {
+  return Array.from(
+    { length: 10 },
+    (_, decision) =>
+      mean(
+        trainTapes.map((tape) =>
+          neuralTerm(tape.neuralFeatures[decision], params),
+        ),
+      ),
+  );
+}
+
+function auc(rows) {
+  const drink = rows
+    .filter((row) => row.oracleClass === "FORCED_DRINK")
+    .map((row) => row.residual);
+  const wait = rows
+    .filter((row) => row.oracleClass === "FORCED_WAIT")
+    .map((row) => row.residual);
+  if (!drink.length || !wait.length) return null;
+  let score = 0;
+  let pairs = 0;
+  for (const d of drink) {
+    for (const w of wait) {
+      if (d > w) score += 1;
+      else if (d === w) score += 0.5;
+      pairs += 1;
+    }
+  }
+  return score / pairs;
+}
+
+function meanAbs(rows, key) {
+  if (!rows.length) return 0;
+  return mean(rows.map((row) => Math.abs(row[key])));
+}
+
+function stateBeforeDecision(tape, history) {
+  const decisionIndex = history.length;
+  const contact = tapeContactSchedule(tape);
+  let hp = MAX_HP - CONTACT_DAMAGE * contact.contactsBeforeFirst;
+  if (hp <= 0) return null;
+
+  for (let i = 0; i < decisionIndex; i += 1) {
+    if (history[i] === 1) {
+      hp += Math.min(POTION_HEAL, MAX_HP - hp);
+    }
+    hp = Math.max(
+      0,
+      hp - CONTACT_DAMAGE * contact.contactsAfter[i],
+    );
+    if (hp <= 0) return null;
+  }
+  return hp;
+}
+
+function recurrentStateForHistory(history, params) {
+  const r00 = params[33];
+  const r01 = params[34];
+  const r10 = params[35];
+  const r11 = params[36];
+  const q0 = params[37];
+  const q1 = params[38];
+  let h0 = 0;
+  let h1 = 0;
+  let previousAction = 0;
+
+  for (let decision = 0; decision <= history.length; decision += 1) {
+    const next0 = Math.tanh(
+      r00 * h0 + r01 * h1 + q0 * previousAction,
+    );
+    const next1 = Math.tanh(
+      r10 * h0 + r11 * h1 + q1 * previousAction,
+    );
+    h0 = next0;
+    h1 = next1;
+    if (decision < history.length) {
+      previousAction = history[decision];
+    }
+  }
+  return [h0, h1];
+}
+
+function binaryHistory(mask, length) {
+  return Array.from(
+    { length },
+    (_, index) => (mask >> index) & 1,
+  );
+}
+
+function ecologyChecks(validity) {
+  return {
+    threeKillEpisodeRate: validity.threeKillEpisodeRate >= 0.75,
+    encounterObstacleClear: validity.encounterObstacleClearRate >= 0.85,
+    encounterTargetKill: validity.encounterTargetKillRate >= 0.70,
+    leftEncounterTargetKill: validity.leftEncounterTargetKillRate >= 0.65,
+    rightEncounterTargetKill: validity.rightEncounterTargetKillRate >= 0.65,
+    attackHitPrecision: validity.attackHitPrecision >= 0.45,
+    airborneAttackActionFraction:
+      validity.airborneAttackActionFraction <= 0.22,
+    postClearJumpEncounter: validity.postClearJumpEncounterRate <= 0.25,
+    preClearAttackEncounter: validity.preClearAttackEncounterRate <= 0.30,
+  };
+}
+
+function computeD6PhaseMeans(tapes) {
+  const means = Array.from(
+    { length: POTION_HISTORY_FRAMES },
+    () => new Float64Array(DN_COUNT),
+  );
+  const counts = new Int32Array(POTION_HISTORY_FRAMES);
+  for (const tape of tapes) {
+    if (tape.potionFrameEvents.length !== 480) {
+      throw new Error("v15N-D6 frame count mismatch");
+    }
+    for (const frame of tape.potionFrameEvents) {
+      const phase = frame.frameIndex % POTION_HISTORY_FRAMES;
+      counts[phase] += 1;
+      for (let d = 0; d < DN_COUNT; d += 1) {
+        means[phase][d] += frame.values[d];
+      }
+    }
+  }
+  for (let phase = 0; phase < POTION_HISTORY_FRAMES; phase += 1) {
+    if (counts[phase] !== 240) {
+      throw new Error(
+        "v15N-D6 phase support mismatch phase=" +
+          phase +
+          " count=" +
+          counts[phase],
+      );
+    }
+    for (let d = 0; d < DN_COUNT; d += 1) {
+      means[phase][d] /= counts[phase];
+    }
+  }
+  return { means, counts: Array.from(counts) };
+}
+
+function latestDamageAgeSteps(tape, step) {
+  let latest = null;
+  for (const event of tape.damageEvents) {
+    if (event.step > step) break;
+    latest = event.step;
+  }
+  return latest === null ? Infinity : step - latest;
+}
+
+function d6Label(ageSteps) {
+  if (
+    Number.isFinite(ageSteps) &&
+    ageSteps >= 0 &&
+    ageSteps < V15N_D6_POSITIVE_MAX_AGE_STEPS
+  ) {
+    return 1;
+  }
+  if (
+    !Number.isFinite(ageSteps) ||
+    ageSteps >= V15N_D6_NEGATIVE_MIN_AGE_STEPS
+  ) {
+    return 0;
+  }
+  return null;
+}
+
+function d6ResidualFrame(frame, phaseMeans) {
+  const phase = frame.frameIndex % POTION_HISTORY_FRAMES;
+  const out = new Float64Array(DN_COUNT);
+  for (let d = 0; d < DN_COUNT; d += 1) {
+    out[d] = frame.values[d] - phaseMeans[phase][d];
+  }
+  return out;
+}
+
+function collectD6DetectorExamples(tapes, phaseMeans) {
+  const examples = [];
+  const positiveTapes = new Set();
+  for (const tape of tapes) {
+    for (const frame of tape.potionFrameEvents) {
+      const ageSteps = latestDamageAgeSteps(tape, frame.step);
+      const y = d6Label(ageSteps);
+      if (y === null) continue;
+      if (y === 1) positiveTapes.add(tape.seed);
+      examples.push({
+        seed: tape.seed,
+        frameIndex: frame.frameIndex,
+        step: frame.step,
+        ageSteps,
+        y,
+        x: d6ResidualFrame(frame, phaseMeans),
+      });
+    }
+  }
+  return {
+    examples,
+    positiveTapes: positiveTapes.size,
+  };
+}
+
+function d6MeanVector(examples, label) {
+  const selected = examples.filter((row) => row.y === label);
+  const result = new Float64Array(DN_COUNT);
+  for (const row of selected) {
+    for (let d = 0; d < DN_COUNT; d += 1) {
+      result[d] += row.x[d];
+    }
+  }
+  for (let d = 0; d < DN_COUNT; d += 1) {
+    result[d] /= selected.length;
+  }
+  return result;
+}
+
+function trainD6ImpactDirection(examples) {
+  const positiveMean = d6MeanVector(examples, 1);
+  const negativeMean = d6MeanVector(examples, 0);
+  const weights = new Float64Array(DN_COUNT);
+  let norm2 = 0;
+  for (let d = 0; d < DN_COUNT; d += 1) {
+    weights[d] = positiveMean[d] - negativeMean[d];
+    norm2 += weights[d] * weights[d];
+  }
+  const norm = Math.sqrt(norm2);
+  if (!(norm > 1e-12)) {
+    throw new Error("v15N-D6 impact direction collapsed");
+  }
+  for (let d = 0; d < DN_COUNT; d += 1) weights[d] /= norm;
+  const positiveProjectedMean = vectorDot(weights, positiveMean);
+  const negativeProjectedMean = vectorDot(weights, negativeMean);
+  const separation =
+    positiveProjectedMean - negativeProjectedMean;
+  if (!(separation > 0)) {
+    throw new Error("v15N-D6 impact separation invalid");
+  }
+  return {
+    weights,
+    threshold:
+      (positiveProjectedMean + negativeProjectedMean) / 2,
+    separation,
+    positiveProjectedMean,
+    negativeProjectedMean,
+  };
+}
+
+function d6Support(detectorSet) {
+  const positives = detectorSet.examples.filter(
+    (row) => row.y === 1,
+  ).length;
+  const negatives = detectorSet.examples.length - positives;
+  return {
+    positives,
+    negatives,
+    positiveTapes: detectorSet.positiveTapes,
+    pass:
+      positives >= V15N_D6_MIN_POSITIVE_SUPPORT &&
+      negatives >= V15N_D6_MIN_NEGATIVE_SUPPORT &&
+      detectorSet.positiveTapes >= V15N_D6_MIN_POSITIVE_TAPES,
+  };
+}
+
+function d6DetectorMetrics(detectorSet, detector) {
+  let positiveN = 0;
+  let negativeN = 0;
+  let positiveCorrect = 0;
+  let negativeCorrect = 0;
+  for (const row of detectorSet.examples) {
+    const score =
+      vectorDot(detector.weights, row.x) - detector.threshold;
+    const predicted = score > 0 ? 1 : 0;
+    if (row.y === 1) {
+      positiveN += 1;
+      if (predicted === 1) positiveCorrect += 1;
+    } else {
+      negativeN += 1;
+      if (predicted === 0) negativeCorrect += 1;
+    }
+  }
+  const positiveRecall = positiveCorrect / positiveN;
+  const negativeRecall = negativeCorrect / negativeN;
+  return {
+    positives: positiveN,
+    negatives: negativeN,
+    positiveTapes: detectorSet.positiveTapes,
+    positiveRecall,
+    negativeRecall,
+    balancedAccuracy: (positiveRecall + negativeRecall) / 2,
+  };
+}
+
+function accumulateD6Evidence(tapes, phaseMeans, detector) {
+  for (const tape of tapes) {
+    let cumulative = 0;
+    const byStep = new Map();
+    for (const frame of tape.potionFrameEvents) {
+      const residual = d6ResidualFrame(frame, phaseMeans);
+      const margin =
+        vectorDot(detector.weights, residual) - detector.threshold;
+      const evidence =
+        Math.max(0, margin) / detector.separation;
+      cumulative += evidence;
+      byStep.set(frame.step, cumulative);
+    }
+    tape.d6DecisionEvidence = tape.potionEvents.map((event) => {
+      const value = byStep.get(event.step);
+      if (!Number.isFinite(value)) {
+        throw new Error("v15N-D6 missing decision evidence");
+      }
+      return value;
+    });
+  }
+}
+
+function cumulativeDamageBefore(tape, decisionStep) {
+  return CONTACT_DAMAGE * tape.damageEvents.filter(
+    (event) => event.step < decisionStep,
+  ).length;
+}
+
+function trainD6DecisionMeans(tapes) {
+  return Array.from({ length: 10 }, (_, decisionIndex) => ({
+    evidence: mean(
+      tapes.map((tape) => tape.d6DecisionEvidence[decisionIndex]),
+    ),
+    damage: mean(
+      tapes.map((tape) =>
+        cumulativeDamageBefore(
+          tape,
+          tape.potionEvents[decisionIndex].step,
+        ),
+      ),
+    ),
+  }));
+}
+
+function d6Rows(tapes, decisionMeans) {
+  const rows = [];
+  for (const tape of tapes) {
+    for (let decisionIndex = 0; decisionIndex < 10; decisionIndex += 1) {
+      const damage = cumulativeDamageBefore(
+        tape,
+        tape.potionEvents[decisionIndex].step,
+      );
+      rows.push({
+        seed: tape.seed,
+        decisionIndex,
+        evidenceResidual:
+          tape.d6DecisionEvidence[decisionIndex] -
+          decisionMeans[decisionIndex].evidence,
+        y: damage - decisionMeans[decisionIndex].damage,
+      });
+    }
+  }
+  return rows;
+}
+
+function d6ResidualSd(rows) {
+  const center = mean(rows.map((row) => row.y));
+  return Math.sqrt(
+    mean(rows.map((row) => (row.y - center) ** 2)),
+  );
+}
+
+function fitD6Calibration(rows) {
+  let sumXX = 0;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  const n = rows.length;
+  for (const row of rows) {
+    const x = row.evidenceResidual;
+    sumXX += x * x;
+    sumX += x;
+    sumY += row.y;
+    sumXY += x * row.y;
+  }
+  const a = sumXX + V15N_D6_RIDGE_LAMBDA;
+  const b = sumX;
+  const c = n;
+  const determinant = a * c - b * b;
+  if (Math.abs(determinant) < 1e-12) {
+    throw new Error("v15N-D6 singular scalar ridge");
+  }
+  return {
+    beta: (sumXY * c - sumY * b) / determinant,
+    intercept: (a * sumY - b * sumXY) / determinant,
+    lambda: V15N_D6_RIDGE_LAMBDA,
+  };
+}
+
+function d6Metrics(rows, calibration, overrideEvidence = null) {
+  const actual = rows.map((row) => row.y);
+  const predicted = rows.map((row, index) => {
+    const x = overrideEvidence
+      ? overrideEvidence[index]
+      : row.evidenceResidual;
+    return calibration.beta * x + calibration.intercept;
+  });
+  const actualMean = mean(actual);
+  const predictedMean = mean(predicted);
+  const sse = actual.reduce(
+    (sum, value, index) => sum + (value - predicted[index]) ** 2,
+    0,
+  );
+  const sst = actual.reduce(
+    (sum, value) => sum + (value - actualMean) ** 2,
+    0,
+  );
+  const mae = mean(
+    actual.map((value, index) => Math.abs(value - predicted[index])),
+  );
+  const rmse = Math.sqrt(sse / actual.length);
+  let covariance = 0;
+  let actualVariance = 0;
+  let predictedVariance = 0;
+  for (let i = 0; i < actual.length; i += 1) {
+    const a = actual[i] - actualMean;
+    const p = predicted[i] - predictedMean;
+    covariance += a * p;
+    actualVariance += a * a;
+    predictedVariance += p * p;
+  }
+  return {
+    states: rows.length,
+    residualSd: d6ResidualSd(rows),
+    r2: sst > 0 ? 1 - sse / sst : null,
+    mae,
+    rmse,
+    pearson:
+      actualVariance > 0 && predictedVariance > 0
+        ? covariance / Math.sqrt(actualVariance * predictedVariance)
+        : null,
+  };
+}
+
+function d6ShiftedEvidence(rows) {
+  const seeds = [...new Set(rows.map((row) => row.seed))];
+  const donor = new Map(
+    seeds.map((seed, index) => [
+      seed,
+      seeds[(index + 1) % seeds.length],
+    ]),
+  );
+  const lookup = new Map(
+    rows.map((row) => [
+      row.seed + ":" + row.decisionIndex,
+      row.evidenceResidual,
+    ]),
+  );
+  return rows.map((row) =>
+    lookup.get(donor.get(row.seed) + ":" + row.decisionIndex),
+  );
+}
+
+function d1AssertClose(actual, expected, label) {
+  if (
+    !Number.isFinite(actual) ||
+    !Number.isFinite(expected) ||
+    Math.abs(actual - expected) > 1e-12
+  ) {
+    throw new Error(
+      "v15N-D6-D1 reproduction mismatch " +
+        label +
+        ": " +
+        actual +
+        " != " +
+        expected,
+    );
+  }
+}
+
+function d1VerifyMetricObject(actual, expected, label) {
+  for (const key of ["r2", "mae", "rmse", "pearson"]) {
+    d1AssertClose(actual[key], expected[key], label + "." + key);
+  }
+}
+
+function d1LatestDamageIndex(tape, step) {
+  let latest = -1;
+  for (let index = 0; index < tape.damageEvents.length; index += 1) {
+    if (tape.damageEvents[index].step > step) break;
+    latest = index;
+  }
+  return latest;
+}
+
+function d1Percentile(sorted, q) {
+  if (!sorted.length) return null;
+  if (sorted.length === 1) return sorted[0];
+  const position = (sorted.length - 1) * q;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  const weight = position - lower;
+  return (
+    sorted[lower] * (1 - weight) +
+    sorted[upper] * weight
+  );
+}
+
+function d1Attribution(tapes, phaseMeans, detector) {
+  const category = {
+    recent: { frames: 0, positiveFrames: 0, evidenceMass: 0 },
+    linger: { frames: 0, positiveFrames: 0, evidenceMass: 0 },
+    background: { frames: 0, positiveFrames: 0, evidenceMass: 0 },
+  };
+  const hitRows = [];
+
+  for (const tape of tapes) {
+    const hits = tape.damageEvents.map((event, hitIndex) => ({
+      seed: tape.seed,
+      hitIndex,
+      step: event.step,
+      totalEvidenceMass: 0,
+      positiveFrameCount: 0,
+      firstPositiveLatencySteps: null,
+      duplicateEvidenceMass: 0,
+    }));
+
+    for (const frame of tape.potionFrameEvents) {
+      const residual = d6ResidualFrame(frame, phaseMeans);
+      const margin =
+        vectorDot(detector.weights, residual) - detector.threshold;
+      const evidence =
+        Math.max(0, margin) / detector.separation;
+      const positive = evidence > 0;
+      const latestIndex = d1LatestDamageIndex(tape, frame.step);
+      const ageSteps =
+        latestIndex < 0
+          ? Infinity
+          : frame.step - tape.damageEvents[latestIndex].step;
+
+      let bucket;
+      if (
+        Number.isFinite(ageSteps) &&
+        ageSteps >= 0 &&
+        ageSteps < V15N_D6_POSITIVE_MAX_AGE_STEPS
+      ) {
+        bucket = category.recent;
+      } else if (
+        Number.isFinite(ageSteps) &&
+        ageSteps >= V15N_D6_POSITIVE_MAX_AGE_STEPS &&
+        ageSteps < V15N_D6_NEGATIVE_MIN_AGE_STEPS
+      ) {
+        bucket = category.linger;
+      } else {
+        bucket = category.background;
+      }
+      bucket.frames += 1;
+      bucket.evidenceMass += evidence;
+      if (positive) bucket.positiveFrames += 1;
+
+      if (
+        positive &&
+        latestIndex >= 0 &&
+        ageSteps < V15N_D6_NEGATIVE_MIN_AGE_STEPS
+      ) {
+        const hit = hits[latestIndex];
+        hit.totalEvidenceMass += evidence;
+        if (hit.positiveFrameCount === 0) {
+          hit.firstPositiveLatencySteps = ageSteps;
+        } else {
+          hit.duplicateEvidenceMass += evidence;
+        }
+        hit.positiveFrameCount += 1;
+      }
+    }
+    hitRows.push(...hits);
+  }
+
+  const totalEvidenceMass =
+    category.recent.evidenceMass +
+    category.linger.evidenceMass +
+    category.background.evidenceMass;
+  const hitEvidenceMass = hitRows.reduce(
+    (sum, row) => sum + row.totalEvidenceMass,
+    0,
+  );
+  const duplicateEvidenceMass = hitRows.reduce(
+    (sum, row) => sum + row.duplicateEvidenceMass,
+    0,
+  );
+  const evidenceValues = hitRows
+    .map((row) => row.totalEvidenceMass)
+    .sort((a, b) => a - b);
+  const positiveFrameCounts = hitRows
+    .map((row) => row.positiveFrameCount)
+    .sort((a, b) => a - b);
+  const evidenceMean = mean(evidenceValues);
+  const evidenceSd = Math.sqrt(
+    mean(evidenceValues.map((value) => (value - evidenceMean) ** 2)),
+  );
+
+  return {
+    frames: tapes.reduce(
+      (sum, tape) => sum + tape.potionFrameEvents.length,
+      0,
+    ),
+    hits: hitRows.length,
+    category,
+    totalEvidenceMass,
+    backgroundMassFraction:
+      totalEvidenceMass > 0
+        ? category.background.evidenceMass / totalEvidenceMass
+        : 0,
+    backgroundPositiveFrameRate:
+      category.background.frames > 0
+        ? category.background.positiveFrames /
+          category.background.frames
+        : 0,
+    backgroundEvidencePerSecond:
+      category.background.frames > 0
+        ? category.background.evidenceMass /
+          (category.background.frames * 0.1)
+        : 0,
+    hitEvidenceMass,
+    duplicateEvidenceMass,
+    duplicateMassFraction:
+      hitEvidenceMass > 0
+        ? duplicateEvidenceMass / hitEvidenceMass
+        : 0,
+    perHit: {
+      meanEvidence: evidenceMean,
+      medianEvidence: d1Percentile(evidenceValues, 0.5),
+      sdEvidence: evidenceSd,
+      cvEvidence:
+        evidenceMean > 0 ? evidenceSd / evidenceMean : null,
+      p10Evidence: d1Percentile(evidenceValues, 0.1),
+      p90Evidence: d1Percentile(evidenceValues, 0.9),
+      meanPositiveFrameCount: mean(positiveFrameCounts),
+      medianPositiveFrameCount:
+        d1Percentile(positiveFrameCounts, 0.5),
+      zeroEvidenceHitFraction:
+        hitRows.filter((row) => row.positiveFrameCount === 0).length /
+        hitRows.length,
+      firstPositiveLatencyStepsMean: mean(
+        hitRows
+          .filter((row) => row.firstPositiveLatencySteps !== null)
+          .map((row) => row.firstPositiveLatencySteps),
+      ),
+    },
+  };
+}
+
+function d1MechanismFlags(attribution) {
+  return {
+    backgroundLeakageHigh:
+      attribution.backgroundMassFraction >=
+      V15N_D6_D1_BACKGROUND_FRACTION_GATE,
+    multiCountHigh:
+      attribution.duplicateMassFraction >=
+        V15N_D6_D1_DUPLICATE_FRACTION_GATE &&
+      attribution.perHit.medianPositiveFrameCount >=
+        V15N_D6_D1_MEDIAN_POSITIVE_FRAMES_GATE,
+    amplitudeUnstable:
+      attribution.perHit.cvEvidence >=
+      V15N_D6_D1_AMPLITUDE_CV_GATE,
+  };
+}
+
+function d2RunEventizer(tape, phaseMeans, detector) {
+  let armed = true;
+  let negativeRun = 0;
+  let eventCount = 0;
+  const events = [];
+  const countByStep = new Map();
+
+  for (const frame of tape.potionFrameEvents) {
+    const residual = d6ResidualFrame(frame, phaseMeans);
+    const margin =
+      vectorDot(detector.weights, residual) - detector.threshold;
+    const positive = margin > 0;
+
+    if (positive) {
+      negativeRun = 0;
+      if (armed) {
+        eventCount += 1;
+        events.push({
+          step: frame.step,
+          frameIndex: frame.frameIndex,
+          margin,
+        });
+        armed = false;
+      }
+    } else {
+      negativeRun += 1;
+      if (negativeRun >= V15N_D6_D2_REARM_NEGATIVE_FRAMES) {
+        armed = true;
+      }
+    }
+    countByStep.set(frame.step, eventCount);
+  }
+
+  const decisionCounts = tape.potionEvents.map((event) => {
+    const value = countByStep.get(event.step);
+    if (!Number.isInteger(value)) {
+      throw new Error("v15N-D6-D2 missing decision event count");
+    }
+    return value;
+  });
+
+  return { events, decisionCounts };
+}
+
+function d2AttachEventizer(tapes, phaseMeans, detector) {
+  for (const tape of tapes) {
+    const result = d2RunEventizer(tape, phaseMeans, detector);
+    tape.d2NeuralEvents = result.events;
+    tape.d2DecisionEventCounts = result.decisionCounts;
+  }
+}
+
+function d2EventMatchesHit(eventStep, hitStep) {
+  const age = eventStep - hitStep;
+  return age >= 0 && age < V15N_D6_D2_MATCH_MAX_AGE_STEPS;
+}
+
+function d2EventMetrics(tapes) {
+  let neuralEvents = 0;
+  let physicalHits = 0;
+  let truePositiveEvents = 0;
+  let recalledHits = 0;
+
+  for (const tape of tapes) {
+    neuralEvents += tape.d2NeuralEvents.length;
+    physicalHits += tape.damageEvents.length;
+
+    for (const event of tape.d2NeuralEvents) {
+      if (
+        tape.damageEvents.some((hit) =>
+          d2EventMatchesHit(event.step, hit.step),
+        )
+      ) {
+        truePositiveEvents += 1;
+      }
+    }
+
+    for (const hit of tape.damageEvents) {
+      if (
+        tape.d2NeuralEvents.some((event) =>
+          d2EventMatchesHit(event.step, hit.step),
+        )
+      ) {
+        recalledHits += 1;
+      }
+    }
+  }
+
+  const precision =
+    neuralEvents > 0 ? truePositiveEvents / neuralEvents : 0;
+  const recall =
+    physicalHits > 0 ? recalledHits / physicalHits : 0;
+  const f1 =
+    precision + recall > 0
+      ? (2 * precision * recall) / (precision + recall)
+      : 0;
+
+  return {
+    tapes: tapes.length,
+    neuralEvents,
+    physicalHits,
+    truePositiveEvents,
+    recalledHits,
+    precision,
+    recall,
+    f1,
+    falseEventsPerEpisode:
+      (neuralEvents - truePositiveEvents) / tapes.length,
+  };
+}
+
+function d2PhysicalHitCountBefore(tape, decisionStep) {
+  return tape.damageEvents.filter(
+    (event) => event.step < decisionStep,
+  ).length;
+}
+
+function d2TrainDecisionMeans(tapes) {
+  return Array.from({ length: 10 }, (_, decisionIndex) => ({
+    neuralEvents: mean(
+      tapes.map(
+        (tape) => tape.d2DecisionEventCounts[decisionIndex],
+      ),
+    ),
+    physicalHits: mean(
+      tapes.map((tape) =>
+        d2PhysicalHitCountBefore(
+          tape,
+          tape.potionEvents[decisionIndex].step,
+        ),
+      ),
+    ),
+  }));
+}
+
+function d2DecisionRows(tapes, decisionMeans) {
+  const rows = [];
+  for (const tape of tapes) {
+    for (let decisionIndex = 0; decisionIndex < 10; decisionIndex += 1) {
+      const neuralCount =
+        tape.d2DecisionEventCounts[decisionIndex];
+      const hitCount = d2PhysicalHitCountBefore(
+        tape,
+        tape.potionEvents[decisionIndex].step,
+      );
+      rows.push({
+        seed: tape.seed,
+        decisionIndex,
+        neuralCount,
+        hitCount,
+        neuralResidual:
+          neuralCount - decisionMeans[decisionIndex].neuralEvents,
+        hitResidual:
+          hitCount - decisionMeans[decisionIndex].physicalHits,
+      });
+    }
+  }
+  return rows;
+}
+
+function d2RegressionLikeMetrics(actual, predicted) {
+  const actualMean = mean(actual);
+  const predictedMean = mean(predicted);
+  const sse = actual.reduce(
+    (sum, value, index) => sum + (value - predicted[index]) ** 2,
+    0,
+  );
+  const sst = actual.reduce(
+    (sum, value) => sum + (value - actualMean) ** 2,
+    0,
+  );
+  const errors = actual.map(
+    (value, index) => predicted[index] - value,
+  );
+  const mae = mean(errors.map((value) => Math.abs(value)));
+  const rmse = Math.sqrt(mean(errors.map((value) => value * value)));
+  let covariance = 0;
+  let actualVariance = 0;
+  let predictedVariance = 0;
+  for (let index = 0; index < actual.length; index += 1) {
+    const a = actual[index] - actualMean;
+    const p = predicted[index] - predictedMean;
+    covariance += a * p;
+    actualVariance += a * a;
+    predictedVariance += p * p;
+  }
+  return {
+    states: actual.length,
+    r2: sst > 0 ? 1 - sse / sst : null,
+    mae,
+    rmse,
+    pearson:
+      actualVariance > 0 && predictedVariance > 0
+        ? covariance / Math.sqrt(actualVariance * predictedVariance)
+        : null,
+    meanSignedError: mean(errors),
+  };
+}
+
+function d2DirectMetrics(rows) {
+  return d2RegressionLikeMetrics(
+    rows.map((row) => row.hitCount),
+    rows.map((row) => row.neuralCount),
+  );
+}
+
+function d2ResidualMetrics(rows, overrideNeural = null) {
+  return d2RegressionLikeMetrics(
+    rows.map((row) => row.hitResidual),
+    overrideNeural ??
+      rows.map((row) => row.neuralResidual),
+  );
+}
+
+function d2ShiftedResidual(rows) {
+  const seeds = [...new Set(rows.map((row) => row.seed))];
+  const donor = new Map(
+    seeds.map((seed, index) => [
+      seed,
+      seeds[(index + 1) % seeds.length],
+    ]),
+  );
+  const lookup = new Map(
+    rows.map((row) => [
+      row.seed + ":" + row.decisionIndex,
+      row.neuralResidual,
+    ]),
+  );
+  return rows.map((row) =>
+    lookup.get(donor.get(row.seed) + ":" + row.decisionIndex),
+  );
+}
+
+function d2d1LatestHitIndex(tape, step) {
+  let latest = -1;
+  for (let index = 0; index < tape.damageEvents.length; index += 1) {
+    if (tape.damageEvents[index].step > step) break;
+    latest = index;
+  }
+  return latest;
+}
+
+function d2d1EventTiming(tapes) {
+  const bins = {
+    recent_0_0p2: 0,
+    linger_0p2_0p5: 0,
+    linger_0p5_1p0: 0,
+    linger_1p0_2p0: 0,
+    background_2p0_plus_or_none: 0,
+  };
+  let totalEvents = 0;
+  let recentEvents = 0;
+  let lingerEvents = 0;
+  let backgroundEvents = 0;
+
+  for (const tape of tapes) {
+    for (const event of tape.d2NeuralEvents) {
+      totalEvents += 1;
+      const hitIndex = d2d1LatestHitIndex(tape, event.step);
+      const age =
+        hitIndex < 0
+          ? Infinity
+          : event.step - tape.damageEvents[hitIndex].step;
+
+      if (age >= 0 && age < 10) {
+        recentEvents += 1;
+        bins.recent_0_0p2 += 1;
+      } else if (age >= 10 && age < 25) {
+        lingerEvents += 1;
+        bins.linger_0p2_0p5 += 1;
+      } else if (age >= 25 && age < 50) {
+        lingerEvents += 1;
+        bins.linger_0p5_1p0 += 1;
+      } else if (age >= 50 && age < 100) {
+        lingerEvents += 1;
+        bins.linger_1p0_2p0 += 1;
+      } else {
+        backgroundEvents += 1;
+        bins.background_2p0_plus_or_none += 1;
+      }
+    }
+  }
+
+  const falseEvents = lingerEvents + backgroundEvents;
+  return {
+    totalEvents,
+    recentEvents,
+    falseEvents,
+    lingerEvents,
+    backgroundEvents,
+    falseLingerFraction:
+      falseEvents > 0 ? lingerEvents / falseEvents : null,
+    falseBackgroundFraction:
+      falseEvents > 0 ? backgroundEvents / falseEvents : null,
+    bins,
+  };
+}
+
+function d2d1MissedHitAttribution(tapes, phaseMeans, detector) {
+  let physicalHits = 0;
+  let recalledHits = 0;
+  let rawDetectableHits = 0;
+  let rawDetectorMisses = 0;
+  let suppressionMisses = 0;
+
+  for (const tape of tapes) {
+    const frameMargins = tape.potionFrameEvents.map((frame) => ({
+      step: frame.step,
+      margin:
+        vectorDot(
+          detector.weights,
+          d6ResidualFrame(frame, phaseMeans),
+        ) - detector.threshold,
+    }));
+
+    for (const hit of tape.damageEvents) {
+      physicalHits += 1;
+      const rawDetectable = frameMargins.some(
+        (frame) =>
+          frame.step - hit.step >= 0 &&
+          frame.step - hit.step <
+            V15N_D6_D2_MATCH_MAX_AGE_STEPS &&
+          frame.margin > 0,
+      );
+      const recalled = tape.d2NeuralEvents.some(
+        (event) =>
+          event.step - hit.step >= 0 &&
+          event.step - hit.step <
+            V15N_D6_D2_MATCH_MAX_AGE_STEPS,
+      );
+
+      if (rawDetectable) rawDetectableHits += 1;
+      if (recalled) {
+        recalledHits += 1;
+      } else if (rawDetectable) {
+        suppressionMisses += 1;
+      } else {
+        rawDetectorMisses += 1;
+      }
+    }
+  }
+
+  const missedHits = physicalHits - recalledHits;
+  return {
+    physicalHits,
+    recalledHits,
+    missedHits,
+    rawDetectableHits,
+    rawDetectorMisses,
+    suppressionMisses,
+    rawDetectableHitFraction:
+      rawDetectableHits / physicalHits,
+    recalledHitFraction: recalledHits / physicalHits,
+    rawDetectorMissFraction:
+      rawDetectorMisses / physicalHits,
+    suppressionMissFraction:
+      suppressionMisses / physicalHits,
+    suppressionFractionAmongMissed:
+      missedHits > 0 ? suppressionMisses / missedHits : null,
+  };
+}
+
+function d2d1InterHitTiming(tapes) {
+  const intervals = [];
+  for (const tape of tapes) {
+    for (let index = 1; index < tape.damageEvents.length; index += 1) {
+      intervals.push(
+        (tape.damageEvents[index].step -
+          tape.damageEvents[index - 1].step) *
+          0.02,
+      );
+    }
+  }
+  intervals.sort((a, b) => a - b);
+  return {
+    count: intervals.length,
+    medianSeconds: d1Percentile(intervals, 0.5),
+    p10Seconds: d1Percentile(intervals, 0.1),
+    p25Seconds: d1Percentile(intervals, 0.25),
+    p75Seconds: d1Percentile(intervals, 0.75),
+    p90Seconds: d1Percentile(intervals, 0.9),
+    fractionBelow0p5s:
+      intervals.filter((value) => value < 0.5).length /
+      intervals.length,
+    fractionBelow1p0s:
+      intervals.filter((value) => value < 1.0).length /
+      intervals.length,
+    fractionBelow2p0s:
+      intervals.filter((value) => value < 2.0).length /
+      intervals.length,
+  };
+}
+
+function d2d1VerifyEventMetrics(actual, expected, label) {
+  for (const key of [
+    "precision",
+    "recall",
+    "f1",
+    "falseEventsPerEpisode",
+  ]) {
+    d1AssertClose(actual[key], expected[key], label + "." + key);
+  }
+  for (const key of [
+    "tapes",
+    "neuralEvents",
+    "physicalHits",
+    "truePositiveEvents",
+    "recalledHits",
+  ]) {
+    if (actual[key] !== expected[key]) {
+      throw new Error(
+        "v15N-D6-D2-D1 reproduction mismatch " +
+          label +
+          "." +
+          key,
+      );
+    }
+  }
+}
+
+
+function d2d2EvenlySpacedRows(rows, count) {
+  if (rows.length < count) {
+    throw new Error("v15N-D6-D2-D2 insufficient PCA fit rows");
+  }
+  if (count === 1) return [rows[0]];
+  return Array.from({ length: count }, (_, index) => {
+    const sourceIndex = Math.round(
+      (index * (rows.length - 1)) / (count - 1),
+    );
+    return rows[sourceIndex];
+  });
+}
+
+function d2d2FitPca(rawRows) {
+  const raw = d2d2EvenlySpacedRows(
+    rawRows,
+    V15N_D6_D2_D2_PCA_FIT_ROWS,
+  );
+  const means = new Float64Array(DN_COUNT);
+  for (const row of raw) {
+    for (let d = 0; d < DN_COUNT; d += 1) means[d] += row[d];
+  }
+  for (let d = 0; d < DN_COUNT; d += 1) means[d] /= raw.length;
+
+  const scales = new Float64Array(DN_COUNT);
+  for (const row of raw) {
+    for (let d = 0; d < DN_COUNT; d += 1) {
+      const delta = row[d] - means[d];
+      scales[d] += delta * delta;
+    }
+  }
+  for (let d = 0; d < DN_COUNT; d += 1) {
+    scales[d] = Math.max(Math.sqrt(scales[d] / raw.length), 1e-6);
+  }
+
+  const standardized = raw.map((row) => {
+    const out = new Float64Array(DN_COUNT);
+    for (let d = 0; d < DN_COUNT; d += 1) {
+      out[d] = (row[d] - means[d]) / scales[d];
+    }
+    return out;
+  });
+
+  const n = standardized.length;
+  const gram = new Float64Array(n * n);
+  for (let i = 0; i < n; i += 1) {
+    for (let j = 0; j <= i; j += 1) {
+      const value = vectorDot(standardized[i], standardized[j]) / n;
+      gram[i * n + j] = value;
+      gram[j * n + i] = value;
+    }
+  }
+
+  const sampleEigenvectors = [];
+  const components = [];
+  const eigenvalues = [];
+  for (
+    let component = 0;
+    component < V15N_PCA_COMPONENTS;
+    component += 1
+  ) {
+    const random = mulberry32(V15N_PCA_SEED + component);
+    let u = Float64Array.from(
+      { length: n },
+      () => random() * 2 - 1,
+    );
+    orthogonalize(u, sampleEigenvectors);
+    normalizeVector(u);
+
+    for (
+      let iteration = 0;
+      iteration < V15N_PCA_ITERATIONS;
+      iteration += 1
+    ) {
+      const next = new Float64Array(n);
+      for (let i = 0; i < n; i += 1) {
+        let value = 0;
+        const offset = i * n;
+        for (let j = 0; j < n; j += 1) {
+          value += gram[offset + j] * u[j];
+        }
+        next[i] = value;
+      }
+      orthogonalize(next, sampleEigenvectors);
+      normalizeVector(next);
+      u = next;
+    }
+
+    const gu = new Float64Array(n);
+    for (let i = 0; i < n; i += 1) {
+      let value = 0;
+      const offset = i * n;
+      for (let j = 0; j < n; j += 1) {
+        value += gram[offset + j] * u[j];
+      }
+      gu[i] = value;
+    }
+    const eigenvalue = vectorDot(u, gu);
+
+    const loading = new Float64Array(DN_COUNT);
+    for (let i = 0; i < n; i += 1) {
+      const scale = u[i];
+      const row = standardized[i];
+      for (let d = 0; d < DN_COUNT; d += 1) {
+        loading[d] += scale * row[d];
+      }
+    }
+    normalizeVector(loading);
+    let maxIndex = 0;
+    for (let d = 1; d < DN_COUNT; d += 1) {
+      if (Math.abs(loading[d]) > Math.abs(loading[maxIndex])) {
+        maxIndex = d;
+      }
+    }
+    if (loading[maxIndex] < 0) {
+      for (let d = 0; d < DN_COUNT; d += 1) loading[d] *= -1;
+      for (let i = 0; i < n; i += 1) u[i] *= -1;
+    }
+    sampleEigenvectors.push(u);
+    components.push(loading);
+    eigenvalues.push(eigenvalue);
+  }
+  return { means, scales, components, eigenvalues };
+}
+
+function d2d2ProjectPca(row, preprocessing) {
+  const z = new Float64Array(DN_COUNT);
+  for (let d = 0; d < DN_COUNT; d += 1) {
+    z[d] = (row[d] - preprocessing.means[d]) /
+      preprocessing.scales[d];
+  }
+  return preprocessing.components.map(
+    (component) => vectorDot(z, component),
+  );
+}
+
+function d2d2FrameData(tape, phaseMeans, detector) {
+  const rows = tape.potionFrameEvents.map((frame) => {
+    const residual = d6ResidualFrame(frame, phaseMeans);
+    return {
+      frameIndex: frame.frameIndex,
+      step: frame.step,
+      residual,
+      margin:
+        vectorDot(detector.weights, residual) - detector.threshold,
+    };
+  });
+  const eligible = [];
+  for (
+    let index = V15N_D6_D2_D2_HISTORY_FRAMES;
+    index < rows.length;
+    index += 1
+  ) {
+    const row = rows[index];
+    const previous = rows.slice(
+      index - V15N_D6_D2_D2_HISTORY_FRAMES,
+      index,
+    );
+    const previousMargins = previous.map((item) => item.margin);
+    const previousMeanMargin = mean(previousMargins);
+    const previousMaxMargin = Math.max(...previousMargins);
+    const innovation = new Float64Array(DN_COUNT);
+    for (let d = 0; d < DN_COUNT; d += 1) {
+      let baseline = 0;
+      for (const prior of previous) baseline += prior.residual[d];
+      baseline /= previous.length;
+      innovation[d] = row.residual[d] - baseline;
+    }
+    eligible.push({
+      ...row,
+      scalar: [
+        row.margin,
+        row.margin - previousMargins[previousMargins.length - 1],
+        row.margin - previousMeanMargin,
+        row.margin - previousMaxMargin,
+      ],
+      innovation,
+    });
+  }
+  return eligible;
+}
+
+function d2d2PositiveFrameForHit(frames, hitStep) {
+  return frames.find(
+    (frame) =>
+      frame.step >= hitStep &&
+      frame.step - hitStep < POTION_FRAME_STEPS,
+  ) ?? null;
+}
+
+function d2d2HitSuppressed(tape, phaseMeans, detector, hit) {
+  const rawDetectable = tape.potionFrameEvents.some((frame) => {
+    const age = frame.step - hit.step;
+    if (age < 0 || age >= V15N_D6_D2_MATCH_MAX_AGE_STEPS) {
+      return false;
+    }
+    const residual = d6ResidualFrame(frame, phaseMeans);
+    return (
+      vectorDot(detector.weights, residual) - detector.threshold > 0
+    );
+  });
+  const emitted = tape.d2NeuralEvents.some(
+    (event) =>
+      event.step - hit.step >= 0 &&
+      event.step - hit.step < V15N_D6_D2_MATCH_MAX_AGE_STEPS,
+  );
+  return rawDetectable && !emitted;
+}
+
+function d2d2Rows(tapes, phaseMeans, detector) {
+  const rows = [];
+  for (const tape of tapes) {
+    const frames = d2d2FrameData(tape, phaseMeans, detector);
+    const positiveByFrame = new Map();
+    for (let hitIndex = 0; hitIndex < tape.damageEvents.length; hitIndex += 1) {
+      const hit = tape.damageEvents[hitIndex];
+      const frame = d2d2PositiveFrameForHit(frames, hit.step);
+      if (!frame) continue;
+      const key = frame.frameIndex;
+      if (!positiveByFrame.has(key)) {
+        positiveByFrame.set(key, []);
+      }
+      positiveByFrame.get(key).push({
+        hitIndex,
+        suppressed: d2d2HitSuppressed(
+          tape,
+          phaseMeans,
+          detector,
+          hit,
+        ),
+      });
+    }
+
+    for (const frame of frames) {
+      const positiveHits = positiveByFrame.get(frame.frameIndex);
+      if (positiveHits?.length) {
+        rows.push({
+          seed: tape.seed,
+          frameIndex: frame.frameIndex,
+          step: frame.step,
+          y: 1,
+          negativeKind: null,
+          suppressed: positiveHits.some((hit) => hit.suppressed),
+          scalar: frame.scalar,
+          innovation: frame.innovation,
+        });
+        continue;
+      }
+
+      const age = latestDamageAgeSteps(tape, frame.step);
+      let negativeKind = null;
+      if (
+        Number.isFinite(age) &&
+        age >= 25 &&
+        age < 100
+      ) {
+        negativeKind = "LINGER";
+      } else if (!Number.isFinite(age) || age >= 100) {
+        negativeKind = "BACKGROUND";
+      }
+      if (!negativeKind) continue;
+      rows.push({
+        seed: tape.seed,
+        frameIndex: frame.frameIndex,
+        step: frame.step,
+        y: 0,
+        negativeKind,
+        suppressed: false,
+        scalar: frame.scalar,
+        innovation: frame.innovation,
+      });
+    }
+  }
+  return rows;
+}
+
+function d2d2SolveLinear(matrix, vector) {
+  const n = vector.length;
+  const a = Array.from({ length: n }, (_, row) => {
+    const out = Array.from(
+      { length: n + 1 },
+      (_, col) => col < n ? matrix[row][col] : vector[row],
+    );
+    return out;
+  });
+  for (let col = 0; col < n; col += 1) {
+    let pivot = col;
+    for (let row = col + 1; row < n; row += 1) {
+      if (Math.abs(a[row][col]) > Math.abs(a[pivot][col])) {
+        pivot = row;
+      }
+    }
+    if (Math.abs(a[pivot][col]) < 1e-12) {
+      throw new Error("v15N-D6-D2-D2 singular ridge system");
+    }
+    [a[col], a[pivot]] = [a[pivot], a[col]];
+    const scale = a[col][col];
+    for (let j = col; j <= n; j += 1) a[col][j] /= scale;
+    for (let row = 0; row < n; row += 1) {
+      if (row === col) continue;
+      const factor = a[row][col];
+      if (factor === 0) continue;
+      for (let j = col; j <= n; j += 1) {
+        a[row][j] -= factor * a[col][j];
+      }
+    }
+  }
+  return a.map((row) => row[n]);
+}
+
+function d2d2FitReadout(trainRows, featureKey) {
+  const width = trainRows[0][featureKey].length;
+  const positives = trainRows.filter((row) => row.y === 1).length;
+  const negatives = trainRows.length - positives;
+  if (!(positives > 0 && negatives > 0)) {
+    throw new Error("v15N-D6-D2-D2 readout class support collapsed");
+  }
+
+  const means = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      means[j] += row[featureKey][j];
+    }
+  }
+  for (let j = 0; j < width; j += 1) means[j] /= trainRows.length;
+
+  const scales = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      const delta = row[featureKey][j] - means[j];
+      scales[j] += delta * delta;
+    }
+  }
+  for (let j = 0; j < width; j += 1) {
+    scales[j] = Math.max(
+      Math.sqrt(scales[j] / trainRows.length),
+      1e-9,
+    );
+  }
+
+  const dim = width + 1;
+  const xtwx = Array.from(
+    { length: dim },
+    () => Array(dim).fill(0),
+  );
+  const xtwy = Array(dim).fill(0);
+
+  for (const row of trainRows) {
+    const classWeight =
+      row.y === 1 ? 0.5 / positives : 0.5 / negatives;
+    const x = [1];
+    for (let j = 0; j < width; j += 1) {
+      x.push((row[featureKey][j] - means[j]) / scales[j]);
+    }
+    for (let i = 0; i < dim; i += 1) {
+      xtwy[i] += classWeight * x[i] * row.y;
+      for (let j = 0; j < dim; j += 1) {
+        xtwx[i][j] += classWeight * x[i] * x[j];
+      }
+    }
+  }
+  for (let j = 1; j < dim; j += 1) {
+    xtwx[j][j] += V15N_D6_D2_D2_RIDGE_LAMBDA;
+  }
+
+  return {
+    means,
+    scales,
+    weights: d2d2SolveLinear(xtwx, xtwy),
+    featureKey,
+  };
+}
+
+function d2d2Predict(row, model) {
+  let score = model.weights[0];
+  for (let j = 0; j < model.means.length; j += 1) {
+    score +=
+      model.weights[j + 1] *
+      ((row[model.featureKey][j] - model.means[j]) /
+        model.scales[j]);
+  }
+  return { score, predicted: score >= V15N_D6_D2_D2_THRESHOLD ? 1 : 0 };
+}
+
+function d2d2Metrics(rows, model) {
+  let positiveN = 0;
+  let negativeN = 0;
+  let positiveCorrect = 0;
+  let negativeCorrect = 0;
+  let lingerN = 0;
+  let lingerCorrect = 0;
+  let backgroundN = 0;
+  let backgroundCorrect = 0;
+  let suppressedN = 0;
+  let suppressedCorrect = 0;
+
+  for (const row of rows) {
+    const { predicted } = d2d2Predict(row, model);
+    if (row.y === 1) {
+      positiveN += 1;
+      if (predicted === 1) positiveCorrect += 1;
+      if (row.suppressed) {
+        suppressedN += 1;
+        if (predicted === 1) suppressedCorrect += 1;
+      }
+    } else {
+      negativeN += 1;
+      if (predicted === 0) negativeCorrect += 1;
+      if (row.negativeKind === "LINGER") {
+        lingerN += 1;
+        if (predicted === 0) lingerCorrect += 1;
+      } else if (row.negativeKind === "BACKGROUND") {
+        backgroundN += 1;
+        if (predicted === 0) backgroundCorrect += 1;
+      }
+    }
+  }
+
+  const positiveRecall = positiveCorrect / positiveN;
+  const negativeRecall = negativeCorrect / negativeN;
+  return {
+    positives: positiveN,
+    negatives: negativeN,
+    lingerNegatives: lingerN,
+    backgroundNegatives: backgroundN,
+    suppressedReimpacts: suppressedN,
+    positiveRecall,
+    negativeRecall,
+    balancedAccuracy: (positiveRecall + negativeRecall) / 2,
+    lingerNegativeRecall:
+      lingerN > 0 ? lingerCorrect / lingerN : null,
+    backgroundNegativeRecall:
+      backgroundN > 0 ? backgroundCorrect / backgroundN : null,
+    suppressedReimpactRecall:
+      suppressedN > 0 ? suppressedCorrect / suppressedN : null,
+  };
+}
+
+function d2d2Support(metrics, tapes) {
+  return {
+    tapes,
+    positives: metrics.positives,
+    lingerNegatives: metrics.lingerNegatives,
+    backgroundNegatives: metrics.backgroundNegatives,
+    suppressedReimpacts: metrics.suppressedReimpacts,
+    pass:
+      tapes === 24 &&
+      metrics.positives >= V15N_D6_D2_D2_MIN_POSITIVE &&
+      metrics.lingerNegatives >= V15N_D6_D2_D2_MIN_LINGER &&
+      metrics.backgroundNegatives >=
+        V15N_D6_D2_D2_MIN_BACKGROUND &&
+      metrics.suppressedReimpacts >=
+        V15N_D6_D2_D2_MIN_SUPPRESSED,
+  };
+}
+
+function d2d2FamilyPass(evalMetrics, holdoutMetrics) {
+  return [evalMetrics, holdoutMetrics].every(
+    (metrics) =>
+      metrics.balancedAccuracy >= V15N_D6_D2_D2_GATE &&
+      metrics.positiveRecall >= V15N_D6_D2_D2_GATE &&
+      metrics.negativeRecall >= V15N_D6_D2_D2_GATE &&
+      metrics.suppressedReimpactRecall >= V15N_D6_D2_D2_GATE,
+  );
+}
+
+function d2d3AssertMetric(actual, expected, label) {
+  if (Math.abs(actual - expected) > 1e-12) {
+    throw new Error(
+      "v15N-D6-D2-D3 D2-D2 metric mismatch " +
+        label +
+        " actual=" +
+        actual +
+        " expected=" +
+        expected,
+    );
+  }
+}
+
+function d2d3VerifyScalarMetrics(actual, expected, label) {
+  for (const key of [
+    "positiveRecall",
+    "negativeRecall",
+    "balancedAccuracy",
+    "lingerNegativeRecall",
+    "backgroundNegativeRecall",
+    "suppressedReimpactRecall",
+  ]) {
+    d2d3AssertMetric(actual[key], expected[key], label + "." + key);
+  }
+  for (const key of [
+    "positives",
+    "negatives",
+    "lingerNegatives",
+    "backgroundNegatives",
+    "suppressedReimpacts",
+  ]) {
+    if (actual[key] !== expected[key]) {
+      throw new Error(
+        "v15N-D6-D2-D3 D2-D2 support mismatch " +
+          label +
+          "." +
+          key,
+      );
+    }
+  }
+}
+
+function d2d3RunEventizer(tape, phaseMeans, detector, scalarModel) {
+  let previousPositive = false;
+  const events = [];
+  const frames = d2d2FrameData(tape, phaseMeans, detector);
+  for (const frame of frames) {
+    const prediction = d2d2Predict(
+      { scalar: frame.scalar },
+      scalarModel,
+    );
+    const positive = prediction.predicted === 1;
+    if (positive && !previousPositive) {
+      events.push({
+        step: frame.step,
+        frameIndex: frame.frameIndex,
+        score: prediction.score,
+      });
+    }
+    previousPositive = positive;
+  }
+  return events;
+}
+
+function d2d3AttachEventizer(tapes, phaseMeans, detector, scalarModel) {
+  for (const tape of tapes) {
+    tape.d2d3NeuralEvents = d2d3RunEventizer(
+      tape,
+      phaseMeans,
+      detector,
+      scalarModel,
+    );
+  }
+}
+
+function d2d3MatchTape(tape) {
+  const events = tape.d2d3NeuralEvents;
+  const used = new Set();
+  let matched = 0;
+  for (const hit of tape.damageEvents) {
+    let chosen = -1;
+    for (let index = 0; index < events.length; index += 1) {
+      if (used.has(index)) continue;
+      const age = events[index].step - hit.step;
+      if (age < 0) continue;
+      if (age >= V15N_D6_D2_MATCH_MAX_AGE_STEPS) break;
+      chosen = index;
+      break;
+    }
+    if (chosen >= 0) {
+      used.add(chosen);
+      matched += 1;
+    }
+  }
+  return {
+    physicalHits: tape.damageEvents.length,
+    neuralEvents: events.length,
+    matched,
+    falseEvents: events.length - matched,
+    missedHits: tape.damageEvents.length - matched,
+    absoluteCountError: Math.abs(
+      events.length - tape.damageEvents.length,
+    ),
+  };
+}
+
+function d2d3EventMetrics(tapes) {
+  const perTape = tapes.map(d2d3MatchTape);
+  const physicalHits = perTape.reduce(
+    (sum, row) => sum + row.physicalHits,
+    0,
+  );
+  const neuralEvents = perTape.reduce(
+    (sum, row) => sum + row.neuralEvents,
+    0,
+  );
+  const matched = perTape.reduce(
+    (sum, row) => sum + row.matched,
+    0,
+  );
+  const falseEvents = neuralEvents - matched;
+  const missedHits = physicalHits - matched;
+  const precision = neuralEvents > 0 ? matched / neuralEvents : 0;
+  const recall = physicalHits > 0 ? matched / physicalHits : 0;
+  const f1 =
+    precision + recall > 0
+      ? (2 * precision * recall) / (precision + recall)
+      : 0;
+  return {
+    tapes: tapes.length,
+    physicalHits,
+    neuralEvents,
+    matched,
+    falseEvents,
+    missedHits,
+    precision,
+    recall,
+    f1,
+    falseEventsPerEpisode: falseEvents / tapes.length,
+    missedHitsPerEpisode: missedHits / tapes.length,
+    eventCountRatio:
+      physicalHits > 0 ? neuralEvents / physicalHits : 0,
+    meanAbsolutePerEpisodeCountError: mean(
+      perTape.map((row) => row.absoluteCountError),
+    ),
+  };
+}
+
+function d2d3Support(metrics) {
+  return {
+    tapes: metrics.tapes,
+    physicalHits: metrics.physicalHits,
+    neuralEvents: metrics.neuralEvents,
+    pass:
+      metrics.tapes === 24 &&
+      metrics.physicalHits >= V15N_D6_D2_D3_MIN_PHYSICAL_HITS &&
+      metrics.neuralEvents >= V15N_D6_D2_D3_MIN_NEURAL_EVENTS,
+  };
+}
+
+function d2d3Pass(metrics) {
+  return (
+    metrics.precision >= V15N_D6_D2_D3_EVENT_GATE &&
+    metrics.recall >= V15N_D6_D2_D3_EVENT_GATE &&
+    metrics.f1 >= V15N_D6_D2_D3_EVENT_GATE &&
+    metrics.eventCountRatio >= V15N_D6_D2_D3_COUNT_RATIO_MIN &&
+    metrics.eventCountRatio <= V15N_D6_D2_D3_COUNT_RATIO_MAX &&
+    metrics.meanAbsolutePerEpisodeCountError <=
+      V15N_D6_D2_D3_COUNT_MAE_MAX
+  );
+}
+
+function d3d1AssertClose(actual, expected, label) {
+  if (Math.abs(actual - expected) > 1e-12) {
+    throw new Error(
+      "v15N-D6-D2-D3-D1 metric mismatch " +
+        label +
+        " actual=" +
+        actual +
+        " expected=" +
+        expected,
+    );
+  }
+}
+
+function d3d1VerifyEventMetrics(actual, expected, label) {
+  for (const key of [
+    "tapes",
+    "physicalHits",
+    "neuralEvents",
+    "matched",
+    "falseEvents",
+    "missedHits",
+  ]) {
+    if (actual[key] !== expected[key]) {
+      throw new Error(
+        "v15N-D6-D2-D3-D1 integer metric mismatch " +
+          label +
+          "." +
+          key,
+      );
+    }
+  }
+  for (const key of [
+    "precision",
+    "recall",
+    "f1",
+    "falseEventsPerEpisode",
+    "missedHitsPerEpisode",
+    "eventCountRatio",
+    "meanAbsolutePerEpisodeCountError",
+  ]) {
+    d3d1AssertClose(actual[key], expected[key], label + "." + key);
+  }
+}
+
+function d3d1PredictedFrames(tape, phaseMeans, detector, scalarModel) {
+  return d2d2FrameData(tape, phaseMeans, detector).map((frame) => {
+    const prediction = d2d2Predict(
+      { scalar: frame.scalar },
+      scalarModel,
+    );
+    return {
+      step: frame.step,
+      frameIndex: frame.frameIndex,
+      score: prediction.score,
+      positive: prediction.predicted === 1,
+    };
+  });
+}
+
+function d3d1DetailedMatching(tape) {
+  const events = tape.d2d3NeuralEvents;
+  const hits = tape.damageEvents;
+  const eventOwner = Array(events.length).fill(null);
+  const hitEvent = Array(hits.length).fill(null);
+  const used = new Set();
+
+  for (let hitIndex = 0; hitIndex < hits.length; hitIndex += 1) {
+    const hit = hits[hitIndex];
+    let chosen = -1;
+    for (let eventIndex = 0; eventIndex < events.length; eventIndex += 1) {
+      if (used.has(eventIndex)) continue;
+      const age = events[eventIndex].step - hit.step;
+      if (age < 0) continue;
+      if (age >= V15N_D6_D2_MATCH_MAX_AGE_STEPS) break;
+      chosen = eventIndex;
+      break;
+    }
+    if (chosen >= 0) {
+      used.add(chosen);
+      eventOwner[chosen] = hitIndex;
+      hitEvent[hitIndex] = chosen;
+    }
+  }
+  return { eventOwner, hitEvent };
+}
+
+function d3d1LatestHitAge(tape, step) {
+  let latest = null;
+  for (const hit of tape.damageEvents) {
+    if (hit.step > step) break;
+    latest = hit.step;
+  }
+  return latest === null ? Infinity : step - latest;
+}
+
+function d3d1TapeAttribution(tape, phaseMeans, detector, scalarModel) {
+  const predictions = d3d1PredictedFrames(
+    tape,
+    phaseMeans,
+    detector,
+    scalarModel,
+  );
+  const matching = d3d1DetailedMatching(tape);
+  const missCounts = {
+    RECALLED: 0,
+    FRAME_CLASSIFIER_MISS: 0,
+    EDGE_SUPPRESSION: 0,
+    MATCHING_CONFLICT: 0,
+  };
+  let edgeSuppressionAlreadyPositive = 0;
+  const edgeSuppressionPositiveFrameCounts = [];
+
+  for (let hitIndex = 0; hitIndex < tape.damageEvents.length; hitIndex += 1) {
+    const hit = tape.damageEvents[hitIndex];
+    if (matching.hitEvent[hitIndex] !== null) {
+      missCounts.RECALLED += 1;
+      continue;
+    }
+
+    const windowFrames = predictions.filter(
+      (frame) =>
+        frame.step >= hit.step &&
+        frame.step - hit.step < V15N_D6_D2_MATCH_MAX_AGE_STEPS,
+    );
+    const positiveFrames = windowFrames.filter((frame) => frame.positive);
+    if (positiveFrames.length === 0) {
+      missCounts.FRAME_CLASSIFIER_MISS += 1;
+      continue;
+    }
+
+    const eventIndicesInWindow = [];
+    for (
+      let eventIndex = 0;
+      eventIndex < tape.d2d3NeuralEvents.length;
+      eventIndex += 1
+    ) {
+      const event = tape.d2d3NeuralEvents[eventIndex];
+      const age = event.step - hit.step;
+      if (age >= 0 && age < V15N_D6_D2_MATCH_MAX_AGE_STEPS) {
+        eventIndicesInWindow.push(eventIndex);
+      }
+    }
+
+    if (eventIndicesInWindow.length > 0) {
+      const owners = eventIndicesInWindow.map(
+        (eventIndex) => matching.eventOwner[eventIndex],
+      );
+      if (owners.some((owner) => owner === null)) {
+        throw new Error(
+          "v15N-D6-D2-D3-D1 unmatched in-window event should have matched hit",
+        );
+      }
+      if (owners.some((owner) => owner >= hitIndex)) {
+        throw new Error(
+          "v15N-D6-D2-D3-D1 in-window event conflict owner invalid",
+        );
+      }
+      missCounts.MATCHING_CONFLICT += 1;
+      continue;
+    }
+
+    missCounts.EDGE_SUPPRESSION += 1;
+    edgeSuppressionPositiveFrameCounts.push(positiveFrames.length);
+
+    const firstPositive = positiveFrames[0];
+    const predictionIndex = predictions.findIndex(
+      (frame) => frame.frameIndex === firstPositive.frameIndex,
+    );
+    if (
+      predictionIndex > 0 &&
+      predictions[predictionIndex - 1].positive
+    ) {
+      edgeSuppressionAlreadyPositive += 1;
+    }
+  }
+
+  const falseCounts = {
+    RECENT_UNMATCHED: 0,
+    LINGER: 0,
+    BACKGROUND: 0,
+  };
+  const falseFineBins = {
+    "0-0.2s": 0,
+    "0.2-0.5s": 0,
+    "0.5-1.0s": 0,
+    "1.0-2.0s": 0,
+    ">=2.0s_or_no_prior_hit": 0,
+  };
+
+  for (
+    let eventIndex = 0;
+    eventIndex < tape.d2d3NeuralEvents.length;
+    eventIndex += 1
+  ) {
+    if (matching.eventOwner[eventIndex] !== null) continue;
+    const event = tape.d2d3NeuralEvents[eventIndex];
+    const age = d3d1LatestHitAge(tape, event.step);
+    if (Number.isFinite(age) && age < 10) {
+      falseCounts.RECENT_UNMATCHED += 1;
+      falseFineBins["0-0.2s"] += 1;
+    } else if (Number.isFinite(age) && age < 100) {
+      falseCounts.LINGER += 1;
+      if (age < 25) {
+        falseFineBins["0.2-0.5s"] += 1;
+      } else if (age < 50) {
+        falseFineBins["0.5-1.0s"] += 1;
+      } else {
+        falseFineBins["1.0-2.0s"] += 1;
+      }
+    } else {
+      falseCounts.BACKGROUND += 1;
+      falseFineBins[">=2.0s_or_no_prior_hit"] += 1;
+    }
+  }
+
+  const interHitSteps = [];
+  for (let index = 1; index < tape.damageEvents.length; index += 1) {
+    interHitSteps.push(
+      tape.damageEvents[index].step -
+        tape.damageEvents[index - 1].step,
+    );
+  }
+
+  return {
+    missCounts,
+    edgeSuppressionAlreadyPositive,
+    edgeSuppressionPositiveFrameCounts,
+    falseCounts,
+    falseFineBins,
+    interHitSteps,
+  };
+}
+
+function d3d1Median(values) {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  if (sorted.length % 2) return sorted[middle];
+  return (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function d3d1CohortAttribution(tapes, phaseMeans, detector, scalarModel) {
+  const aggregate = {
+    missCounts: {
+      RECALLED: 0,
+      FRAME_CLASSIFIER_MISS: 0,
+      EDGE_SUPPRESSION: 0,
+      MATCHING_CONFLICT: 0,
+    },
+    edgeSuppressionAlreadyPositive: 0,
+    edgeSuppressionPositiveFrameCounts: [],
+    falseCounts: {
+      RECENT_UNMATCHED: 0,
+      LINGER: 0,
+      BACKGROUND: 0,
+    },
+    falseFineBins: {
+      "0-0.2s": 0,
+      "0.2-0.5s": 0,
+      "0.5-1.0s": 0,
+      "1.0-2.0s": 0,
+      ">=2.0s_or_no_prior_hit": 0,
+    },
+    interHitSteps: [],
+  };
+
+  for (const tape of tapes) {
+    const one = d3d1TapeAttribution(
+      tape,
+      phaseMeans,
+      detector,
+      scalarModel,
+    );
+    for (const key of Object.keys(aggregate.missCounts)) {
+      aggregate.missCounts[key] += one.missCounts[key];
+    }
+    aggregate.edgeSuppressionAlreadyPositive +=
+      one.edgeSuppressionAlreadyPositive;
+    aggregate.edgeSuppressionPositiveFrameCounts.push(
+      ...one.edgeSuppressionPositiveFrameCounts,
+    );
+    for (const key of Object.keys(aggregate.falseCounts)) {
+      aggregate.falseCounts[key] += one.falseCounts[key];
+    }
+    for (const key of Object.keys(aggregate.falseFineBins)) {
+      aggregate.falseFineBins[key] += one.falseFineBins[key];
+    }
+    aggregate.interHitSteps.push(...one.interHitSteps);
+  }
+
+  const missedHits =
+    aggregate.missCounts.FRAME_CLASSIFIER_MISS +
+    aggregate.missCounts.EDGE_SUPPRESSION +
+    aggregate.missCounts.MATCHING_CONFLICT;
+  const falseEvents =
+    aggregate.falseCounts.RECENT_UNMATCHED +
+    aggregate.falseCounts.LINGER +
+    aggregate.falseCounts.BACKGROUND;
+  const edgeSuppression = aggregate.missCounts.EDGE_SUPPRESSION;
+  const intervals = aggregate.interHitSteps;
+
+  return {
+    tapes: tapes.length,
+    physicalHits: aggregate.missCounts.RECALLED + missedHits,
+    recalledHits: aggregate.missCounts.RECALLED,
+    missedHits,
+    missedHitCategories: {
+      ...aggregate.missCounts,
+      frameClassifierMissFraction:
+        missedHits > 0
+          ? aggregate.missCounts.FRAME_CLASSIFIER_MISS / missedHits
+          : 0,
+      edgeSuppressionFraction:
+        missedHits > 0
+          ? aggregate.missCounts.EDGE_SUPPRESSION / missedHits
+          : 0,
+      matchingConflictFraction:
+        missedHits > 0
+          ? aggregate.missCounts.MATCHING_CONFLICT / missedHits
+          : 0,
+    },
+    edgeSuppressionDetail: {
+      alreadyPositiveBeforeFirstInWindow:
+        aggregate.edgeSuppressionAlreadyPositive,
+      alreadyPositiveFraction:
+        edgeSuppression > 0
+          ? aggregate.edgeSuppressionAlreadyPositive / edgeSuppression
+          : 0,
+      medianPositiveFramesInWindow:
+        d3d1Median(aggregate.edgeSuppressionPositiveFrameCounts),
+    },
+    falseEvents,
+    falseEventTiming: {
+      ...aggregate.falseCounts,
+      recentUnmatchedFraction:
+        falseEvents > 0
+          ? aggregate.falseCounts.RECENT_UNMATCHED / falseEvents
+          : 0,
+      lingerFraction:
+        falseEvents > 0
+          ? aggregate.falseCounts.LINGER / falseEvents
+          : 0,
+      backgroundFraction:
+        falseEvents > 0
+          ? aggregate.falseCounts.BACKGROUND / falseEvents
+          : 0,
+      fineBins: aggregate.falseFineBins,
+    },
+    interHitTiming: {
+      intervals: intervals.length,
+      medianSeconds:
+        intervals.length > 0
+          ? d3d1Median(intervals) * STEP_SECONDS
+          : null,
+      fractionUnder0_2s:
+        intervals.length > 0
+          ? intervals.filter((value) => value < 10).length /
+            intervals.length
+          : 0,
+      fractionUnder0_5s:
+        intervals.length > 0
+          ? intervals.filter((value) => value < 25).length /
+            intervals.length
+          : 0,
+      fractionUnder1s:
+        intervals.length > 0
+          ? intervals.filter((value) => value < 50).length /
+            intervals.length
+          : 0,
+      fractionUnder2s:
+        intervals.length > 0
+          ? intervals.filter((value) => value < 100).length /
+            intervals.length
+          : 0,
+    },
+  };
+}
+
+function d3d1Support(cohort) {
+  return {
+    tapes: cohort.tapes,
+    missedHits: cohort.missedHits,
+    falseEvents: cohort.falseEvents,
+    interHitIntervals: cohort.interHitTiming.intervals,
+    pass:
+      cohort.tapes === 24 &&
+      cohort.missedHits >= V15N_D6_D2_D3_D1_MIN_MISSED_HITS &&
+      cohort.falseEvents >= V15N_D6_D2_D3_D1_MIN_FALSE_EVENTS &&
+      cohort.interHitTiming.intervals >=
+        V15N_D6_D2_D3_D1_MIN_INTER_HIT_INTERVALS,
+  };
+}
+
+function d3d1MissFlags(evalCohort, holdoutCohort) {
+  return {
+    classifierMissDominated: [evalCohort, holdoutCohort].every(
+      (cohort) =>
+        cohort.missedHitCategories.frameClassifierMissFraction >=
+        V15N_D6_D2_D3_D1_ATTRIBUTION_GATE,
+    ),
+    edgeSuppressionDominated: [evalCohort, holdoutCohort].every(
+      (cohort) =>
+        cohort.missedHitCategories.edgeSuppressionFraction >=
+        V15N_D6_D2_D3_D1_ATTRIBUTION_GATE,
+    ),
+    matchingConflictDominated: [evalCohort, holdoutCohort].every(
+      (cohort) =>
+        cohort.missedHitCategories.matchingConflictFraction >=
+        V15N_D6_D2_D3_D1_ATTRIBUTION_GATE,
+    ),
+  };
+}
+
+function d3d1FalseFlags(evalCohort, holdoutCohort) {
+  return {
+    recentFalseDominated: [evalCohort, holdoutCohort].every(
+      (cohort) =>
+        cohort.falseEventTiming.recentUnmatchedFraction >=
+        V15N_D6_D2_D3_D1_ATTRIBUTION_GATE,
+    ),
+    lingerFalseDominated: [evalCohort, holdoutCohort].every(
+      (cohort) =>
+        cohort.falseEventTiming.lingerFraction >=
+        V15N_D6_D2_D3_D1_ATTRIBUTION_GATE,
+    ),
+    backgroundFalseDominated: [evalCohort, holdoutCohort].every(
+      (cohort) =>
+        cohort.falseEventTiming.backgroundFraction >=
+        V15N_D6_D2_D3_D1_ATTRIBUTION_GATE,
+    ),
+  };
+}
+
+function d3d2OldScalarPredictions(tape, phaseMeans, detector, oldScalarModel) {
+  return d2d2FrameData(tape, phaseMeans, detector).map((frame) => {
+    const prediction = d2d2Predict(
+      { scalar: frame.scalar },
+      oldScalarModel,
+    );
+    return {
+      ...frame,
+      oldScalarPositive: prediction.predicted === 1,
+      oldScalarScore: prediction.score,
+    };
+  });
+}
+
+function d3d2FirstConditionalFrameForHit(frames, hitStep) {
+  for (let index = 1; index < frames.length; index += 1) {
+    const frame = frames[index];
+    const age = frame.step - hitStep;
+    if (age < 0) continue;
+    if (age >= POTION_FRAME_STEPS) break;
+    if (frames[index - 1].oldScalarPositive) {
+      return frame;
+    }
+  }
+  return null;
+}
+
+function d3d2HasHitInPreceding100ms(tape, step) {
+  return tape.damageEvents.some((hit) => {
+    const age = step - hit.step;
+    return age >= 0 && age < POTION_FRAME_STEPS;
+  });
+}
+
+function d3d2Rows(tapes, phaseMeans, detector, oldScalarModel) {
+  const rows = [];
+  const conditionalHits = [];
+
+  for (const tape of tapes) {
+    const frames = d3d2OldScalarPredictions(
+      tape,
+      phaseMeans,
+      detector,
+      oldScalarModel,
+    );
+    const positiveByFrame = new Map();
+
+    for (let hitIndex = 0; hitIndex < tape.damageEvents.length; hitIndex += 1) {
+      const hit = tape.damageEvents[hitIndex];
+      const frame = d3d2FirstConditionalFrameForHit(frames, hit.step);
+      if (!frame) continue;
+      positiveByFrame.set(frame.frameIndex, {
+        seed: tape.seed,
+        hitIndex,
+        hitStep: hit.step,
+      });
+      conditionalHits.push({
+        seed: tape.seed,
+        hitIndex,
+        hitStep: hit.step,
+      });
+    }
+
+    for (let index = 1; index < frames.length; index += 1) {
+      const frame = frames[index];
+      if (!frames[index - 1].oldScalarPositive) continue;
+
+      const feature = {
+        derivative3: [
+          frame.scalar[1],
+          frame.scalar[2],
+          frame.scalar[3],
+        ],
+        scalar4: [...frame.scalar],
+      };
+
+      const positive = positiveByFrame.get(frame.frameIndex);
+      if (positive) {
+        rows.push({
+          seed: tape.seed,
+          frameIndex: frame.frameIndex,
+          step: frame.step,
+          y: 1,
+          negativeKind: null,
+          hitIndex: positive.hitIndex,
+          hitStep: positive.hitStep,
+          ...feature,
+        });
+        continue;
+      }
+
+      if (d3d2HasHitInPreceding100ms(tape, frame.step)) {
+        continue;
+      }
+
+      const age = latestDamageAgeSteps(tape, frame.step);
+      let negativeKind = null;
+      if (Number.isFinite(age) && age >= 25 && age < 100) {
+        negativeKind = "LINGER";
+      } else if (!Number.isFinite(age) || age >= 100) {
+        negativeKind = "BACKGROUND";
+      }
+      if (!negativeKind) continue;
+
+      rows.push({
+        seed: tape.seed,
+        frameIndex: frame.frameIndex,
+        step: frame.step,
+        y: 0,
+        negativeKind,
+        hitIndex: null,
+        hitStep: null,
+        ...feature,
+      });
+    }
+  }
+
+  return { rows, conditionalHits };
+}
+
+function d3d2Metrics(rows, model) {
+  let positiveN = 0;
+  let positiveCorrect = 0;
+  let negativeN = 0;
+  let negativeCorrect = 0;
+  let lingerN = 0;
+  let lingerCorrect = 0;
+  let backgroundN = 0;
+  let backgroundCorrect = 0;
+
+  for (const row of rows) {
+    const { predicted } = d2d2Predict(row, model);
+    if (row.y === 1) {
+      positiveN += 1;
+      if (predicted === 1) positiveCorrect += 1;
+    } else {
+      negativeN += 1;
+      if (predicted === 0) negativeCorrect += 1;
+      if (row.negativeKind === "LINGER") {
+        lingerN += 1;
+        if (predicted === 0) lingerCorrect += 1;
+      } else if (row.negativeKind === "BACKGROUND") {
+        backgroundN += 1;
+        if (predicted === 0) backgroundCorrect += 1;
+      }
+    }
+  }
+
+  const positiveRecall = positiveCorrect / positiveN;
+  const negativeRecall = negativeCorrect / negativeN;
+  return {
+    positives: positiveN,
+    negatives: negativeN,
+    lingerNegatives: lingerN,
+    backgroundNegatives: backgroundN,
+    positiveRecall,
+    negativeRecall,
+    balancedAccuracy: (positiveRecall + negativeRecall) / 2,
+    lingerNegativeRecall:
+      lingerN > 0 ? lingerCorrect / lingerN : null,
+    backgroundNegativeRecall:
+      backgroundN > 0 ? backgroundCorrect / backgroundN : null,
+  };
+}
+
+function d3d2Support(metrics, tapes) {
+  return {
+    tapes,
+    positives: metrics.positives,
+    lingerNegatives: metrics.lingerNegatives,
+    backgroundNegatives: metrics.backgroundNegatives,
+    pass:
+      tapes === 24 &&
+      metrics.positives >= V15N_D6_D2_D3_D2_MIN_POSITIVE &&
+      metrics.lingerNegatives >= V15N_D6_D2_D3_D2_MIN_LINGER &&
+      metrics.backgroundNegatives >= V15N_D6_D2_D3_D2_MIN_BACKGROUND,
+  };
+}
+
+function d3d2Pass(evalMetrics, holdoutMetrics) {
+  return [evalMetrics, holdoutMetrics].every(
+    (metrics) =>
+      metrics.balancedAccuracy >= V15N_D6_D2_D3_D2_GATE &&
+      metrics.positiveRecall >= V15N_D6_D2_D3_D2_GATE &&
+      metrics.negativeRecall >= V15N_D6_D2_D3_D2_GATE,
+  );
+}
+
+function d3d2Multiplicity(
+  tapes,
+  phaseMeans,
+  detector,
+  oldScalarModel,
+  conditionalModel,
+  featureKey,
+) {
+  const counts = [];
+  for (const tape of tapes) {
+    const frames = d3d2OldScalarPredictions(
+      tape,
+      phaseMeans,
+      detector,
+      oldScalarModel,
+    );
+    for (const hit of tape.damageEvents) {
+      const first = d3d2FirstConditionalFrameForHit(frames, hit.step);
+      if (!first) continue;
+      let count = 0;
+      for (let index = 1; index < frames.length; index += 1) {
+        const frame = frames[index];
+        const age = frame.step - hit.step;
+        if (age < 0) continue;
+        if (age >= V15N_D6_D2_MATCH_MAX_AGE_STEPS) break;
+        if (!frames[index - 1].oldScalarPositive) continue;
+        const row = {
+          derivative3: [
+            frame.scalar[1],
+            frame.scalar[2],
+            frame.scalar[3],
+          ],
+          scalar4: [...frame.scalar],
+        };
+        if (d2d2Predict(row, conditionalModel).predicted === 1) {
+          count += 1;
+        }
+      }
+      counts.push(count);
+    }
+  }
+  return {
+    hits: counts.length,
+    meanPositiveFrames: mean(counts),
+    medianPositiveFrames: d3d1Median(counts),
+    zeroPositiveFraction:
+      counts.filter((value) => value === 0).length / counts.length,
+    onePositiveFraction:
+      counts.filter((value) => value === 1).length / counts.length,
+    multiplePositiveFraction:
+      counts.filter((value) => value >= 2).length / counts.length,
+    featureKey,
+  };
+}
+
+function d3d3Rows(
+  tapes,
+  phaseMeans,
+  detector,
+  oldScalarModel,
+  innovationPca,
+) {
+  const rows = [];
+  for (const tape of tapes) {
+    const frames = d3d2OldScalarPredictions(
+      tape,
+      phaseMeans,
+      detector,
+      oldScalarModel,
+    );
+    const positiveByFrame = new Map();
+
+    for (let hitIndex = 0; hitIndex < tape.damageEvents.length; hitIndex += 1) {
+      const hit = tape.damageEvents[hitIndex];
+      const frame = d3d2FirstConditionalFrameForHit(frames, hit.step);
+      if (!frame) continue;
+      positiveByFrame.set(frame.frameIndex, {
+        hitIndex,
+        hitStep: hit.step,
+      });
+    }
+
+    for (let index = 1; index < frames.length; index += 1) {
+      const frame = frames[index];
+      if (!frames[index - 1].oldScalarPositive) continue;
+
+      const feature = {
+        derivative3: [
+          frame.scalar[1],
+          frame.scalar[2],
+          frame.scalar[3],
+        ],
+        innovationPca32: d2d2ProjectPca(
+          frame.innovation,
+          innovationPca,
+        ),
+      };
+
+      const positive = positiveByFrame.get(frame.frameIndex);
+      if (positive) {
+        rows.push({
+          seed: tape.seed,
+          frameIndex: frame.frameIndex,
+          step: frame.step,
+          y: 1,
+          negativeKind: null,
+          hitIndex: positive.hitIndex,
+          hitStep: positive.hitStep,
+          ...feature,
+        });
+        continue;
+      }
+
+      if (d3d2HasHitInPreceding100ms(tape, frame.step)) continue;
+
+      const age = latestDamageAgeSteps(tape, frame.step);
+      let negativeKind = null;
+      if (Number.isFinite(age) && age >= 25 && age < 100) {
+        negativeKind = "LINGER";
+      } else if (!Number.isFinite(age) || age >= 100) {
+        negativeKind = "BACKGROUND";
+      }
+      if (!negativeKind) continue;
+
+      rows.push({
+        seed: tape.seed,
+        frameIndex: frame.frameIndex,
+        step: frame.step,
+        y: 0,
+        negativeKind,
+        hitIndex: null,
+        hitStep: null,
+        ...feature,
+      });
+    }
+  }
+  return rows;
+}
+
+function d3d3FitContextBalancedReadout(trainRows, featureKey) {
+  if (!trainRows.length) {
+    throw new Error("v15N-D6-D2-D3-D3 empty TRAIN rows");
+  }
+  const width = trainRows[0][featureKey].length;
+  const positiveN = trainRows.filter((row) => row.y === 1).length;
+  const lingerN = trainRows.filter(
+    (row) => row.y === 0 && row.negativeKind === "LINGER",
+  ).length;
+  const backgroundN = trainRows.filter(
+    (row) => row.y === 0 && row.negativeKind === "BACKGROUND",
+  ).length;
+  if (!(positiveN > 0 && lingerN > 0 && backgroundN > 0)) {
+    throw new Error("v15N-D6-D2-D3-D3 TRAIN stratum support collapsed");
+  }
+
+  const means = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      means[j] += row[featureKey][j];
+    }
+  }
+  for (let j = 0; j < width; j += 1) means[j] /= trainRows.length;
+
+  const scales = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      const delta = row[featureKey][j] - means[j];
+      scales[j] += delta * delta;
+    }
+  }
+  for (let j = 0; j < width; j += 1) {
+    scales[j] = Math.max(
+      Math.sqrt(scales[j] / trainRows.length),
+      1e-9,
+    );
+  }
+
+  const dim = width + 1;
+  const xtwx = Array.from(
+    { length: dim },
+    () => Array(dim).fill(0),
+  );
+  const xtwy = Array(dim).fill(0);
+
+  for (const row of trainRows) {
+    let sampleWeight;
+    if (row.y === 1) {
+      sampleWeight = 1 / (3 * positiveN);
+    } else if (row.negativeKind === "LINGER") {
+      sampleWeight = 1 / (3 * lingerN);
+    } else if (row.negativeKind === "BACKGROUND") {
+      sampleWeight = 1 / (3 * backgroundN);
+    } else {
+      throw new Error("v15N-D6-D2-D3-D3 unknown TRAIN stratum");
+    }
+
+    const x = [1];
+    for (let j = 0; j < width; j += 1) {
+      x.push((row[featureKey][j] - means[j]) / scales[j]);
+    }
+
+    for (let i = 0; i < dim; i += 1) {
+      xtwy[i] += sampleWeight * x[i] * row.y;
+      for (let j = 0; j < dim; j += 1) {
+        xtwx[i][j] += sampleWeight * x[i] * x[j];
+      }
+    }
+  }
+  for (let j = 1; j < dim; j += 1) {
+    xtwx[j][j] += V15N_D6_D2_D2_RIDGE_LAMBDA;
+  }
+
+  return {
+    means,
+    scales,
+    weights: d2d2SolveLinear(xtwx, xtwy),
+    featureKey,
+    stratumCounts: {
+      positive: positiveN,
+      linger: lingerN,
+      background: backgroundN,
+    },
+  };
+}
+
+function d3d3Metrics(rows, model) {
+  return d3d2Metrics(rows, model);
+}
+
+function d3d3Support(metrics, tapes) {
+  return {
+    tapes,
+    positives: metrics.positives,
+    lingerNegatives: metrics.lingerNegatives,
+    backgroundNegatives: metrics.backgroundNegatives,
+    pass:
+      tapes === V15N_D6_D2_D3_D3_TAPES_PER_PROSPECTIVE &&
+      metrics.positives >= V15N_D6_D2_D3_D3_MIN_POSITIVE &&
+      metrics.lingerNegatives >= V15N_D6_D2_D3_D3_MIN_LINGER &&
+      metrics.backgroundNegatives >= V15N_D6_D2_D3_D3_MIN_BACKGROUND,
+  };
+}
+
+function d3d3FamilyPass(a, b) {
+  return [a, b].every(
+    (metrics) =>
+      metrics.balancedAccuracy >= V15N_D6_D2_D3_D3_GATE &&
+      metrics.positiveRecall >= V15N_D6_D2_D3_D3_GATE &&
+      metrics.negativeRecall >= V15N_D6_D2_D3_D3_GATE &&
+      metrics.lingerNegativeRecall >= V15N_D6_D2_D3_D3_GATE &&
+      metrics.backgroundNegativeRecall >= V15N_D6_D2_D3_D3_GATE,
+  );
+}
+
+function d4NextDamageAgeSteps(tape, step) {
+  for (const hit of tape.damageEvents) {
+    if (hit.step > step) return hit.step - step;
+  }
+  return Number.POSITIVE_INFINITY;
+}
+
+function d4Rows(tapes, phaseMeans, detector, innovationPca) {
+  const rows = [];
+
+  for (const tape of tapes) {
+    const frames = d2d2FrameData(
+      tape,
+      phaseMeans,
+      detector,
+    ).map((frame) => ({
+      ...frame,
+      pca32: d2d2ProjectPca(frame.innovation, innovationPca),
+    }));
+
+    for (let index = 2; index < frames.length; index += 1) {
+      const frame = frames[index];
+      const previousAge = latestDamageAgeSteps(tape, frame.step);
+      const nextAge = d4NextDamageAgeSteps(tape, frame.step);
+
+      let stratum;
+      let y;
+      if (
+        Number.isFinite(previousAge) &&
+        previousAge >= 0 &&
+        previousAge < V15N_D6_D2_MATCH_MAX_AGE_STEPS
+      ) {
+        stratum = "REALIZED_IMPACT";
+        y = 1;
+      } else if (
+        Number.isFinite(nextAge) &&
+        nextAge > 0 &&
+        nextAge < V15N_D6_D2_MATCH_MAX_AGE_STEPS
+      ) {
+        stratum = "PRE_HIT";
+        y = 0;
+      } else {
+        stratum = "TRUE_BACKGROUND";
+        y = 0;
+      }
+
+      rows.push({
+        seed: tape.seed,
+        frameIndex: frame.frameIndex,
+        step: frame.step,
+        y,
+        stratum,
+        currentPca32: Array.from(frame.pca32),
+        temporal3: [
+          ...frames[index - 2].pca32,
+          ...frames[index - 1].pca32,
+          ...frame.pca32,
+        ],
+      });
+    }
+  }
+
+  return rows;
+}
+
+function d4FitReadout(trainRows, featureKey) {
+  if (!trainRows.length) {
+    throw new Error("v15N-D6-D2-D3-D3-D4 empty TRAIN rows");
+  }
+
+  const counts = {
+    REALIZED_IMPACT: trainRows.filter(
+      (row) => row.stratum === "REALIZED_IMPACT",
+    ).length,
+    PRE_HIT: trainRows.filter(
+      (row) => row.stratum === "PRE_HIT",
+    ).length,
+    TRUE_BACKGROUND: trainRows.filter(
+      (row) => row.stratum === "TRUE_BACKGROUND",
+    ).length,
+  };
+  if (
+    !(
+      counts.REALIZED_IMPACT > 0 &&
+      counts.PRE_HIT > 0 &&
+      counts.TRUE_BACKGROUND > 0
+    )
+  ) {
+    throw new Error(
+      "v15N-D6-D2-D3-D3-D4 TRAIN stratum support collapsed",
+    );
+  }
+
+  const width = trainRows[0][featureKey].length;
+  const means = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      means[j] += row[featureKey][j];
+    }
+  }
+  for (let j = 0; j < width; j += 1) {
+    means[j] /= trainRows.length;
+  }
+
+  const scales = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      const delta = row[featureKey][j] - means[j];
+      scales[j] += delta * delta;
+    }
+  }
+  for (let j = 0; j < width; j += 1) {
+    scales[j] = Math.max(
+      Math.sqrt(scales[j] / trainRows.length),
+      1e-9,
+    );
+  }
+
+  const dim = width + 1;
+  const xtwx = Array.from(
+    { length: dim },
+    () => Array(dim).fill(0),
+  );
+  const xtwy = Array(dim).fill(0);
+
+  for (const row of trainRows) {
+    const sampleWeight = 1 / (3 * counts[row.stratum]);
+    const x = [1];
+    for (let j = 0; j < width; j += 1) {
+      x.push((row[featureKey][j] - means[j]) / scales[j]);
+    }
+
+    for (let i = 0; i < dim; i += 1) {
+      xtwy[i] += sampleWeight * x[i] * row.y;
+      for (let j = 0; j < dim; j += 1) {
+        xtwx[i][j] += sampleWeight * x[i] * x[j];
+      }
+    }
+  }
+
+  for (let j = 1; j < dim; j += 1) {
+    xtwx[j][j] += V15N_D6_D2_D2_RIDGE_LAMBDA;
+  }
+
+  return {
+    means,
+    scales,
+    weights: d2d2SolveLinear(xtwx, xtwy),
+    featureKey,
+    stratumCounts: counts,
+  };
+}
+
+function d4Predict(row, model) {
+  let score = model.weights[0];
+  for (let j = 0; j < model.means.length; j += 1) {
+    score +=
+      model.weights[j + 1] *
+      ((row[model.featureKey][j] - model.means[j]) /
+        model.scales[j]);
+  }
+  return {
+    score,
+    predicted:
+      score >= V15N_D6_D2_D2_THRESHOLD ? 1 : 0,
+  };
+}
+
+function d4Metrics(rows, model) {
+  let positive = 0;
+  let positiveCorrect = 0;
+  let negative = 0;
+  let negativeCorrect = 0;
+  let preHit = 0;
+  let preHitCorrect = 0;
+  let background = 0;
+  let backgroundCorrect = 0;
+
+  for (const row of rows) {
+    const prediction = d4Predict(row, model).predicted;
+    if (row.stratum === "REALIZED_IMPACT") {
+      positive += 1;
+      if (prediction === 1) positiveCorrect += 1;
+    } else {
+      negative += 1;
+      if (prediction === 0) negativeCorrect += 1;
+      if (row.stratum === "PRE_HIT") {
+        preHit += 1;
+        if (prediction === 0) preHitCorrect += 1;
+      } else if (row.stratum === "TRUE_BACKGROUND") {
+        background += 1;
+        if (prediction === 0) backgroundCorrect += 1;
+      }
+    }
+  }
+
+  const positiveRecall = positiveCorrect / positive;
+  const negativeRecall = negativeCorrect / negative;
+
+  return {
+    realizedImpact: positive,
+    preHit,
+    trueBackground: background,
+    positiveRecall,
+    negativeRecall,
+    balancedAccuracy: (positiveRecall + negativeRecall) / 2,
+    preHitNegativeRecall:
+      preHit > 0 ? preHitCorrect / preHit : null,
+    trueBackgroundNegativeRecall:
+      background > 0 ? backgroundCorrect / background : null,
+  };
+}
+
+function d4Support(metrics, tapes) {
+  return {
+    tapes,
+    realizedImpact: metrics.realizedImpact,
+    preHit: metrics.preHit,
+    trueBackground: metrics.trueBackground,
+    pass:
+      tapes === V15N_D6_D2_D3_D3_D4_TAPES_PER_PROSPECTIVE &&
+      metrics.realizedImpact >= V15N_D6_D2_D3_D3_D4_MIN_REALIZED &&
+      metrics.preHit >= V15N_D6_D2_D3_D3_D4_MIN_PRE_HIT &&
+      metrics.trueBackground >= V15N_D6_D2_D3_D3_D4_MIN_BACKGROUND,
+  };
+}
+
+function d4FamilyPass(metricsA, metricsB) {
+  return [metricsA, metricsB].every(
+    (metrics) =>
+      metrics.balancedAccuracy >= V15N_D6_D2_D3_D3_D4_GATE &&
+      metrics.positiveRecall >= V15N_D6_D2_D3_D3_D4_GATE &&
+      metrics.negativeRecall >= V15N_D6_D2_D3_D3_D4_GATE &&
+      metrics.preHitNegativeRecall >= V15N_D6_D2_D3_D3_D4_GATE &&
+      metrics.trueBackgroundNegativeRecall >=
+        V15N_D6_D2_D3_D3_D4_GATE,
+  );
+}
+
+
+function d4d2Quantile(values, q) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  if (sorted.length === 1) return sorted[0];
+  const position = (sorted.length - 1) * q;
+  const low = Math.floor(position);
+  const high = Math.ceil(position);
+  if (low === high) return sorted[low];
+  const weight = position - low;
+  return sorted[low] * (1 - weight) + sorted[high] * weight;
+}
+
+function d4d2TemporalFrames(tape, phaseMeans, detector, innovationPca, temporalModel) {
+  const frames = d2d2FrameData(
+    tape,
+    phaseMeans,
+    detector,
+  ).map((frame) => ({
+    ...frame,
+    pca32: d2d2ProjectPca(frame.innovation, innovationPca),
+  }));
+
+  const scored = [];
+  for (let index = 2; index < frames.length; index += 1) {
+    const row = {
+      temporal3: [
+        ...frames[index - 2].pca32,
+        ...frames[index - 1].pca32,
+        ...frames[index].pca32,
+      ],
+    };
+    const score = d4Predict(row, temporalModel).score;
+    scored.push({
+      step: frames[index].step,
+      frameIndex: frames[index].frameIndex,
+      score,
+      positive: score >= V15N_D6_D2_D2_THRESHOLD,
+    });
+  }
+  return scored;
+}
+
+function d4d2RunEventizer(tape, phaseMeans, detector, innovationPca, temporalModel) {
+  const frames = d4d2TemporalFrames(
+    tape,
+    phaseMeans,
+    detector,
+    innovationPca,
+    temporalModel,
+  );
+  let previousPositive = false;
+  let lastEmittedEventStep = null;
+  let risingEdges = 0;
+  let refractorySuppressed = 0;
+  const events = [];
+
+  for (const frame of frames) {
+    const risingEdge = frame.positive && !previousPositive;
+    if (risingEdge) {
+      risingEdges += 1;
+      const refractoryClear =
+        lastEmittedEventStep === null ||
+        frame.step - lastEmittedEventStep >=
+          V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+      if (refractoryClear) {
+        events.push({
+          step: frame.step,
+          frameIndex: frame.frameIndex,
+          score: frame.score,
+        });
+        lastEmittedEventStep = frame.step;
+      } else {
+        refractorySuppressed += 1;
+      }
+    }
+    previousPositive = frame.positive;
+  }
+
+  return { events, risingEdges, refractorySuppressed };
+}
+
+function d4d2AttachEventizer(tapes, phaseMeans, detector, innovationPca, temporalModel) {
+  for (const tape of tapes) {
+    const result = d4d2RunEventizer(
+      tape,
+      phaseMeans,
+      detector,
+      innovationPca,
+      temporalModel,
+    );
+    tape.d4d2NeuralEvents = result.events;
+    tape.d4d2RisingEdges = result.risingEdges;
+    tape.d4d2RefractorySuppressed = result.refractorySuppressed;
+  }
+}
+
+function d4d2MatchTape(tape) {
+  const events = tape.d4d2NeuralEvents;
+  const hits = tape.damageEvents;
+  const used = new Set();
+  const matchedPairs = [];
+
+  for (let hitIndex = 0; hitIndex < hits.length; hitIndex += 1) {
+    let chosen = -1;
+    for (let eventIndex = 0; eventIndex < events.length; eventIndex += 1) {
+      if (used.has(eventIndex)) continue;
+      const age = events[eventIndex].step - hits[hitIndex].step;
+      if (age < 0) continue;
+      if (age >= V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS) break;
+      chosen = eventIndex;
+      break;
+    }
+    if (chosen >= 0) {
+      used.add(chosen);
+      matchedPairs.push({
+        hitIndex,
+        eventIndex: chosen,
+        latencySteps: events[chosen].step - hits[hitIndex].step,
+      });
+    }
+  }
+
+  let preImpactUnmatched200ms = 0;
+  for (let eventIndex = 0; eventIndex < events.length; eventIndex += 1) {
+    if (used.has(eventIndex)) continue;
+    const event = events[eventIndex];
+    const nearFuture = hits.some((hit) => {
+      const delta = hit.step - event.step;
+      return delta > 0 && delta < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+    });
+    if (nearFuture) preImpactUnmatched200ms += 1;
+  }
+
+  let closeImpactPairs = 0;
+  let impactPairIntervals = 0;
+  for (let index = 1; index < hits.length; index += 1) {
+    impactPairIntervals += 1;
+    if (
+      hits[index].step - hits[index - 1].step <
+      V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS
+    ) {
+      closeImpactPairs += 1;
+    }
+  }
+
+  return {
+    physicalImpacts: hits.length,
+    neuralEvents: events.length,
+    matched: matchedPairs.length,
+    falseEvents: events.length - matchedPairs.length,
+    missedImpacts: hits.length - matchedPairs.length,
+    absoluteCountError: Math.abs(events.length - hits.length),
+    matchedPairs,
+    preImpactUnmatched200ms,
+    closeImpactPairs,
+    impactPairIntervals,
+    risingEdges: tape.d4d2RisingEdges,
+    refractorySuppressed: tape.d4d2RefractorySuppressed,
+  };
+}
+
+function d4d2Metrics(tapes) {
+  const perTape = tapes.map(d4d2MatchTape);
+  const physicalImpacts = perTape.reduce((s, r) => s + r.physicalImpacts, 0);
+  const neuralEvents = perTape.reduce((s, r) => s + r.neuralEvents, 0);
+  const matched = perTape.reduce((s, r) => s + r.matched, 0);
+  const falseEvents = neuralEvents - matched;
+  const missedImpacts = physicalImpacts - matched;
+  const precision = neuralEvents > 0 ? matched / neuralEvents : 0;
+  const recall = physicalImpacts > 0 ? matched / physicalImpacts : 0;
+  const f1 =
+    precision + recall > 0
+      ? (2 * precision * recall) / (precision + recall)
+      : 0;
+  const latencySeconds = perTape
+    .flatMap((row) => row.matchedPairs)
+    .map((row) => row.latencySteps * STEP_SECONDS);
+  const preImpactUnmatched200ms = perTape.reduce(
+    (s, r) => s + r.preImpactUnmatched200ms,
+    0,
+  );
+  const closeImpactPairs = perTape.reduce((s, r) => s + r.closeImpactPairs, 0);
+  const impactPairIntervals = perTape.reduce(
+    (s, r) => s + r.impactPairIntervals,
+    0,
+  );
+  const risingEdges = perTape.reduce((s, r) => s + r.risingEdges, 0);
+  const refractorySuppressed = perTape.reduce(
+    (s, r) => s + r.refractorySuppressed,
+    0,
+  );
+
+  return {
+    tapes: tapes.length,
+    physicalImpacts,
+    neuralEvents,
+    matched,
+    falseEvents,
+    missedImpacts,
+    precision,
+    recall,
+    f1,
+    eventCountRatio:
+      physicalImpacts > 0 ? neuralEvents / physicalImpacts : 0,
+    meanAbsolutePerTapeCountError: mean(
+      perTape.map((row) => row.absoluteCountError),
+    ),
+    medianMatchedLatencySeconds: d4d2Quantile(latencySeconds, 0.5),
+    p90MatchedLatencySeconds: d4d2Quantile(latencySeconds, 0.9),
+    preImpactUnmatched200ms,
+    preImpactUnmatchedFraction:
+      falseEvents > 0 ? preImpactUnmatched200ms / falseEvents : 0,
+    closeImpactPairFraction:
+      impactPairIntervals > 0 ? closeImpactPairs / impactPairIntervals : 0,
+    risingEdges,
+    refractorySuppressed,
+    refractorySuppressedFraction:
+      risingEdges > 0 ? refractorySuppressed / risingEdges : 0,
+  };
+}
+
+function d4d2Support(metrics) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts: metrics.physicalImpacts,
+    neuralEvents: metrics.neuralEvents,
+    pass:
+      metrics.tapes === V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      metrics.physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_MIN_PHYSICAL_IMPACTS &&
+      metrics.neuralEvents >=
+        V15N_D6_D2_D3_D3_D4_D2_MIN_NEURAL_EVENTS,
+  };
+}
+
+function d4d2Pass(metrics) {
+  return (
+    metrics.precision >= V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE &&
+    metrics.recall >= V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE &&
+    metrics.f1 >= V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE &&
+    metrics.eventCountRatio >= V15N_D6_D2_D3_D3_D4_D2_COUNT_RATIO_MIN &&
+    metrics.eventCountRatio <= V15N_D6_D2_D3_D3_D4_D2_COUNT_RATIO_MAX &&
+    metrics.meanAbsolutePerTapeCountError <=
+      V15N_D6_D2_D3_D3_D4_D2_COUNT_MAE_MAX
+  );
+}
+
+
+function d4d2d1MatchState(tape) {
+  const events = tape.d4d2NeuralEvents;
+  const hits = tape.damageEvents;
+  const used = new Set();
+  const matchedPairs = [];
+
+  for (let hitIndex = 0; hitIndex < hits.length; hitIndex += 1) {
+    let chosen = -1;
+    for (let eventIndex = 0; eventIndex < events.length; eventIndex += 1) {
+      if (used.has(eventIndex)) continue;
+      const age = events[eventIndex].step - hits[hitIndex].step;
+      if (age < 0) continue;
+      if (age >= V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS) break;
+      chosen = eventIndex;
+      break;
+    }
+    if (chosen >= 0) {
+      used.add(chosen);
+      matchedPairs.push({
+        hitIndex,
+        eventIndex: chosen,
+        latencySteps: events[chosen].step - hits[hitIndex].step,
+      });
+    }
+  }
+  const matchedHitIndexes = new Set(matchedPairs.map((pair) => pair.hitIndex));
+  return { events, hits, used, matchedPairs, matchedHitIndexes };
+}
+
+function d4d2d1FalseEventCategories(tape, state) {
+  const counts = {
+    PRE_HIT_200MS: 0,
+    RECENT_POST_HIT_200MS: 0,
+    BACKGROUND_200MS: 0,
+  };
+  for (let eventIndex = 0; eventIndex < state.events.length; eventIndex += 1) {
+    if (state.used.has(eventIndex)) continue;
+    const event = state.events[eventIndex];
+
+    const preHit = state.hits.some((hit) => {
+      const delta = hit.step - event.step;
+      return delta > 0 && delta < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+    });
+    if (preHit) {
+      counts.PRE_HIT_200MS += 1;
+      continue;
+    }
+
+    const recentPost = state.hits.some((hit) => {
+      const delta = event.step - hit.step;
+      return delta >= 0 && delta < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+    });
+    if (recentPost) {
+      counts.RECENT_POST_HIT_200MS += 1;
+      continue;
+    }
+
+    counts.BACKGROUND_200MS += 1;
+  }
+  return counts;
+}
+
+function d4d2d1MissCategories(tape, state, phaseMeans, detector, innovationPca, temporalModel) {
+  const frames = d4d2TemporalFrames(
+    tape,
+    phaseMeans,
+    detector,
+    innovationPca,
+    temporalModel,
+  );
+  const counts = {
+    MATCH_CONFLICT: 0,
+    PRE_HIT_CARRYOVER_NO_RISE: 0,
+    POSITIVE_NO_RISE_OTHER: 0,
+    NO_POSITIVE_WINDOW: 0,
+  };
+  let noPositiveLateWindowPositive = 0;
+  const noPositiveLateLatenciesSteps = [];
+
+  for (let hitIndex = 0; hitIndex < state.hits.length; hitIndex += 1) {
+    if (state.matchedHitIndexes.has(hitIndex)) continue;
+    const hit = state.hits[hitIndex];
+
+    const inWindowEvents = state.events.filter(
+      (event) =>
+        event.step >= hit.step &&
+        event.step - hit.step < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+    );
+    if (inWindowEvents.length > 0) {
+      counts.MATCH_CONFLICT += 1;
+      continue;
+    }
+
+    const inWindowFrames = frames.filter(
+      (frame) =>
+        frame.step >= hit.step &&
+        frame.step - hit.step < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+    );
+    const positiveFrames = inWindowFrames.filter((frame) => frame.positive);
+
+    if (positiveFrames.length === 0) {
+      counts.NO_POSITIVE_WINDOW += 1;
+      const lateFrames = frames.filter(
+        (frame) =>
+          frame.step - hit.step >= V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS &&
+          frame.step - hit.step <
+            2 * V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+      );
+      const firstLatePositive = lateFrames.find((frame) => frame.positive);
+      if (firstLatePositive) {
+        noPositiveLateWindowPositive += 1;
+        noPositiveLateLatenciesSteps.push(firstLatePositive.step - hit.step);
+      }
+      continue;
+    }
+
+    const firstPostIndex = frames.findIndex(
+      (frame) =>
+        frame.step >= hit.step &&
+        frame.step - hit.step < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+    );
+    const firstPost = firstPostIndex >= 0 ? frames[firstPostIndex] : null;
+    const previous = firstPostIndex > 0 ? frames[firstPostIndex - 1] : null;
+
+    if (firstPost?.positive && previous?.positive) {
+      counts.PRE_HIT_CARRYOVER_NO_RISE += 1;
+    } else {
+      counts.POSITIVE_NO_RISE_OTHER += 1;
+    }
+  }
+
+  return {
+    counts,
+    noPositiveLateWindowPositive,
+    noPositiveLateLatenciesSteps,
+  };
+}
+
+function d4d2d1Aggregate(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+  temporalModel,
+) {
+  const falseCounts = {
+    PRE_HIT_200MS: 0,
+    RECENT_POST_HIT_200MS: 0,
+    BACKGROUND_200MS: 0,
+  };
+  const missCounts = {
+    MATCH_CONFLICT: 0,
+    PRE_HIT_CARRYOVER_NO_RISE: 0,
+    POSITIVE_NO_RISE_OTHER: 0,
+    NO_POSITIVE_WINDOW: 0,
+  };
+  let unmatchedEvents = 0;
+  let missedImpacts = 0;
+  let noPositiveLateWindowPositive = 0;
+  const lateLatencies = [];
+
+  for (const tape of tapes) {
+    const state = d4d2d1MatchState(tape);
+    unmatchedEvents += state.events.length - state.used.size;
+    missedImpacts += state.hits.length - state.matchedHitIndexes.size;
+
+    const falsePart = d4d2d1FalseEventCategories(tape, state);
+    for (const key of Object.keys(falseCounts)) {
+      falseCounts[key] += falsePart[key];
+    }
+
+    const missPart = d4d2d1MissCategories(
+      tape,
+      state,
+      phaseMeans,
+      detector,
+      innovationPca,
+      temporalModel,
+    );
+    for (const key of Object.keys(missCounts)) {
+      missCounts[key] += missPart.counts[key];
+    }
+    noPositiveLateWindowPositive += missPart.noPositiveLateWindowPositive;
+    lateLatencies.push(...missPart.noPositiveLateLatenciesSteps);
+  }
+
+  const falseFractions = Object.fromEntries(
+    Object.entries(falseCounts).map(([key, value]) => [
+      key,
+      unmatchedEvents > 0 ? value / unmatchedEvents : 0,
+    ]),
+  );
+  const missFractions = Object.fromEntries(
+    Object.entries(missCounts).map(([key, value]) => [
+      key,
+      missedImpacts > 0 ? value / missedImpacts : 0,
+    ]),
+  );
+
+  return {
+    tapes: tapes.length,
+    unmatchedEvents,
+    missedImpacts,
+    falseCounts,
+    falseFractions,
+    missCounts,
+    missFractions,
+    noPositiveLateWindowPositive,
+    noPositiveLateWindowPositiveFraction:
+      missCounts.NO_POSITIVE_WINDOW > 0
+        ? noPositiveLateWindowPositive / missCounts.NO_POSITIVE_WINDOW
+        : 0,
+    noPositiveLateFirstPositiveMedianSeconds:
+      lateLatencies.length > 0
+        ? d4d2Quantile(lateLatencies, 0.5) * STEP_SECONDS
+        : null,
+    noPositiveLateFirstPositiveP90Seconds:
+      lateLatencies.length > 0
+        ? d4d2Quantile(lateLatencies, 0.9) * STEP_SECONDS
+        : null,
+  };
+}
+
+function d4d2d1FalseAxis(a, b) {
+  for (const [key, label] of [
+    ["PRE_HIT_200MS", "PRE_HIT_DOMINANT"],
+    ["RECENT_POST_HIT_200MS", "RECENT_POST_HIT_DOMINANT"],
+    ["BACKGROUND_200MS", "BACKGROUND_DOMINANT"],
+  ]) {
+    if (
+      a.falseFractions[key] > V15N_D6_D2_D3_D3_D4_D2_D1_DOMINANCE &&
+      b.falseFractions[key] > V15N_D6_D2_D3_D3_D4_D2_D1_DOMINANCE
+    ) {
+      return label;
+    }
+  }
+  return "MIXED_FALSE_EVENT_FAILURE";
+}
+
+function d4d2d1MissAxis(a, b) {
+  for (const [key, label] of [
+    ["NO_POSITIVE_WINDOW", "NO_POSITIVE_DOMINANT"],
+    ["PRE_HIT_CARRYOVER_NO_RISE", "PRE_HIT_CARRYOVER_DOMINANT"],
+    ["MATCH_CONFLICT", "MATCH_CONFLICT_DOMINANT"],
+  ]) {
+    if (
+      a.missFractions[key] > V15N_D6_D2_D3_D3_D4_D2_D1_DOMINANCE &&
+      b.missFractions[key] > V15N_D6_D2_D3_D3_D4_D2_D1_DOMINANCE
+    ) {
+      return label;
+    }
+  }
+  return "MIXED_MISS_FAILURE";
+}
+
+function d4d2d1Support(summary) {
+  return {
+    tapes: summary.tapes,
+    unmatchedEvents: summary.unmatchedEvents,
+    missedImpacts: summary.missedImpacts,
+    pass:
+      summary.tapes === V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      summary.unmatchedEvents >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_MIN_FALSE_EVENTS &&
+      summary.missedImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_MIN_MISSED_IMPACTS,
+  };
+}
+
+function d4d2d1AssertNear(actual, expected, path) {
+  if (typeof expected === "number") {
+    if (Math.abs(actual - expected) > 1e-12) {
+      throw new Error(
+        "D4-D2 reproduction mismatch at " +
+          path +
+          ": " +
+          actual +
+          " != " +
+          expected,
+      );
+    }
+    return;
+  }
+  if (actual !== expected) {
+    throw new Error(
+      "D4-D2 reproduction mismatch at " +
+        path +
+        ": " +
+        String(actual) +
+        " != " +
+        String(expected),
+    );
+  }
+}
+
+function d4d2d1VerifyMetrics(actual, expected, label) {
+  for (const key of [
+    "tapes",
+    "physicalImpacts",
+    "neuralEvents",
+    "matched",
+    "falseEvents",
+    "missedImpacts",
+    "precision",
+    "recall",
+    "f1",
+    "eventCountRatio",
+    "meanAbsolutePerTapeCountError",
+    "medianMatchedLatencySeconds",
+    "p90MatchedLatencySeconds",
+    "preImpactUnmatched200ms",
+    "preImpactUnmatchedFraction",
+    "closeImpactPairFraction",
+    "risingEdges",
+    "refractorySuppressed",
+    "refractorySuppressedFraction",
+  ]) {
+    d4d2d1AssertNear(actual[key], expected[key], label + "." + key);
+  }
+}
+
+
+function d4d2d1d1PrepareFrames(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+  temporalModel,
+) {
+  for (const tape of tapes) {
+    tape.d4d2d1d1Frames = d4d2TemporalFrames(
+      tape,
+      phaseMeans,
+      detector,
+      innovationPca,
+      temporalModel,
+    ).map((frame) => ({
+      step: frame.step,
+      frameIndex: frame.frameIndex,
+      score: frame.score,
+    }));
+  }
+}
+
+function d4d2d1d1AttachThreshold(tapes, threshold) {
+  for (const tape of tapes) {
+    let previousPositive = false;
+    let lastEmittedEventStep = null;
+    let risingEdges = 0;
+    let refractorySuppressed = 0;
+    const events = [];
+
+    for (const frame of tape.d4d2d1d1Frames) {
+      const positive = frame.score >= threshold;
+      const risingEdge = positive && !previousPositive;
+      if (risingEdge) {
+        risingEdges += 1;
+        const refractoryClear =
+          lastEmittedEventStep === null ||
+          frame.step - lastEmittedEventStep >=
+            V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+        if (refractoryClear) {
+          events.push({
+            step: frame.step,
+            frameIndex: frame.frameIndex,
+            score: frame.score,
+          });
+          lastEmittedEventStep = frame.step;
+        } else {
+          refractorySuppressed += 1;
+        }
+      }
+      previousPositive = positive;
+    }
+
+    tape.d4d2NeuralEvents = events;
+    tape.d4d2RisingEdges = risingEdges;
+    tape.d4d2RefractorySuppressed = refractorySuppressed;
+  }
+}
+
+function d4d2d1d1GateBreakdown(metrics) {
+  const precision = metrics.precision >= V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE;
+  const recall = metrics.recall >= V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE;
+  const f1 = metrics.f1 >= V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE;
+  const countRatio =
+    metrics.eventCountRatio >= V15N_D6_D2_D3_D3_D4_D2_COUNT_RATIO_MIN &&
+    metrics.eventCountRatio <= V15N_D6_D2_D3_D3_D4_D2_COUNT_RATIO_MAX;
+  const countMae =
+    metrics.meanAbsolutePerTapeCountError <=
+    V15N_D6_D2_D3_D3_D4_D2_COUNT_MAE_MAX;
+  return {
+    precision,
+    recall,
+    f1,
+    countRatio,
+    countMae,
+    pass: precision && recall && f1 && countRatio && countMae,
+  };
+}
+
+function d4d2d1d1AuditCohort(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+  temporalModel,
+) {
+  d4d2d1d1PrepareFrames(
+    tapes,
+    phaseMeans,
+    detector,
+    innovationPca,
+    temporalModel,
+  );
+
+  const rows = [];
+  for (const threshold of V15N_D6_D2_D3_D3_D4_D2_D1_D1_THRESHOLD_GRID) {
+    d4d2d1d1AttachThreshold(tapes, threshold);
+    const metrics = d4d2Metrics(tapes);
+    rows.push({
+      threshold,
+      metrics,
+      gates: d4d2d1d1GateBreakdown(metrics),
+    });
+  }
+  return rows;
+}
+
+function d4d2d1d1BestRecallAtPrecisionGate(rows) {
+  const eligible = rows
+    .filter(
+      (row) =>
+        row.metrics.precision >=
+        V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE,
+    )
+    .map((row) => row.metrics.recall);
+  return eligible.length > 0 ? Math.max(...eligible) : null;
+}
+
+function d4d2d1d1BestPrecisionAtRecallGate(rows) {
+  const eligible = rows
+    .filter(
+      (row) =>
+        row.metrics.recall >=
+        V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE,
+    )
+    .map((row) => row.metrics.precision);
+  return eligible.length > 0 ? Math.max(...eligible) : null;
+}
+
+function d4d2d1d1BelowGate(value) {
+  return value === null || value < V15N_D6_D2_D3_D3_D4_D2_EVENT_GATE;
+}
+
+function d4d2d1d1ScalarAxis(rowsA, rowsB) {
+  const commonPassingThresholds = [];
+  for (let index = 0; index < rowsA.length; index += 1) {
+    if (
+      rowsA[index].threshold !== rowsB[index].threshold
+    ) {
+      throw new Error("D4-D2-D1-D1 threshold grid alignment mismatch");
+    }
+    if (rowsA[index].gates.pass && rowsB[index].gates.pass) {
+      commonPassingThresholds.push(rowsA[index].threshold);
+    }
+  }
+
+  const bestRecallAtPrecisionGate = {
+    A: d4d2d1d1BestRecallAtPrecisionGate(rowsA),
+    B: d4d2d1d1BestRecallAtPrecisionGate(rowsB),
+  };
+  const bestPrecisionAtRecallGate = {
+    A: d4d2d1d1BestPrecisionAtRecallGate(rowsA),
+    B: d4d2d1d1BestPrecisionAtRecallGate(rowsB),
+  };
+
+  let scalarAxis;
+  if (commonPassingThresholds.length > 0) {
+    scalarAxis = "SINGLE_THRESHOLD_FEASIBLE_ON_AUDIT";
+  } else if (
+    (
+      d4d2d1d1BelowGate(bestRecallAtPrecisionGate.A) &&
+      d4d2d1d1BelowGate(bestRecallAtPrecisionGate.B)
+    ) ||
+    (
+      d4d2d1d1BelowGate(bestPrecisionAtRecallGate.A) &&
+      d4d2d1d1BelowGate(bestPrecisionAtRecallGate.B)
+    )
+  ) {
+    scalarAxis = "PRECISION_RECALL_TRADEOFF";
+  } else {
+    let countStructureFailure = false;
+    for (let index = 0; index < rowsA.length; index += 1) {
+      const a = rowsA[index];
+      const b = rowsB[index];
+      const aCore =
+        a.gates.precision && a.gates.recall && a.gates.f1;
+      const bCore =
+        b.gates.precision && b.gates.recall && b.gates.f1;
+      const aCountOnlyFail =
+        aCore && (!a.gates.countRatio || !a.gates.countMae);
+      const bCountOnlyFail =
+        bCore && (!b.gates.countRatio || !b.gates.countMae);
+      if (
+        a.threshold === b.threshold &&
+        aCore &&
+        bCore &&
+        (aCountOnlyFail || bCountOnlyFail)
+      ) {
+        countStructureFailure = true;
+        break;
+      }
+    }
+    scalarAxis = countStructureFailure
+      ? "COUNT_STRUCTURE_FAILURE"
+      : "MIXED_SCALAR_FAILURE";
+  }
+
+  return {
+    scalarAxis,
+    commonPassingThresholds,
+    bestRecallAtPrecisionGate,
+    bestPrecisionAtRecallGate,
+  };
+}
+
+function d4d2d1d1Support(metrics) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts: metrics.physicalImpacts,
+    pass:
+      metrics.tapes ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      metrics.physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_MIN_PHYSICAL_IMPACTS,
+  };
+}
+
+
+function d4d2d1d1d1FitThreeClass(trainRows) {
+  if (!trainRows.length) {
+    throw new Error("D4-D2-D1-D1-D1 empty TRAIN rows");
+  }
+
+  const counts = {
+    REALIZED_IMPACT: 0,
+    PRE_HIT: 0,
+    TRUE_BACKGROUND: 0,
+  };
+  for (const row of trainRows) {
+    if (!(row.stratum in counts)) {
+      throw new Error("unknown TRAIN stratum " + row.stratum);
+    }
+    counts[row.stratum] += 1;
+  }
+  for (const className of V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES) {
+    if (!(counts[className] > 0)) {
+      throw new Error("collapsed TRAIN stratum " + className);
+    }
+  }
+
+  const featureKey = "temporal3";
+  const width = trainRows[0][featureKey].length;
+  if (width !== 96) {
+    throw new Error("THREE_CLASS_TEMPORAL3 feature width mismatch");
+  }
+
+  const means = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      means[j] += row[featureKey][j];
+    }
+  }
+  for (let j = 0; j < width; j += 1) {
+    means[j] /= trainRows.length;
+  }
+
+  const scales = Array(width).fill(0);
+  for (const row of trainRows) {
+    for (let j = 0; j < width; j += 1) {
+      const delta = row[featureKey][j] - means[j];
+      scales[j] += delta * delta;
+    }
+  }
+  for (let j = 0; j < width; j += 1) {
+    scales[j] = Math.max(
+      Math.sqrt(scales[j] / trainRows.length),
+      1e-9,
+    );
+  }
+
+  const dim = width + 1;
+  const xtwx = Array.from(
+    { length: dim },
+    () => Array(dim).fill(0),
+  );
+  const xtwyByClass = Object.fromEntries(
+    V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES.map(
+      (className) => [className, Array(dim).fill(0)],
+    ),
+  );
+
+  for (const row of trainRows) {
+    const sampleWeight = 1 / (3 * counts[row.stratum]);
+    const x = [1];
+    for (let j = 0; j < width; j += 1) {
+      x.push(
+        (row[featureKey][j] - means[j]) / scales[j],
+      );
+    }
+
+    for (let i = 0; i < dim; i += 1) {
+      for (const className of V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES) {
+        const target = row.stratum === className ? 1 : 0;
+        xtwyByClass[className][i] +=
+          sampleWeight * x[i] * target;
+      }
+      for (let j = 0; j < dim; j += 1) {
+        xtwx[i][j] += sampleWeight * x[i] * x[j];
+      }
+    }
+  }
+
+  for (let j = 1; j < dim; j += 1) {
+    xtwx[j][j] += V15N_D6_D2_D2_RIDGE_LAMBDA;
+  }
+
+  const weightsByClass = {};
+  for (const className of V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES) {
+    weightsByClass[className] = d2d2SolveLinear(
+      xtwx.map((row) => [...row]),
+      [...xtwyByClass[className]],
+    );
+  }
+
+  return {
+    featureKey,
+    means,
+    scales,
+    weightsByClass,
+    stratumCounts: counts,
+    classOrder: [
+      ...V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES,
+    ],
+  };
+}
+
+function d4d2d1d1d1Predict(row, model) {
+  const x = [1];
+  for (let j = 0; j < model.means.length; j += 1) {
+    x.push(
+      (row[model.featureKey][j] - model.means[j]) /
+        model.scales[j],
+    );
+  }
+
+  const scores = {};
+  let predictedClass = model.classOrder[0];
+  let bestScore = -Infinity;
+  for (const className of model.classOrder) {
+    const weights = model.weightsByClass[className];
+    let score = 0;
+    for (let j = 0; j < weights.length; j += 1) {
+      score += weights[j] * x[j];
+    }
+    scores[className] = score;
+    if (score > bestScore) {
+      bestScore = score;
+      predictedClass = className;
+    }
+  }
+
+  return { predictedClass, scores };
+}
+
+function d4d2d1d1d1FrameMetrics(rows, model) {
+  const confusion = Object.fromEntries(
+    V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES.map(
+      (actual) => [
+        actual,
+        Object.fromEntries(
+          V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES.map(
+            (predicted) => [predicted, 0],
+          ),
+        ),
+      ],
+    ),
+  );
+  const support = {
+    REALIZED_IMPACT: 0,
+    PRE_HIT: 0,
+    TRUE_BACKGROUND: 0,
+  };
+
+  for (const row of rows) {
+    support[row.stratum] += 1;
+    const prediction = d4d2d1d1d1Predict(row, model);
+    confusion[row.stratum][prediction.predictedClass] += 1;
+  }
+
+  const recall = {};
+  for (const className of V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_CLASSES) {
+    recall[className] =
+      support[className] > 0
+        ? confusion[className][className] / support[className]
+        : null;
+  }
+  const validRecall = Object.values(recall).filter(
+    (value) => value !== null,
+  );
+
+  return {
+    support,
+    confusion,
+    recall,
+    macroRecall:
+      validRecall.length > 0 ? mean(validRecall) : null,
+  };
+}
+
+function d4d2d1d1d1TemporalFrames(
+  tape,
+  phaseMeans,
+  detector,
+  innovationPca,
+  model,
+) {
+  const frames = d2d2FrameData(
+    tape,
+    phaseMeans,
+    detector,
+  ).map((frame) => ({
+    ...frame,
+    pca32: d2d2ProjectPca(
+      frame.innovation,
+      innovationPca,
+    ),
+  }));
+
+  const out = [];
+  for (let index = 2; index < frames.length; index += 1) {
+    const row = {
+      temporal3: [
+        ...frames[index - 2].pca32,
+        ...frames[index - 1].pca32,
+        ...frames[index].pca32,
+      ],
+    };
+    const prediction = d4d2d1d1d1Predict(row, model);
+    out.push({
+      step: frames[index].step,
+      frameIndex: frames[index].frameIndex,
+      predictedClass: prediction.predictedClass,
+      scores: prediction.scores,
+    });
+  }
+  return out;
+}
+
+function d4d2d1d1d1RunEventizer(
+  tape,
+  phaseMeans,
+  detector,
+  innovationPca,
+  model,
+) {
+  const frames = d4d2d1d1d1TemporalFrames(
+    tape,
+    phaseMeans,
+    detector,
+    innovationPca,
+    model,
+  );
+  let previousPositive = false;
+  let lastEmittedEventStep = null;
+  let risingEdges = 0;
+  let refractorySuppressed = 0;
+  const events = [];
+
+  for (const frame of frames) {
+    const positive =
+      frame.predictedClass === "REALIZED_IMPACT";
+    const risingEdge = positive && !previousPositive;
+    if (risingEdge) {
+      risingEdges += 1;
+      const refractoryClear =
+        lastEmittedEventStep === null ||
+        frame.step - lastEmittedEventStep >=
+          V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+      if (refractoryClear) {
+        events.push({
+          step: frame.step,
+          frameIndex: frame.frameIndex,
+          predictedClass: frame.predictedClass,
+          scores: frame.scores,
+        });
+        lastEmittedEventStep = frame.step;
+      } else {
+        refractorySuppressed += 1;
+      }
+    }
+    previousPositive = positive;
+  }
+
+  return {
+    events,
+    risingEdges,
+    refractorySuppressed,
+  };
+}
+
+function d4d2d1d1d1AttachEventizer(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+  model,
+) {
+  for (const tape of tapes) {
+    const result = d4d2d1d1d1RunEventizer(
+      tape,
+      phaseMeans,
+      detector,
+      innovationPca,
+      model,
+    );
+    tape.d4d2NeuralEvents = result.events;
+    tape.d4d2RisingEdges = result.risingEdges;
+    tape.d4d2RefractorySuppressed =
+      result.refractorySuppressed;
+  }
+}
+
+function d4d2d1d1d1FalseTiming(tapes) {
+  const counts = {
+    PRE_HIT_200MS: 0,
+    RECENT_POST_HIT_200MS: 0,
+    BACKGROUND_200MS: 0,
+  };
+  let falseEvents = 0;
+  for (const tape of tapes) {
+    const state = d4d2d1MatchState(tape);
+    const part = d4d2d1FalseEventCategories(
+      tape,
+      state,
+    );
+    for (const key of Object.keys(counts)) {
+      counts[key] += part[key];
+    }
+    falseEvents += state.events.length - state.used.size;
+  }
+  return {
+    falseEvents,
+    counts,
+    fractions: Object.fromEntries(
+      Object.entries(counts).map(([key, value]) => [
+        key,
+        falseEvents > 0 ? value / falseEvents : 0,
+      ]),
+    ),
+  };
+}
+
+function d4d2d1d1d1Support(
+  metrics,
+  frameMetrics,
+) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts: metrics.physicalImpacts,
+    neuralEvents: metrics.neuralEvents,
+    realizedImpactRows:
+      frameMetrics.support.REALIZED_IMPACT,
+    preHitRows: frameMetrics.support.PRE_HIT,
+    trueBackgroundRows:
+      frameMetrics.support.TRUE_BACKGROUND,
+    pass:
+      metrics.tapes ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      metrics.physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_PHYSICAL_IMPACTS &&
+      metrics.neuralEvents >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_NEURAL_EVENTS &&
+      frameMetrics.support.REALIZED_IMPACT >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_REALIZED_ROWS &&
+      frameMetrics.support.PRE_HIT >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_PREHIT_ROWS &&
+      frameMetrics.support.TRUE_BACKGROUND >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_MIN_BACKGROUND_ROWS,
+  };
+}
+
+
+function d4d2d1d1d1d1EventTimingCategory(event, hits) {
+  const preHit = hits.some((hit) => {
+    const delta = hit.step - event.step;
+    return (
+      delta > 0 &&
+      delta < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS
+    );
+  });
+  if (preHit) return "PRE_HIT_200MS";
+
+  const recentPost = hits.some((hit) => {
+    const delta = event.step - hit.step;
+    return (
+      delta >= 0 &&
+      delta < V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS
+    );
+  });
+  if (recentPost) return "RECENT_POST_HIT_200MS";
+  return "BACKGROUND_200MS";
+}
+
+function d4d2d1d1d1d1Margin(event) {
+  return (
+    event.scores.REALIZED_IMPACT -
+    Math.max(
+      event.scores.PRE_HIT,
+      event.scores.TRUE_BACKGROUND,
+    )
+  );
+}
+
+function d4d2d1d1d1d1Stats(values) {
+  return {
+    rows: values.length,
+    mean: values.length > 0 ? mean(values) : null,
+    q25:
+      values.length > 0
+        ? d4d2Quantile(values, 0.25)
+        : null,
+    median:
+      values.length > 0
+        ? d4d2Quantile(values, 0.5)
+        : null,
+    q75:
+      values.length > 0
+        ? d4d2Quantile(values, 0.75)
+        : null,
+    q90:
+      values.length > 0
+        ? d4d2Quantile(values, 0.9)
+        : null,
+  };
+}
+
+function d4d2d1d1d1d1Auc(positiveValues, negativeValues) {
+  if (
+    positiveValues.length === 0 ||
+    negativeValues.length === 0
+  ) {
+    return null;
+  }
+  const combined = [
+    ...positiveValues.map((value) => ({
+      value,
+      positive: true,
+    })),
+    ...negativeValues.map((value) => ({
+      value,
+      positive: false,
+    })),
+  ].sort((a, b) => a.value - b.value);
+
+  let positiveRankSum = 0;
+  let index = 0;
+  while (index < combined.length) {
+    let end = index + 1;
+    while (
+      end < combined.length &&
+      combined[end].value === combined[index].value
+    ) {
+      end += 1;
+    }
+    const averageRank = (index + 1 + end) / 2;
+    for (let k = index; k < end; k += 1) {
+      if (combined[k].positive) {
+        positiveRankSum += averageRank;
+      }
+    }
+    index = end;
+  }
+
+  const nPos = positiveValues.length;
+  const nNeg = negativeValues.length;
+  const u =
+    positiveRankSum - (nPos * (nPos + 1)) / 2;
+  return u / (nPos * nNeg);
+}
+
+function d4d2d1d1d1d1MissAttribution(
+  tape,
+  state,
+  frames,
+) {
+  const counts = {
+    MATCH_CONFLICT: 0,
+    PRE_HIT_REALIZED_CARRYOVER: 0,
+    REALIZED_NO_EVENT_OTHER: 0,
+    NO_REALIZED_WINDOW: 0,
+  };
+  let noRealizedLatePositive = 0;
+  const noRealizedLateLatencySteps = [];
+
+  for (
+    let hitIndex = 0;
+    hitIndex < state.hits.length;
+    hitIndex += 1
+  ) {
+    if (state.matchedHitIndexes.has(hitIndex)) {
+      continue;
+    }
+    const hit = state.hits[hitIndex];
+
+    const inWindowEvents = state.events.filter(
+      (event) =>
+        event.step >= hit.step &&
+        event.step - hit.step <
+          V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+    );
+    if (inWindowEvents.length > 0) {
+      counts.MATCH_CONFLICT += 1;
+      continue;
+    }
+
+    const inWindowFrames = frames.filter(
+      (frame) =>
+        frame.step >= hit.step &&
+        frame.step - hit.step <
+          V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+    );
+    const realizedFrames = inWindowFrames.filter(
+      (frame) =>
+        frame.predictedClass === "REALIZED_IMPACT",
+    );
+
+    if (realizedFrames.length === 0) {
+      counts.NO_REALIZED_WINDOW += 1;
+      const lateFrames = frames.filter(
+        (frame) =>
+          frame.step - hit.step >=
+            V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS &&
+          frame.step - hit.step <
+            2 *
+              V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+      );
+      const firstLate = lateFrames.find(
+        (frame) =>
+          frame.predictedClass ===
+          "REALIZED_IMPACT",
+      );
+      if (firstLate) {
+        noRealizedLatePositive += 1;
+        noRealizedLateLatencySteps.push(
+          firstLate.step - hit.step,
+        );
+      }
+      continue;
+    }
+
+    const firstPostIndex = frames.findIndex(
+      (frame) =>
+        frame.step >= hit.step &&
+        frame.step - hit.step <
+          V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS,
+    );
+    const firstPost =
+      firstPostIndex >= 0
+        ? frames[firstPostIndex]
+        : null;
+    const previous =
+      firstPostIndex > 0
+        ? frames[firstPostIndex - 1]
+        : null;
+
+    if (
+      firstPost?.predictedClass ===
+        "REALIZED_IMPACT" &&
+      previous?.predictedClass ===
+        "REALIZED_IMPACT"
+    ) {
+      counts.PRE_HIT_REALIZED_CARRYOVER += 1;
+    } else {
+      counts.REALIZED_NO_EVENT_OTHER += 1;
+    }
+  }
+
+  return {
+    counts,
+    noRealizedLatePositive,
+    noRealizedLatePositiveFraction:
+      counts.NO_REALIZED_WINDOW > 0
+        ? noRealizedLatePositive /
+          counts.NO_REALIZED_WINDOW
+        : 0,
+    noRealizedLateMedianSeconds:
+      noRealizedLateLatencySteps.length > 0
+        ? d4d2Quantile(
+            noRealizedLateLatencySteps,
+            0.5,
+          ) * STEP_SECONDS
+        : null,
+    noRealizedLateP90Seconds:
+      noRealizedLateLatencySteps.length > 0
+        ? d4d2Quantile(
+            noRealizedLateLatencySteps,
+            0.9,
+          ) * STEP_SECONDS
+        : null,
+  };
+}
+
+function d4d2d1d1d1d1CohortAttribution(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+  model,
+) {
+  const timingCounts = {
+    PRE_HIT_200MS: 0,
+    RECENT_POST_HIT_200MS: 0,
+    BACKGROUND_200MS: 0,
+  };
+  const entryCounts = {
+    FROM_TRUE_BACKGROUND: 0,
+    FROM_PRE_HIT: 0,
+    FROM_INITIAL: 0,
+  };
+  const margins = {
+    MATCHED_EVENT: [],
+    BACKGROUND_FALSE_EVENT: [],
+    PRE_HIT_FALSE_EVENT: [],
+    RECENT_POST_HIT_FALSE_EVENT: [],
+  };
+  const missCounts = {
+    MATCH_CONFLICT: 0,
+    PRE_HIT_REALIZED_CARRYOVER: 0,
+    REALIZED_NO_EVENT_OTHER: 0,
+    NO_REALIZED_WINDOW: 0,
+  };
+
+  let matched = 0;
+  let unmatched = 0;
+  let missed = 0;
+  let noRealizedLatePositive = 0;
+  const lateMedianPool = [];
+
+  for (const tape of tapes) {
+    const frames =
+      d4d2d1d1d1TemporalFrames(
+        tape,
+        phaseMeans,
+        detector,
+        innovationPca,
+        model,
+      );
+    const frameIndexToPosition = new Map(
+      frames.map((frame, index) => [
+        frame.frameIndex,
+        index,
+      ]),
+    );
+    const state = d4d2d1MatchState(tape);
+    matched += state.used.size;
+    unmatched +=
+      state.events.length - state.used.size;
+    missed +=
+      state.hits.length -
+      state.matchedHitIndexes.size;
+
+    for (
+      let eventIndex = 0;
+      eventIndex < state.events.length;
+      eventIndex += 1
+    ) {
+      const event = state.events[eventIndex];
+      const margin =
+        d4d2d1d1d1d1Margin(event);
+      if (state.used.has(eventIndex)) {
+        margins.MATCHED_EVENT.push(margin);
+        continue;
+      }
+
+      const timing =
+        d4d2d1d1d1d1EventTimingCategory(
+          event,
+          state.hits,
+        );
+      timingCounts[timing] += 1;
+
+      if (timing === "BACKGROUND_200MS") {
+        margins.BACKGROUND_FALSE_EVENT.push(
+          margin,
+        );
+        const position =
+          frameIndexToPosition.get(
+            event.frameIndex,
+          );
+        if (position === 0 || position === undefined) {
+          entryCounts.FROM_INITIAL += 1;
+        } else {
+          const previousClass =
+            frames[position - 1]
+              .predictedClass;
+          if (
+            previousClass ===
+            "TRUE_BACKGROUND"
+          ) {
+            entryCounts.FROM_TRUE_BACKGROUND += 1;
+          } else if (
+            previousClass === "PRE_HIT"
+          ) {
+            entryCounts.FROM_PRE_HIT += 1;
+          } else {
+            throw new Error(
+              "unexpected previous class at rising edge: " +
+                previousClass,
+            );
+          }
+        }
+      } else if (
+        timing === "PRE_HIT_200MS"
+      ) {
+        margins.PRE_HIT_FALSE_EVENT.push(
+          margin,
+        );
+      } else {
+        margins.RECENT_POST_HIT_FALSE_EVENT.push(
+          margin,
+        );
+      }
+    }
+
+    const missPart =
+      d4d2d1d1d1d1MissAttribution(
+        tape,
+        state,
+        frames,
+      );
+    for (const key of Object.keys(missCounts)) {
+      missCounts[key] +=
+        missPart.counts[key];
+    }
+    noRealizedLatePositive +=
+      missPart.noRealizedLatePositive;
+    if (
+      missPart.noRealizedLateMedianSeconds !==
+      null
+    ) {
+      lateMedianPool.push(
+        missPart.noRealizedLateMedianSeconds,
+      );
+    }
+  }
+
+  const backgroundFalse =
+    timingCounts.BACKGROUND_200MS;
+  const timingFractions =
+    Object.fromEntries(
+      Object.entries(timingCounts).map(
+        ([key, value]) => [
+          key,
+          unmatched > 0
+            ? value / unmatched
+            : 0,
+        ],
+      ),
+    );
+  const entryFractions =
+    Object.fromEntries(
+      Object.entries(entryCounts).map(
+        ([key, value]) => [
+          key,
+          backgroundFalse > 0
+            ? value / backgroundFalse
+            : 0,
+        ],
+      ),
+    );
+  const missFractions =
+    Object.fromEntries(
+      Object.entries(missCounts).map(
+        ([key, value]) => [
+          key,
+          missed > 0 ? value / missed : 0,
+        ],
+      ),
+    );
+
+  return {
+    tapes: tapes.length,
+    matched,
+    unmatched,
+    missed,
+    timingCounts,
+    timingFractions,
+    entryCounts,
+    entryFractions,
+    marginStats: {
+      MATCHED_EVENT:
+        d4d2d1d1d1d1Stats(
+          margins.MATCHED_EVENT,
+        ),
+      BACKGROUND_FALSE_EVENT:
+        d4d2d1d1d1d1Stats(
+          margins.BACKGROUND_FALSE_EVENT,
+        ),
+      PRE_HIT_FALSE_EVENT:
+        d4d2d1d1d1d1Stats(
+          margins.PRE_HIT_FALSE_EVENT,
+        ),
+      RECENT_POST_HIT_FALSE_EVENT:
+        d4d2d1d1d1d1Stats(
+          margins.RECENT_POST_HIT_FALSE_EVENT,
+        ),
+    },
+    matchedVsBackgroundFalseMarginAuc:
+      d4d2d1d1d1d1Auc(
+        margins.MATCHED_EVENT,
+        margins.BACKGROUND_FALSE_EVENT,
+      ),
+    missCounts,
+    missFractions,
+    noRealizedLatePositive,
+    noRealizedLatePositiveFraction:
+      missCounts.NO_REALIZED_WINDOW > 0
+        ? noRealizedLatePositive /
+          missCounts.NO_REALIZED_WINDOW
+        : 0,
+  };
+}
+
+function d4d2d1d1d1d1EntryAxis(a, b) {
+  for (const [key, label] of [
+    [
+      "FROM_TRUE_BACKGROUND",
+      "TRUE_BACKGROUND_ENTRY_DOMINANT",
+    ],
+    [
+      "FROM_PRE_HIT",
+      "PRE_HIT_ENTRY_DOMINANT",
+    ],
+    [
+      "FROM_INITIAL",
+      "INITIAL_ENTRY_DOMINANT",
+    ],
+  ]) {
+    if (
+      a.entryFractions[key] >
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_DOMINANCE &&
+      b.entryFractions[key] >
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_DOMINANCE
+    ) {
+      return label;
+    }
+  }
+  return "MIXED_ENTRY_SOURCE";
+}
+
+function d4d2d1d1d1d1MarginAxis(a, b) {
+  const aucA =
+    a.matchedVsBackgroundFalseMarginAuc;
+  const aucB =
+    b.matchedVsBackgroundFalseMarginAuc;
+  if (
+    aucA >=
+      V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_AUC_GATE &&
+    aucB >=
+      V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_AUC_GATE
+  ) {
+    return "MARGIN_SEPARABLE";
+  }
+  if (
+    aucA <
+      V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_AUC_GATE &&
+    aucB <
+      V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_AUC_GATE
+  ) {
+    return "MARGIN_NOT_SEPARABLE";
+  }
+  return "MIXED_MARGIN_SEPARABILITY";
+}
+
+function d4d2d1d1d1d1MissAxis(a, b) {
+  for (const [key, label] of [
+    [
+      "NO_REALIZED_WINDOW",
+      "NO_REALIZED_DOMINANT",
+    ],
+    [
+      "PRE_HIT_REALIZED_CARRYOVER",
+      "PRE_HIT_CARRYOVER_DOMINANT",
+    ],
+    [
+      "MATCH_CONFLICT",
+      "MATCH_CONFLICT_DOMINANT",
+    ],
+  ]) {
+    if (
+      a.missFractions[key] >
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_DOMINANCE &&
+      b.missFractions[key] >
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_DOMINANCE
+    ) {
+      return label;
+    }
+  }
+  return "MIXED_MISS_FAILURE";
+}
+
+function d4d2d1d1d1d1Support(summary) {
+  return {
+    tapes: summary.tapes,
+    unmatchedEvents: summary.unmatched,
+    backgroundFalseEvents:
+      summary.timingCounts.BACKGROUND_200MS,
+    missedImpacts: summary.missed,
+    matchedEvents: summary.matched,
+    pass:
+      summary.tapes ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      summary.unmatched >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_UNMATCHED &&
+      summary.timingCounts.BACKGROUND_200MS >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_BACKGROUND_FALSE &&
+      summary.missed >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_MISSED &&
+      summary.matched >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_MIN_MATCHED,
+  };
+}
+
+
+function d4d2d1d1d1d1d1Margin(scores) {
+  return (
+    scores.REALIZED_IMPACT -
+    Math.max(
+      scores.PRE_HIT,
+      scores.TRUE_BACKGROUND,
+    )
+  );
+}
+
+function d4d2d1d1d1d1d1PrepareMarginFrames(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+  model,
+) {
+  for (const tape of tapes) {
+    const frames =
+      d4d2d1d1d1TemporalFrames(
+        tape,
+        phaseMeans,
+        detector,
+        innovationPca,
+        model,
+      );
+    tape.d4d2d1d1d1d1d1MarginFrames =
+      frames.map((frame) => ({
+        step: frame.step,
+        frameIndex: frame.frameIndex,
+        margin:
+          d4d2d1d1d1d1d1Margin(
+            frame.scores,
+          ),
+      }));
+  }
+}
+
+function d4d2d1d1d1d1d1ThresholdCandidates(
+  tapes,
+) {
+  const values = new Set([0]);
+  for (const tape of tapes) {
+    for (
+      const frame of
+        tape.d4d2d1d1d1d1d1MarginFrames
+    ) {
+      if (
+        Number.isFinite(frame.margin) &&
+        frame.margin > 0
+      ) {
+        values.add(frame.margin);
+      }
+    }
+  }
+  return [...values].sort((a, b) => a - b);
+}
+
+function d4d2d1d1d1d1d1AttachMarginThreshold(
+  tapes,
+  threshold,
+) {
+  for (const tape of tapes) {
+    let previousPositive = false;
+    let lastEmittedEventStep = null;
+    let risingEdges = 0;
+    let refractorySuppressed = 0;
+    const events = [];
+
+    for (
+      const frame of
+        tape.d4d2d1d1d1d1d1MarginFrames
+    ) {
+      const positive =
+        frame.margin >= threshold;
+      const crossing =
+        positive && !previousPositive;
+      if (crossing) {
+        risingEdges += 1;
+        const refractoryClear =
+          lastEmittedEventStep === null ||
+          frame.step -
+              lastEmittedEventStep >=
+            V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+        if (refractoryClear) {
+          events.push({
+            step: frame.step,
+            frameIndex: frame.frameIndex,
+            margin: frame.margin,
+          });
+          lastEmittedEventStep =
+            frame.step;
+        } else {
+          refractorySuppressed += 1;
+        }
+      }
+      previousPositive = positive;
+    }
+
+    tape.d4d2NeuralEvents = events;
+    tape.d4d2RisingEdges = risingEdges;
+    tape.d4d2RefractorySuppressed =
+      refractorySuppressed;
+  }
+}
+
+function d4d2d1d1d1d1d1CalibrationRow(
+  tapes,
+  threshold,
+) {
+  d4d2d1d1d1d1d1AttachMarginThreshold(
+    tapes,
+    threshold,
+  );
+  const metrics = d4d2Metrics(tapes);
+  return {
+    threshold,
+    metrics,
+    feasible: d4d2Pass(metrics),
+  };
+}
+
+function d4d2d1d1d1d1d1SelectThreshold(
+  feasibleRows,
+) {
+  if (!feasibleRows.length) return null;
+  const rows = [...feasibleRows];
+  rows.sort((a, b) => {
+    const am = a.metrics;
+    const bm = b.metrics;
+    if (bm.f1 !== am.f1) {
+      return bm.f1 - am.f1;
+    }
+    const ar =
+      Math.abs(am.eventCountRatio - 1);
+    const br =
+      Math.abs(bm.eventCountRatio - 1);
+    if (ar !== br) return ar - br;
+    if (
+      am.meanAbsolutePerTapeCountError !==
+      bm.meanAbsolutePerTapeCountError
+    ) {
+      return (
+        am.meanAbsolutePerTapeCountError -
+        bm.meanAbsolutePerTapeCountError
+      );
+    }
+    if (bm.precision !== am.precision) {
+      return bm.precision - am.precision;
+    }
+    if (bm.recall !== am.recall) {
+      return bm.recall - am.recall;
+    }
+    return b.threshold - a.threshold;
+  });
+  return rows[0];
+}
+
+function d4d2d1d1d1d1d1CalibrationSupport(
+  tapes,
+  candidates,
+) {
+  const physicalImpacts =
+    tapes.reduce(
+      (sum, tape) =>
+        sum + tape.damageEvents.length,
+      0,
+    );
+  return {
+    tapes: tapes.length,
+    physicalImpacts,
+    thresholdCandidates:
+      candidates.length,
+    pass:
+      tapes.length ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_CALIBRATION_IMPACTS &&
+      candidates.length >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_THRESHOLD_CANDIDATES,
+  };
+}
+
+function d4d2d1d1d1d1d1ProspectiveSupport(
+  metrics,
+) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts:
+      metrics.physicalImpacts,
+    neuralEvents:
+      metrics.neuralEvents,
+    pass:
+      metrics.tapes ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      metrics.physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_IMPACTS &&
+      metrics.neuralEvents >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_EVENTS,
+  };
+}
+
+function d4d2d1d1d1d1d1MetricDigest(metrics) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts:
+      metrics.physicalImpacts,
+    neuralEvents:
+      metrics.neuralEvents,
+    matched: metrics.matched,
+    falseEvents: metrics.falseEvents,
+    missedImpacts:
+      metrics.missedImpacts,
+    precision: metrics.precision,
+    recall: metrics.recall,
+    f1: metrics.f1,
+    eventCountRatio:
+      metrics.eventCountRatio,
+    meanAbsolutePerTapeCountError:
+      metrics.meanAbsolutePerTapeCountError,
+    medianMatchedLatencySeconds:
+      metrics.medianMatchedLatencySeconds,
+    p90MatchedLatencySeconds:
+      metrics.p90MatchedLatencySeconds,
+    risingEdges: metrics.risingEdges,
+    refractorySuppressed:
+      metrics.refractorySuppressed,
+  };
+}
+
+async function d4d2d1d1d1d1d1WriteOutput(output) {
+  const outDir = resolve(
+    "results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-train-calibrated-margin-crossing",
+  );
+  await mkdir(outDir, {
+    recursive: true,
+  });
+  await writeFile(
+    resolve(
+      outDir,
+      "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1.json",
+    ),
+    JSON.stringify(output, null, 2) +
+      "\n",
+  );
+}
+
+
+function d4d2d1d1d1d1d1d1d1LatestHitPositive(
+  tape,
+  step,
+) {
+  let latest = null;
+  for (const hit of tape.damageEvents) {
+    const age = step - hit.step;
+    if (age < 0) continue;
+    if (
+      age <
+      V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS
+    ) {
+      if (
+        latest === null ||
+        hit.step > latest.step
+      ) {
+        latest = hit;
+      }
+    }
+  }
+  return latest !== null ? 1 : 0;
+}
+
+function d4d2d1d1d1d1d1d1d1BuildDynamicsRows(
+  tapes,
+) {
+  const rows = [];
+  for (const tape of tapes) {
+    const frames =
+      tape.d4d2d1d1d1d1d1MarginFrames;
+    for (
+      let index = 5;
+      index < frames.length;
+      index += 1
+    ) {
+      const features = [];
+      for (
+        let offset = 5;
+        offset >= 0;
+        offset -= 1
+      ) {
+        features.push(
+          frames[index - offset].margin,
+        );
+      }
+      rows.push({
+        tape,
+        step: frames[index].step,
+        frameIndex:
+          frames[index].frameIndex,
+        features,
+        y:
+          d4d2d1d1d1d1d1d1d1LatestHitPositive(
+            tape,
+            frames[index].step,
+          ),
+      });
+    }
+  }
+  return rows;
+}
+
+function d4d2d1d1d1d1d1d1d1FitDynamics(
+  rows,
+) {
+  if (!rows.length) {
+    throw new Error(
+      "CAUSAL_MARGIN_DYNAMICS6 empty TRAIN rows",
+    );
+  }
+  const width = 6;
+  const positiveRows =
+    rows.filter((row) => row.y === 1);
+  const negativeRows =
+    rows.filter((row) => row.y === 0);
+  if (
+    positiveRows.length === 0 ||
+    negativeRows.length === 0
+  ) {
+    throw new Error(
+      "CAUSAL_MARGIN_DYNAMICS6 collapsed labels",
+    );
+  }
+
+  const means = Array(width).fill(0);
+  for (const row of rows) {
+    for (
+      let j = 0;
+      j < width;
+      j += 1
+    ) {
+      means[j] += row.features[j];
+    }
+  }
+  for (
+    let j = 0;
+    j < width;
+    j += 1
+  ) {
+    means[j] /= rows.length;
+  }
+
+  const scales = Array(width).fill(0);
+  for (const row of rows) {
+    for (
+      let j = 0;
+      j < width;
+      j += 1
+    ) {
+      const delta =
+        row.features[j] - means[j];
+      scales[j] += delta * delta;
+    }
+  }
+  for (
+    let j = 0;
+    j < width;
+    j += 1
+  ) {
+    scales[j] = Math.max(
+      Math.sqrt(
+        scales[j] / rows.length,
+      ),
+      1e-9,
+    );
+  }
+
+  const dim = width + 1;
+  const xtwx = Array.from(
+    { length: dim },
+    () => Array(dim).fill(0),
+  );
+  const xtwy = Array(dim).fill(0);
+
+  for (const row of rows) {
+    const sampleWeight =
+      row.y === 1
+        ? 0.5 / positiveRows.length
+        : 0.5 / negativeRows.length;
+    const x = [1];
+    for (
+      let j = 0;
+      j < width;
+      j += 1
+    ) {
+      x.push(
+        (row.features[j] -
+          means[j]) /
+          scales[j],
+      );
+    }
+    for (
+      let i = 0;
+      i < dim;
+      i += 1
+    ) {
+      xtwy[i] +=
+        sampleWeight *
+        x[i] *
+        row.y;
+      for (
+        let j = 0;
+        j < dim;
+        j += 1
+      ) {
+        xtwx[i][j] +=
+          sampleWeight *
+          x[i] *
+          x[j];
+      }
+    }
+  }
+
+  for (
+    let j = 1;
+    j < dim;
+    j += 1
+  ) {
+    xtwx[j][j] +=
+      V15N_D6_D2_D2_RIDGE_LAMBDA;
+  }
+
+  const weights = d2d2SolveLinear(
+    xtwx.map((row) => [...row]),
+    [...xtwy],
+  );
+
+  return {
+    width,
+    means,
+    scales,
+    weights,
+    positiveRows: positiveRows.length,
+    negativeRows: negativeRows.length,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1PredictDynamics(
+  features,
+  model,
+) {
+  let score = model.weights[0];
+  for (
+    let j = 0;
+    j < model.width;
+    j += 1
+  ) {
+    score +=
+      model.weights[j + 1] *
+      ((features[j] -
+        model.means[j]) /
+        model.scales[j]);
+  }
+  return score;
+}
+
+function d4d2d1d1d1d1d1d1d1PrepareDynamicsFrames(
+  tapes,
+  model,
+) {
+  for (const tape of tapes) {
+    const marginFrames =
+      tape.d4d2d1d1d1d1d1MarginFrames;
+    const out = [];
+    for (
+      let index = 5;
+      index < marginFrames.length;
+      index += 1
+    ) {
+      const features = [];
+      for (
+        let offset = 5;
+        offset >= 0;
+        offset -= 1
+      ) {
+        features.push(
+          marginFrames[
+            index - offset
+          ].margin,
+        );
+      }
+      out.push({
+        step:
+          marginFrames[index].step,
+        frameIndex:
+          marginFrames[index]
+            .frameIndex,
+        score:
+          d4d2d1d1d1d1d1d1d1PredictDynamics(
+            features,
+            model,
+          ),
+      });
+    }
+    tape.d4d2d1d1d1d1d1d1d1DynamicsFrames =
+      out;
+  }
+}
+
+function d4d2d1d1d1d1d1d1d1ThresholdCandidates(
+  tapes,
+) {
+  const values = new Set([0]);
+  for (const tape of tapes) {
+    for (
+      const frame of
+        tape.d4d2d1d1d1d1d1d1d1DynamicsFrames
+    ) {
+      if (
+        Number.isFinite(frame.score) &&
+        frame.score > 0
+      ) {
+        values.add(frame.score);
+      }
+    }
+  }
+  return [...values].sort(
+    (a, b) => a - b,
+  );
+}
+
+function d4d2d1d1d1d1d1d1d1AttachThreshold(
+  tapes,
+  threshold,
+) {
+  for (const tape of tapes) {
+    let previousPositive = false;
+    let lastEmittedEventStep = null;
+    let risingEdges = 0;
+    let refractorySuppressed = 0;
+    const events = [];
+
+    for (
+      const frame of
+        tape.d4d2d1d1d1d1d1d1d1DynamicsFrames
+    ) {
+      const positive =
+        frame.score >= threshold;
+      const crossing =
+        positive &&
+        !previousPositive;
+      if (crossing) {
+        risingEdges += 1;
+        const refractoryClear =
+          lastEmittedEventStep ===
+            null ||
+          frame.step -
+              lastEmittedEventStep >=
+            V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+        if (refractoryClear) {
+          events.push({
+            step: frame.step,
+            frameIndex:
+              frame.frameIndex,
+            score: frame.score,
+          });
+          lastEmittedEventStep =
+            frame.step;
+        } else {
+          refractorySuppressed += 1;
+        }
+      }
+      previousPositive = positive;
+    }
+
+    tape.d4d2NeuralEvents =
+      events;
+    tape.d4d2RisingEdges =
+      risingEdges;
+    tape.d4d2RefractorySuppressed =
+      refractorySuppressed;
+  }
+}
+
+function d4d2d1d1d1d1d1d1d1CalibrationRow(
+  tapes,
+  threshold,
+) {
+  d4d2d1d1d1d1d1d1d1AttachThreshold(
+    tapes,
+    threshold,
+  );
+  const metrics =
+    d4d2Metrics(tapes);
+  return {
+    threshold,
+    metrics,
+    feasible:
+      d4d2Pass(metrics),
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1SelectThreshold(
+  feasibleRows,
+) {
+  if (!feasibleRows.length) {
+    return null;
+  }
+  const rows = [
+    ...feasibleRows,
+  ];
+  rows.sort((a, b) => {
+    const am = a.metrics;
+    const bm = b.metrics;
+    if (bm.f1 !== am.f1) {
+      return bm.f1 - am.f1;
+    }
+    const ar = Math.abs(
+      am.eventCountRatio - 1,
+    );
+    const br = Math.abs(
+      bm.eventCountRatio - 1,
+    );
+    if (ar !== br) {
+      return ar - br;
+    }
+    if (
+      am.meanAbsolutePerTapeCountError !==
+      bm.meanAbsolutePerTapeCountError
+    ) {
+      return (
+        am.meanAbsolutePerTapeCountError -
+        bm.meanAbsolutePerTapeCountError
+      );
+    }
+    if (
+      bm.precision !==
+      am.precision
+    ) {
+      return (
+        bm.precision -
+        am.precision
+      );
+    }
+    if (
+      bm.recall !== am.recall
+    ) {
+      return bm.recall - am.recall;
+    }
+    return (
+      b.threshold -
+      a.threshold
+    );
+  });
+  return rows[0];
+}
+
+function d4d2d1d1d1d1d1d1d1TrainSupport(
+  model,
+  tapes,
+) {
+  return {
+    tapes: tapes.length,
+    positiveRows:
+      model.positiveRows,
+    negativeRows:
+      model.negativeRows,
+    pass:
+      tapes.length ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      model.positiveRows >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_POSITIVE_TRAIN_ROWS &&
+      model.negativeRows >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_NEGATIVE_TRAIN_ROWS,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1CalibrationSupport(
+  tapes,
+  candidates,
+) {
+  const physicalImpacts =
+    tapes.reduce(
+      (sum, tape) =>
+        sum +
+        tape.damageEvents.length,
+      0,
+    );
+  return {
+    tapes: tapes.length,
+    physicalImpacts,
+    thresholdCandidates:
+      candidates.length,
+    pass:
+      tapes.length ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_CALIBRATION_IMPACTS &&
+      candidates.length >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_THRESHOLD_CANDIDATES,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1ProspectiveSupport(
+  metrics,
+) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts:
+      metrics.physicalImpacts,
+    neuralEvents:
+      metrics.neuralEvents,
+    pass:
+      metrics.tapes ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      metrics.physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_IMPACTS &&
+      metrics.neuralEvents >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_EVENTS,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1MetricDigest(
+  metrics,
+) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts:
+      metrics.physicalImpacts,
+    neuralEvents:
+      metrics.neuralEvents,
+    matched:
+      metrics.matched,
+    falseEvents:
+      metrics.falseEvents,
+    missedImpacts:
+      metrics.missedImpacts,
+    precision:
+      metrics.precision,
+    recall: metrics.recall,
+    f1: metrics.f1,
+    eventCountRatio:
+      metrics.eventCountRatio,
+    meanAbsolutePerTapeCountError:
+      metrics.meanAbsolutePerTapeCountError,
+    medianMatchedLatencySeconds:
+      metrics.medianMatchedLatencySeconds,
+    p90MatchedLatencySeconds:
+      metrics.p90MatchedLatencySeconds,
+    risingEdges:
+      metrics.risingEdges,
+    refractorySuppressed:
+      metrics.refractorySuppressed,
+  };
+}
+
+async function d4d2d1d1d1d1d1d1d1WriteOutput(
+  output,
+) {
+  const outDir = resolve(
+    "results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-causal-margin-dynamics6",
+  );
+  await mkdir(
+    outDir,
+    { recursive: true },
+  );
+  await writeFile(
+    resolve(
+      outDir,
+      "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1.json",
+    ),
+    JSON.stringify(
+      output,
+      null,
+      2,
+    ) + "\n",
+  );
+}
+
+
+function d4d2d1d1d1d1d1d1d1d1d1PcaFrames(
+  tape,
+  phaseMeans,
+  detector,
+  innovationPca,
+) {
+  return d2d2FrameData(
+    tape,
+    phaseMeans,
+    detector,
+  ).map((frame) => ({
+    ...frame,
+    pca32: d2d2ProjectPca(
+      frame.innovation,
+      innovationPca,
+    ),
+  }));
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1Stratum(
+  tape,
+  step,
+) {
+  let latestHit = null;
+  let nextHit = null;
+  for (const hit of tape.damageEvents) {
+    if (hit.step <= step) {
+      if (
+        latestHit === null ||
+        hit.step > latestHit.step
+      ) {
+        latestHit = hit;
+      }
+    } else if (
+      nextHit === null ||
+      hit.step < nextHit.step
+    ) {
+      nextHit = hit;
+    }
+  }
+
+  if (
+    latestHit !== null &&
+    step - latestHit.step >= 0 &&
+    step - latestHit.step <
+      V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS
+  ) {
+    return "REALIZED_IMPACT";
+  }
+
+  if (
+    nextHit !== null &&
+    nextHit.step - step > 0 &&
+    nextHit.step - step <
+      V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS
+  ) {
+    return "PRE_HIT";
+  }
+
+  return "TRUE_BACKGROUND";
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1Feature(
+  frames,
+  index,
+) {
+  if (index < 5) {
+    throw new Error(
+      "anchored-delta3 requires five prior PCA32 frames",
+    );
+  }
+  const current = frames[index].pca32;
+  const shortPrior = frames[index - 1].pca32;
+  const midPrior = frames[index - 3].pca32;
+  const longPrior = frames[index - 5].pca32;
+  const feature = [];
+  for (const value of current) {
+    feature.push(value);
+  }
+  for (let j = 0; j < current.length; j += 1) {
+    feature.push(current[j] - shortPrior[j]);
+  }
+  for (let j = 0; j < current.length; j += 1) {
+    feature.push(current[j] - midPrior[j]);
+  }
+  for (let j = 0; j < current.length; j += 1) {
+    feature.push(current[j] - longPrior[j]);
+  }
+  if (feature.length !== 128) {
+    throw new Error(
+      "PCA32_ANCHORED_DELTA3 feature width mismatch",
+    );
+  }
+  return feature;
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1Rows(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+) {
+  const rows = [];
+  for (const tape of tapes) {
+    const frames =
+      d4d2d1d1d1d1d1d1d1d1d1PcaFrames(
+        tape,
+        phaseMeans,
+        detector,
+        innovationPca,
+      );
+    for (
+      let index = 5;
+      index < frames.length;
+      index += 1
+    ) {
+      const stratum =
+        d4d2d1d1d1d1d1d1d1d1d1Stratum(
+          tape,
+          frames[index].step,
+        );
+      rows.push({
+        step: frames[index].step,
+        frameIndex:
+          frames[index].frameIndex,
+        feature:
+          d4d2d1d1d1d1d1d1d1d1d1Feature(
+            frames,
+            index,
+          ),
+        stratum,
+        y:
+          stratum ===
+          "REALIZED_IMPACT"
+            ? 1
+            : 0,
+      });
+    }
+  }
+  return rows;
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1Fit(
+  rows,
+) {
+  const counts = {
+    REALIZED_IMPACT: 0,
+    PRE_HIT: 0,
+    TRUE_BACKGROUND: 0,
+  };
+  for (const row of rows) {
+    counts[row.stratum] += 1;
+  }
+  for (const key of Object.keys(counts)) {
+    if (!(counts[key] > 0)) {
+      throw new Error(
+        "anchored-delta3 collapsed TRAIN stratum " +
+          key,
+      );
+    }
+  }
+
+  const width = 128;
+  const means = Array(width).fill(0);
+  for (const row of rows) {
+    for (
+      let j = 0;
+      j < width;
+      j += 1
+    ) {
+      means[j] += row.feature[j];
+    }
+  }
+  for (
+    let j = 0;
+    j < width;
+    j += 1
+  ) {
+    means[j] /= rows.length;
+  }
+
+  const scales = Array(width).fill(0);
+  for (const row of rows) {
+    for (
+      let j = 0;
+      j < width;
+      j += 1
+    ) {
+      const delta =
+        row.feature[j] - means[j];
+      scales[j] += delta * delta;
+    }
+  }
+  for (
+    let j = 0;
+    j < width;
+    j += 1
+  ) {
+    scales[j] = Math.max(
+      Math.sqrt(
+        scales[j] / rows.length,
+      ),
+      1e-9,
+    );
+  }
+
+  const dim = width + 1;
+  const xtwx = Array.from(
+    { length: dim },
+    () => Array(dim).fill(0),
+  );
+  const xtwy = Array(dim).fill(0);
+
+  for (const row of rows) {
+    const sampleWeight =
+      1 / (3 * counts[row.stratum]);
+    const x = [1];
+    for (
+      let j = 0;
+      j < width;
+      j += 1
+    ) {
+      x.push(
+        (row.feature[j] -
+          means[j]) /
+          scales[j],
+      );
+    }
+
+    for (
+      let i = 0;
+      i < dim;
+      i += 1
+    ) {
+      xtwy[i] +=
+        sampleWeight *
+        x[i] *
+        row.y;
+      for (
+        let j = 0;
+        j < dim;
+        j += 1
+      ) {
+        xtwx[i][j] +=
+          sampleWeight *
+          x[i] *
+          x[j];
+      }
+    }
+  }
+
+  for (
+    let j = 1;
+    j < dim;
+    j += 1
+  ) {
+    xtwx[j][j] +=
+      V15N_D6_D2_D2_RIDGE_LAMBDA;
+  }
+
+  const weights = d2d2SolveLinear(
+    xtwx.map((row) => [...row]),
+    [...xtwy],
+  );
+
+  return {
+    featureFamily:
+      "PCA32_ANCHORED_DELTA3",
+    width,
+    horizons: [1, 3, 5],
+    means,
+    scales,
+    weights,
+    stratumCounts: counts,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1Predict(
+  feature,
+  model,
+) {
+  let score = model.weights[0];
+  for (
+    let j = 0;
+    j < model.width;
+    j += 1
+  ) {
+    score +=
+      model.weights[j + 1] *
+      ((feature[j] -
+        model.means[j]) /
+        model.scales[j]);
+  }
+  return score;
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1PrepareScoreFrames(
+  tapes,
+  phaseMeans,
+  detector,
+  innovationPca,
+  model,
+) {
+  for (const tape of tapes) {
+    const frames =
+      d4d2d1d1d1d1d1d1d1d1d1PcaFrames(
+        tape,
+        phaseMeans,
+        detector,
+        innovationPca,
+      );
+    const out = [];
+    for (
+      let index = 5;
+      index < frames.length;
+      index += 1
+    ) {
+      const feature =
+        d4d2d1d1d1d1d1d1d1d1d1Feature(
+          frames,
+          index,
+        );
+      out.push({
+        step:
+          frames[index].step,
+        frameIndex:
+          frames[index].frameIndex,
+        score:
+          d4d2d1d1d1d1d1d1d1d1d1Predict(
+            feature,
+            model,
+          ),
+      });
+    }
+    tape.d4d2d1d1d1d1d1d1d1d1d1ScoreFrames =
+      out;
+  }
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1ThresholdCandidates(
+  tapes,
+) {
+  const values = new Set([0]);
+  for (const tape of tapes) {
+    for (
+      const frame of
+        tape.d4d2d1d1d1d1d1d1d1d1d1ScoreFrames
+    ) {
+      if (
+        Number.isFinite(frame.score) &&
+        frame.score > 0
+      ) {
+        values.add(frame.score);
+      }
+    }
+  }
+  return [...values].sort(
+    (a, b) => a - b,
+  );
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1AttachThreshold(
+  tapes,
+  threshold,
+) {
+  for (const tape of tapes) {
+    let previousPositive = false;
+    let lastEmittedEventStep = null;
+    let risingEdges = 0;
+    let refractorySuppressed = 0;
+    const events = [];
+
+    for (
+      const frame of
+        tape.d4d2d1d1d1d1d1d1d1d1d1ScoreFrames
+    ) {
+      const positive =
+        frame.score >= threshold;
+      const crossing =
+        positive && !previousPositive;
+      if (crossing) {
+        risingEdges += 1;
+        const refractoryClear =
+          lastEmittedEventStep === null ||
+          frame.step -
+              lastEmittedEventStep >=
+            V15N_D6_D2_D3_D3_D4_D2_REFRACTORY_STEPS;
+        if (refractoryClear) {
+          events.push({
+            step: frame.step,
+            frameIndex:
+              frame.frameIndex,
+            score: frame.score,
+          });
+          lastEmittedEventStep =
+            frame.step;
+        } else {
+          refractorySuppressed += 1;
+        }
+      }
+      previousPositive = positive;
+    }
+
+    tape.d4d2NeuralEvents =
+      events;
+    tape.d4d2RisingEdges =
+      risingEdges;
+    tape.d4d2RefractorySuppressed =
+      refractorySuppressed;
+  }
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1CalibrationRow(
+  tapes,
+  threshold,
+) {
+  d4d2d1d1d1d1d1d1d1d1d1AttachThreshold(
+    tapes,
+    threshold,
+  );
+  const metrics =
+    d4d2Metrics(tapes);
+  return {
+    threshold,
+    metrics,
+    feasible:
+      d4d2Pass(metrics),
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1SelectThreshold(
+  feasibleRows,
+) {
+  if (!feasibleRows.length) {
+    return null;
+  }
+  const rows = [
+    ...feasibleRows,
+  ];
+  rows.sort((a, b) => {
+    const am = a.metrics;
+    const bm = b.metrics;
+    if (bm.f1 !== am.f1) {
+      return bm.f1 - am.f1;
+    }
+    const ar = Math.abs(
+      am.eventCountRatio - 1,
+    );
+    const br = Math.abs(
+      bm.eventCountRatio - 1,
+    );
+    if (ar !== br) {
+      return ar - br;
+    }
+    if (
+      am.meanAbsolutePerTapeCountError !==
+      bm.meanAbsolutePerTapeCountError
+    ) {
+      return (
+        am.meanAbsolutePerTapeCountError -
+        bm.meanAbsolutePerTapeCountError
+      );
+    }
+    if (
+      bm.precision !==
+      am.precision
+    ) {
+      return (
+        bm.precision -
+        am.precision
+      );
+    }
+    if (
+      bm.recall !== am.recall
+    ) {
+      return bm.recall - am.recall;
+    }
+    return (
+      b.threshold -
+      a.threshold
+    );
+  });
+  return rows[0];
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1TrainSupport(
+  model,
+  tapes,
+) {
+  const counts =
+    model.stratumCounts;
+  return {
+    tapes: tapes.length,
+    REALIZED_IMPACT:
+      counts.REALIZED_IMPACT,
+    PRE_HIT:
+      counts.PRE_HIT,
+    TRUE_BACKGROUND:
+      counts.TRUE_BACKGROUND,
+    pass:
+      tapes.length ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      counts.REALIZED_IMPACT >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_REALIZED_ROWS &&
+      counts.PRE_HIT >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_PRE_HIT_ROWS &&
+      counts.TRUE_BACKGROUND >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_BACKGROUND_ROWS,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1CalibrationSupport(
+  tapes,
+  candidates,
+) {
+  const physicalImpacts =
+    tapes.reduce(
+      (sum, tape) =>
+        sum +
+        tape.damageEvents.length,
+      0,
+    );
+  return {
+    tapes: tapes.length,
+    physicalImpacts,
+    thresholdCandidates:
+      candidates.length,
+    pass:
+      tapes.length ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_CALIBRATION_IMPACTS &&
+      candidates.length >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_THRESHOLD_CANDIDATES,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1ProspectiveSupport(
+  metrics,
+) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts:
+      metrics.physicalImpacts,
+    neuralEvents:
+      metrics.neuralEvents,
+    pass:
+      metrics.tapes ===
+        V15N_D6_D2_D3_D3_D4_D2_TAPES_PER_PROSPECTIVE &&
+      metrics.physicalImpacts >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_IMPACTS &&
+      metrics.neuralEvents >=
+        V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_MIN_PROSPECTIVE_EVENTS,
+  };
+}
+
+function d4d2d1d1d1d1d1d1d1d1d1MetricDigest(
+  metrics,
+) {
+  return {
+    tapes: metrics.tapes,
+    physicalImpacts:
+      metrics.physicalImpacts,
+    neuralEvents:
+      metrics.neuralEvents,
+    matched:
+      metrics.matched,
+    falseEvents:
+      metrics.falseEvents,
+    missedImpacts:
+      metrics.missedImpacts,
+    precision:
+      metrics.precision,
+    recall:
+      metrics.recall,
+    f1:
+      metrics.f1,
+    eventCountRatio:
+      metrics.eventCountRatio,
+    meanAbsolutePerTapeCountError:
+      metrics.meanAbsolutePerTapeCountError,
+    medianMatchedLatencySeconds:
+      metrics.medianMatchedLatencySeconds,
+    p90MatchedLatencySeconds:
+      metrics.p90MatchedLatencySeconds,
+    risingEdges:
+      metrics.risingEdges,
+    refractorySuppressed:
+      metrics.refractorySuppressed,
+  };
+}
+
+async function d4d2d1d1d1d1d1d1d1d1d1WriteOutput(
+  output,
+) {
+  const outDir = resolve(
+    "results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-pca32-anchored-delta3",
+  );
+  await mkdir(
+    outDir,
+    { recursive: true },
+  );
+  await writeFile(
+    resolve(
+      outDir,
+      "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1.json",
+    ),
+    JSON.stringify(
+      output,
+      null,
+      2,
+    ) + "\n",
+  );
+}
+
+
+function q256Stats(rows, getter, width) {
+  const means = Array(width).fill(0);
+  for (const row of rows) {
+    const v=getter(row);
+    for(let j=0;j<width;j+=1) means[j]+=v[j];
+  }
+  for(let j=0;j<width;j+=1) means[j]/=rows.length;
+  const scales=Array(width).fill(0);
+  for(const row of rows){
+    const v=getter(row);
+    for(let j=0;j<width;j+=1){
+      const d=v[j]-means[j];
+      scales[j]+=d*d;
+    }
+  }
+  for(let j=0;j<width;j+=1){
+    scales[j]=Math.max(Math.sqrt(scales[j]/rows.length),1e-9);
+  }
+  return {means,scales};
+}
+
+function q256Standardize(v, stats) {
+  const out=Array(v.length);
+  for(let j=0;j<v.length;j+=1) out[j]=(v[j]-stats.means[j])/stats.scales[j];
+  return out;
+}
+
+function q256Expand(u) {
+  const out=Array(256);
+  for(let j=0;j<128;j+=1){
+    out[j]=u[j];
+    out[j+128]=u[j]*u[j];
+  }
+  return out;
+}
+
+function q256Fit(rows) {
+  const counts={REALIZED_IMPACT:0,PRE_HIT:0,TRUE_BACKGROUND:0};
+  for(const row of rows) counts[row.stratum]+=1;
+  for(const k of Object.keys(counts)) if(!(counts[k]>0)) throw new Error("quadratic256 collapsed stratum "+k);
+
+  const baseStats=q256Stats(rows,row=>row.feature,128);
+  const expandedRows=rows.map(row=>{
+    const u=q256Standardize(row.feature,baseStats);
+    return {...row,expanded:q256Expand(u)};
+  });
+  const expandedStats=q256Stats(expandedRows,row=>row.expanded,256);
+
+  const dim=257;
+  const xtwx=Array.from({length:dim},()=>new Float64Array(dim));
+  const xtwy=new Float64Array(dim);
+  for(const row of expandedRows){
+    const sw=1/(3*counts[row.stratum]);
+    const x=new Float64Array(dim);
+    x[0]=1;
+    for(let j=0;j<256;j+=1) x[j+1]=(row.expanded[j]-expandedStats.means[j])/expandedStats.scales[j];
+    for(let i=0;i<dim;i+=1){
+      xtwy[i]+=sw*x[i]*row.y;
+      for(let j=i;j<dim;j+=1) xtwx[i][j]+=sw*x[i]*x[j];
+    }
+  }
+  for(let i=0;i<dim;i+=1){
+    for(let j=i+1;j<dim;j+=1) xtwx[j][i]=xtwx[i][j];
+  }
+  for(let j=1;j<dim;j+=1) xtwx[j][j]+=V15N_D6_D2_D2_RIDGE_LAMBDA;
+
+  const weights=d2d2SolveLinear(
+    xtwx.map(row=>Array.from(row)),
+    Array.from(xtwy),
+  );
+  return {
+    featureFamily:"PCA32_ANCHORED_DELTA3_QUADRATIC256",
+    width:256,
+    baseWidth:128,
+    horizons:[1,3,5],
+    baseMeans:baseStats.means,
+    baseScales:baseStats.scales,
+    expandedMeans:expandedStats.means,
+    expandedScales:expandedStats.scales,
+    weights,
+    stratumCounts:counts,
+  };
+}
+
+function q256Predict(feature, model) {
+  const u=Array(128);
+  for(let j=0;j<128;j+=1) u[j]=(feature[j]-model.baseMeans[j])/model.baseScales[j];
+  const q=q256Expand(u);
+  let score=model.weights[0];
+  for(let j=0;j<256;j+=1){
+    const z=(q[j]-model.expandedMeans[j])/model.expandedScales[j];
+    score+=model.weights[j+1]*z;
+  }
+  return score;
+}
+
+function q256Prepare(tapes,phaseMeans,detector,innovationPca,model){
+  for(const tape of tapes){
+    const frames=d4d2d1d1d1d1d1d1d1d1d1PcaFrames(tape,phaseMeans,detector,innovationPca);
+    const out=[];
+    for(let index=5;index<frames.length;index+=1){
+      const feature=d4d2d1d1d1d1d1d1d1d1d1Feature(frames,index);
+      out.push({step:frames[index].step,frameIndex:frames[index].frameIndex,score:q256Predict(feature,model)});
+    }
+    tape.d4d2d1d1d1d1d1d1d1d1d1ScoreFrames=out;
+  }
+}
+
+function q256MetricDigest(m){
+  return {
+    tapes:m.tapes,physicalImpacts:m.physicalImpacts,neuralEvents:m.neuralEvents,matched:m.matched,
+    falseEvents:m.falseEvents,missedImpacts:m.missedImpacts,precision:m.precision,recall:m.recall,f1:m.f1,
+    eventCountRatio:m.eventCountRatio,meanAbsolutePerTapeCountError:m.meanAbsolutePerTapeCountError,
+    medianMatchedLatencySeconds:m.medianMatchedLatencySeconds,p90MatchedLatencySeconds:m.p90MatchedLatencySeconds,
+    risingEdges:m.risingEdges,refractorySuppressed:m.refractorySuppressed,
+  };
+}
+
+async function q256Write(output){
+  const dir=resolve("results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-anchored-delta3-quadratic256");
+  await mkdir(dir,{recursive:true});
+  await writeFile(resolve(dir,"v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"),JSON.stringify(output,null,2)+"\n");
+}
+
+
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PREREG_COMMIT =
+  "ace688eeba4b1df6bb259066dad182a0d52025bf";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_EVIDENCE_SHA256 =
+  "d7e1633ca5e9df1b0c96641919a887af86ea55a16dd7eb4fb49ae43644d2beac";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_MODEL_SHA256 =
+  "6f72c6c5070b0a8bd9e3d64627614790fdb8c1c97b21b1f408ed1852ec5aaff7";
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_THRESHOLD =
+  0.6097593618468664;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_A_BASE_SEEDS = [
+  7341000, 7351000, 7361000, 7371000,
+  7381000, 7391000, 7401000, 7411000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_A_INTERRUPTION_SEED = 7427000;
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_B_BASE_SEEDS = [
+  7431000, 7441000, 7451000, 7461000,
+  7471000, 7481000, 7491000, 7501000,
+];
+const V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_B_INTERRUPTION_SEED = 7517000;
+
+async function q256ConfirmWrite(output){
+  const dir=resolve("results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-quadratic256-confirmatory-replication");
+  await mkdir(dir,{recursive:true});
+  await writeFile(
+    resolve(dir,"v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"),
+    JSON.stringify(output,null,2)+"\n"
+  );
+}
+
+async function main(){
+  await verifyStaticContract();
+  remediationPotion=await loadRemediationPotion();
+
+  const evidencePath=
+    process.env.V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE;
+  if(!evidencePath) throw new Error("quadratic256 evidence artifact required");
+  const evidenceBytes=await readFile(evidencePath);
+  const evidenceSha=createHash("sha256").update(evidenceBytes).digest("hex");
+  if(evidenceSha!==V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_EVIDENCE_SHA256)
+    throw new Error("quadratic256 evidence SHA mismatch");
+  const frozen=JSON.parse(evidenceBytes.toString("utf8"));
+  if(
+    frozen.outcome!=="V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ANCHORED_DELTA3_QUADRATIC256_EVENT_STREAM_DEMONSTRATED" ||
+    frozen.prospectiveEvaluated!==true ||
+    frozen.prospective?.gates?.A!==true ||
+    frozen.prospective?.gates?.B!==true ||
+    frozen.quadraticModel?.sha256!==V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_MODEL_SHA256 ||
+    frozen.calibration?.selectedThreshold!==V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_THRESHOLD
+  ) throw new Error("quadratic256 frozen prerequisite mismatch");
+
+  const artifactPath=process.env.V15N_ARTIFACT_FILE;
+  if(!artifactPath) throw new Error("V15N_ARTIFACT_FILE is required");
+  const artifactBytes=await readFile(artifactPath);
+  const artifactSha=createHash("sha256").update(artifactBytes).digest("hex");
+  if(artifactSha!==V15N_D1_EVIDENCE_SHA256) throw new Error("v15N evidence SHA mismatch");
+
+  const candidate=JSON.parse(
+    await readFile(new URL("../src/brain/fly-interruption-v14b-candidate.json",import.meta.url),"utf8")
+  );
+  const attackPolicy={bias:candidate.policies.attack.bias,weights:Float64Array.from(candidate.policies.attack.weights)};
+  const jumpPolicy={bias:candidate.policies.jump.bias,weights:Float64Array.from(candidate.policies.jump.weights)};
+
+  const connectome=await loadConnectome({
+    cacheDir:resolve(".cache/maplefly-connectome"),
+    onProgress(m){console.log("[connectome] "+m);}
+  });
+  const dnSlot=buildDnSlot(connectome.meta);
+  const runtimeDnIds=cells(connectome.meta,["descending_neuron","descending_neuron_tbc"]);
+  if(
+    runtimeDnIds.length!==remediationPotion.dnIds.length ||
+    runtimeDnIds.some((v,i)=>v!==remediationPotion.dnIds[i])
+  ) throw new Error("quadratic256 confirm DN order mismatch");
+
+  for(const channel of ["LC6","LC16","LC22","LPLC4"]) for(const side of ["L","R"]){
+    const group=cells(connectome.meta,[channel],side);
+    if(!group.length) throw new Error(channel+"_"+side+" missing");
+    connectome.inputGroups.set(channel+"_"+side,group);
+  }
+  for(const side of ["L","R"]){
+    const impact=cellsWithPrefix(connectome.meta,"LgLG",side);
+    const expected=side==="L"?331:338;
+    if(impact.length!==expected) throw new Error("LgLG_"+side+" mismatch");
+    connectome.inputGroups.set("LgLG_"+side,impact);
+    const taste=cells(connectome.meta,["LB3","claw_tpGRN"],side);
+    if(!taste.length) throw new Error("taste_"+side+" missing");
+    connectome.inputGroups.set("taste_"+side,taste);
+  }
+
+  const upstreamTrain=await collectTapes({
+    connectome,dnSlot,attackPolicy,jumpPolicy,
+    baseSeeds:V15N_TRAIN_BASE_SEEDS,
+    interruptionRandom:mulberry32(4147000),
+    label:"q256-confirm-upstream-train"
+  });
+  const linearTrain=await collectTapes({
+    connectome,dnSlot,attackPolicy,jumpPolicy,
+    baseSeeds:V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_BASE_SEEDS,
+    interruptionRandom:mulberry32(V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_INTERRUPTION_SEED),
+    label:"q256-confirm-linear-reconstruction"
+  });
+  const quadTrain=await collectTapes({
+    connectome,dnSlot,attackPolicy,jumpPolicy,
+    baseSeeds:V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_BASE_SEEDS,
+    interruptionRandom:mulberry32(V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_TRAIN_INTERRUPTION_SEED),
+    label:"q256-confirm-model-reconstruction"
+  });
+
+  const phase=computeD6PhaseMeans(upstreamTrain);
+  const detector=trainD6ImpactDirection(
+    collectD6DetectorExamples(upstreamTrain,phase.means).examples
+  );
+  const innovationFitRows=[];
+  for(const tape of upstreamTrain){
+    for(const frame of d2d2FrameData(tape,phase.means,detector)){
+      innovationFitRows.push(frame.innovation);
+    }
+  }
+  const innovationPca=d2d2FitPca(innovationFitRows);
+
+  const linearRows=d4d2d1d1d1d1d1d1d1d1d1Rows(
+    linearTrain,phase.means,detector,innovationPca
+  );
+  const linearModel=d4d2d1d1d1d1d1d1d1d1d1Fit(linearRows);
+  const linearSha=createHash("sha256").update(JSON.stringify(linearModel)).digest("hex");
+  if(linearSha!==V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_LINEAR_MODEL_SHA256)
+    throw new Error("linear model provenance mismatch");
+
+  const quadRows=d4d2d1d1d1d1d1d1d1d1d1Rows(
+    quadTrain,phase.means,detector,innovationPca
+  );
+  const quadModel=q256Fit(quadRows);
+  const quadSha=createHash("sha256").update(JSON.stringify(quadModel)).digest("hex");
+  if(quadSha!==V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_MODEL_SHA256)
+    throw new Error("quadratic model provenance mismatch");
+
+  const A=await collectTapes({
+    connectome,dnSlot,attackPolicy,jumpPolicy,
+    baseSeeds:V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_A_BASE_SEEDS,
+    interruptionRandom:mulberry32(V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_A_INTERRUPTION_SEED),
+    label:"q256-confirm-a"
+  });
+  const B=await collectTapes({
+    connectome,dnSlot,attackPolicy,jumpPolicy,
+    baseSeeds:V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_B_BASE_SEEDS,
+    interruptionRandom:mulberry32(V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_CONFIRM_B_INTERRUPTION_SEED),
+    label:"q256-confirm-b"
+  });
+
+  for(const tapes of [A,B]){
+    d4d2d1d1d1d1d1d1d1d1d1PrepareScoreFrames(
+      tapes,phase.means,detector,innovationPca,linearModel
+    );
+    d4d2d1d1d1d1d1d1d1d1d1AttachThreshold(
+      tapes,V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_LINEAR_THRESHOLD
+    );
+  }
+  const linearA=d4d2Metrics(A);
+  const linearB=d4d2Metrics(B);
+
+  q256Prepare(A,phase.means,detector,innovationPca,quadModel);
+  q256Prepare(B,phase.means,detector,innovationPca,quadModel);
+  d4d2d1d1d1d1d1d1d1d1d1AttachThreshold(
+    A,V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_THRESHOLD
+  );
+  d4d2d1d1d1d1d1d1d1d1d1AttachThreshold(
+    B,V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_THRESHOLD
+  );
+  const qa=d4d2Metrics(A), qb=d4d2Metrics(B);
+  const supportA=d4d2d1d1d1d1d1d1d1d1d1ProspectiveSupport(qa);
+  const supportB=d4d2d1d1d1d1d1d1d1d1d1ProspectiveSupport(qb);
+  const supportPass=supportA.pass&&supportB.pass;
+  const passA=d4d2Pass(qa), passB=d4d2Pass(qb);
+  const outcome=!supportPass
+    ?"V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_INSUFFICIENT_CONFIRMATORY_SUPPORT"
+    :(passA&&passB
+      ?"V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_QUADRATIC256_CONFIRMATORY_REPLICATION_PASS"
+      :"V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_QUADRATIC256_CONFIRMATORY_REPLICATION_FAIL");
+
+  console.log("[q256-confirm] A="+JSON.stringify(q256MetricDigest(qa))+" pass="+passA);
+  console.log("[q256-confirm] B="+JSON.stringify(q256MetricDigest(qb))+" pass="+passB);
+  console.log("[q256-confirm] outcome="+outcome);
+
+  await q256ConfirmWrite({
+    schema:"maplefly.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.quadratic256-confirmatory-replication.1",
+    preregistration:{
+      path:"history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.md",
+      commit:V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_PREREG_COMMIT
+    },
+    prerequisite:{
+      evidenceSha256:evidenceSha,
+      originalOutcome:frozen.outcome,
+      originalProspectiveGates:frozen.prospective.gates,
+      reconstructedLinearModelSha256:linearSha,
+      reconstructedQuadraticModelSha256:quadSha,
+      frozenQuadraticThreshold:V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_THRESHOLD
+    },
+    support:{A:supportA,B:supportB,pass:supportPass},
+    confirmation:{
+      A:q256MetricDigest(qa),
+      B:q256MetricDigest(qb),
+      gates:{A:passA,B:passB,pass:passA&&passB}
+    },
+    frozenLinearComparator:{
+      A:q256MetricDigest(linearA),
+      B:q256MetricDigest(linearB)
+    },
+    outcome,
+    modelRefit:false,
+    calibrationRerun:false,
+    thresholdCandidatesConstructed:false,
+    thresholdSearched:false,
+    thresholdTunedOnConfirmation:false,
+    featureChanged:false,
+    degreeChanged:false,
+    horizonChanged:false,
+    eventizerChanged:false,
+    refractoryTuned:false,
+    diagnosticStackDeployable:false,
+    deployment:"BLOCKED",
+    deployedPotion:"v15D",
+    v16c:"BLOCKED"
+  });
+}
+
+main().catch(error=>{console.error(error);process.exitCode=1;});
