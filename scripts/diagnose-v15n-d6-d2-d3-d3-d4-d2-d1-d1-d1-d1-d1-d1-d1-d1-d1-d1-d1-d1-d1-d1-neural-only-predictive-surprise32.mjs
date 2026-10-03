@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   SOURCE,
   ConnectomeBrain,
@@ -9220,10 +9221,63 @@ async function noD1Write(output){
   );
 }
 
-async function main(){
+export async function createV15nSimulationContext() {
   await verifyStaticContract();
-  remediationPotion=await loadRemediationPotion();
+  remediationPotion = await loadRemediationPotion();
 
+  const candidate=JSON.parse(
+  await readFile(new URL("../src/brain/fly-interruption-v14b-candidate.json",import.meta.url),"utf8")
+  );
+  const attackPolicy={bias:candidate.policies.attack.bias,weights:Float64Array.from(candidate.policies.attack.weights)};
+  const jumpPolicy={bias:candidate.policies.jump.bias,weights:Float64Array.from(candidate.policies.jump.weights)};
+  
+  const connectome=await loadConnectome({
+  cacheDir:resolve(".cache/maplefly-connectome"),
+  onProgress(m){console.log("[connectome] "+m);}
+  });
+  const dnSlot=buildDnSlot(connectome.meta);
+  const runtimeDnIds=cells(connectome.meta,["descending_neuron","descending_neuron_tbc"]);
+  if(
+  runtimeDnIds.length!==remediationPotion.dnIds.length ||
+  runtimeDnIds.some((v,i)=>v!==remediationPotion.dnIds[i])
+  ) throw new Error("neural-only DN identity/order mismatch");
+  
+  for(const channel of ["LC6","LC16","LC22","LPLC4"]) for(const side of ["L","R"]){
+  const group=cells(connectome.meta,[channel],side);
+  if(!group.length) throw new Error(channel+"_"+side+" missing");
+  connectome.inputGroups.set(channel+"_"+side,group);
+  }
+  for(const side of ["L","R"]){
+  const impact=cellsWithPrefix(connectome.meta,"LgLG",side);
+  const expected=side==="L"?331:338;
+  if(impact.length!==expected) throw new Error("LgLG_"+side+" mismatch");
+  connectome.inputGroups.set("LgLG_"+side,impact);
+  const taste=cells(connectome.meta,["LB3","claw_tpGRN"],side);
+  if(!taste.length) throw new Error("taste_"+side+" missing");
+  connectome.inputGroups.set("taste_"+side,taste);
+  }
+
+  return { connectome, dnSlot, attackPolicy, jumpPolicy };
+}
+
+export async function collectV15nCachedCohort({
+  context,
+  baseSeeds,
+  interruptionSeed,
+  cohortName,
+  label = cohortName,
+}) {
+  if (!context) throw new Error("v15N simulation context required");
+  return collectTapesCached({
+    ...context,
+    baseSeeds,
+    interruptionSeed,
+    cohortName,
+    label,
+  });
+}
+
+async function main(){
   const prerequisitePath=
     process.env.V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE;
   if(!prerequisitePath) throw new Error("confirmatory prerequisite artifact required");
@@ -9242,37 +9296,12 @@ async function main(){
   const artifactSha=createHash("sha256").update(artifactBytes).digest("hex");
   if(artifactSha!==V15N_D1_EVIDENCE_SHA256) throw new Error("v15N evidence SHA mismatch");
 
-  const candidate=JSON.parse(
-    await readFile(new URL("../src/brain/fly-interruption-v14b-candidate.json",import.meta.url),"utf8")
-  );
-  const attackPolicy={bias:candidate.policies.attack.bias,weights:Float64Array.from(candidate.policies.attack.weights)};
-  const jumpPolicy={bias:candidate.policies.jump.bias,weights:Float64Array.from(candidate.policies.jump.weights)};
-
-  const connectome=await loadConnectome({
-    cacheDir:resolve(".cache/maplefly-connectome"),
-    onProgress(m){console.log("[connectome] "+m);}
-  });
-  const dnSlot=buildDnSlot(connectome.meta);
-  const runtimeDnIds=cells(connectome.meta,["descending_neuron","descending_neuron_tbc"]);
-  if(
-    runtimeDnIds.length!==remediationPotion.dnIds.length ||
-    runtimeDnIds.some((v,i)=>v!==remediationPotion.dnIds[i])
-  ) throw new Error("neural-only DN identity/order mismatch");
-
-  for(const channel of ["LC6","LC16","LC22","LPLC4"]) for(const side of ["L","R"]){
-    const group=cells(connectome.meta,[channel],side);
-    if(!group.length) throw new Error(channel+"_"+side+" missing");
-    connectome.inputGroups.set(channel+"_"+side,group);
-  }
-  for(const side of ["L","R"]){
-    const impact=cellsWithPrefix(connectome.meta,"LgLG",side);
-    const expected=side==="L"?331:338;
-    if(impact.length!==expected) throw new Error("LgLG_"+side+" mismatch");
-    connectome.inputGroups.set("LgLG_"+side,impact);
-    const taste=cells(connectome.meta,["LB3","claw_tpGRN"],side);
-    if(!taste.length) throw new Error("taste_"+side+" missing");
-    connectome.inputGroups.set("taste_"+side,taste);
-  }
+  const {
+    connectome,
+    dnSlot,
+    attackPolicy,
+    jumpPolicy,
+  } = await createV15nSimulationContext();
 
   const trainFull=await collectTapesCached({
     connectome,dnSlot,attackPolicy,jumpPolicy,
@@ -9434,4 +9463,12 @@ async function main(){
   });
 }
 
-main().catch(error=>{console.error(error);process.exitCode=1;});
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

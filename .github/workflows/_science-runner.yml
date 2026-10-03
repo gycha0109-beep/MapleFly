@@ -16,27 +16,46 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  run:
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 5
+    outputs:
+      script: ${{ steps.route.outputs.script }}
+      output_dir: ${{ steps.route.outputs.output_dir }}
+      artifact_name: ${{ steps.route.outputs.artifact_name }}
+      needs_malecns: ${{ steps.route.outputs.needs_malecns }}
+      needs_tapes: ${{ steps.route.outputs.needs_tapes }}
+      tape_builder: ${{ steps.route.outputs.tape_builder }}
+      cohort_set: ${{ steps.route.outputs.cohort_set }}
+      tape_cache_key: ${{ steps.route.outputs.tape_cache_key }}
+      tape_cache_restore_prefix: ${{ steps.route.outputs.tape_cache_restore_prefix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Validate science manifest
+        run: node scripts/ci/validate-science-manifest.mjs "${{ inputs.manifest_path }}"
+
       - name: Read manifest routing
-        id: manifest
+        id: route
         shell: bash
         run: |
           set -euo pipefail
           manifest="${{ inputs.manifest_path }}"
-          test -f "$manifest"
           echo "script=$(jq -r '.script' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "output_dir=$(jq -r '.output_dir' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "artifact_name=$(jq -r '.artifact_name' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "needs_malecns=$(jq -r '.needs_malecns // true' "$manifest")" >> "$GITHUB_OUTPUT"
+          echo "tape_builder=$(jq -r '.tape_builder // "scripts/science/build-v15n-tapes.mjs"' "$manifest")" >> "$GITHUB_OUTPUT"
 
           sim="$(jq -r '.simulation_contract // empty' "$manifest")"
           cohorts="$(jq -r '.cohort_set // empty' "$manifest")"
+          echo "cohort_set=$cohorts" >> "$GITHUB_OUTPUT"
           if [[ -n "$sim" && -n "$cohorts" ]]; then
             test -f "$sim"
             test -f "$cohorts"
@@ -51,20 +70,58 @@ jobs:
             echo "tape_cache_restore_prefix=none-" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Validate simulation and cohort contract
+        if: ${{ steps.route.outputs.needs_tapes == 'true' }}
+        run: node scripts/ci/validate-science-tape-contract.mjs "${{ inputs.manifest_path }}"
+
+  simulate:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.needs_tapes == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
       - name: Shared science bootstrap
         uses: ./.github/actions/science-bootstrap
         with:
-          needs_malecns: ${{ steps.manifest.outputs.needs_malecns }}
-          needs_tapes: ${{ steps.manifest.outputs.needs_tapes }}
-          tape_cache_key: ${{ steps.manifest.outputs.tape_cache_key }}
-          tape_cache_restore_prefix: ${{ steps.manifest.outputs.tape_cache_restore_prefix }}
+          needs_malecns: ${{ needs.prepare.outputs.needs_malecns }}
+          needs_tapes: "true"
+          tape_cache_key: ${{ needs.prepare.outputs.tape_cache_key }}
+          tape_cache_restore_prefix: ${{ needs.prepare.outputs.tape_cache_restore_prefix }}
 
-      - name: Validate science manifest
-        run: node scripts/ci/validate-science-manifest.mjs "${{ inputs.manifest_path }}"
+      - name: Fetch frozen dependencies
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ci/fetch-science-dependencies.mjs "${{ inputs.manifest_path }}"
 
-      - name: Validate simulation and cohort contract
-        if: ${{ steps.manifest.outputs.needs_tapes == 'true' }}
-        run: node scripts/ci/validate-science-tape-contract.mjs "${{ inputs.manifest_path }}"
+      - name: Syntax check tape builder
+        run: node --check "${{ needs.prepare.outputs.tape_builder }}"
+
+      - name: Build or restore simulation tapes
+        env:
+          MAPLEFLY_TAPE_CACHE_DIR: .cache/maplefly-tapes
+        run: >
+          node "${{ needs.prepare.outputs.tape_builder }}"
+          "${{ needs.prepare.outputs.cohort_set }}"
+
+  analyze:
+    needs: [prepare, simulate]
+    if: ${{ always() && needs.prepare.result == 'success' && (needs.simulate.result == 'success' || needs.simulate.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Shared science bootstrap
+        uses: ./.github/actions/science-bootstrap
+        with:
+          needs_malecns: ${{ needs.prepare.outputs.needs_malecns }}
+          needs_tapes: ${{ needs.prepare.outputs.needs_tapes }}
+          tape_cache_key: ${{ needs.prepare.outputs.tape_cache_key }}
+          tape_cache_restore_prefix: ${{ needs.prepare.outputs.tape_cache_restore_prefix }}
 
       - name: Fetch frozen dependencies
         env:
@@ -72,18 +129,18 @@ jobs:
         run: node scripts/ci/fetch-science-dependencies.mjs "${{ inputs.manifest_path }}"
 
       - name: Syntax check experiment
-        run: node --check "${{ steps.manifest.outputs.script }}"
+        run: node --check "${{ needs.prepare.outputs.script }}"
 
-      - name: Run experiment
+      - name: Run experiment analysis
         env:
           MAPLEFLY_TAPE_CACHE_DIR: .cache/maplefly-tapes
-        run: node "${{ steps.manifest.outputs.script }}"
+        run: node "${{ needs.prepare.outputs.script }}"
 
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.manifest.outputs.artifact_name }}-${{ github.run_id }}
-          path: ${{ steps.manifest.outputs.output_dir }}
+          name: ${{ needs.prepare.outputs.artifact_name }}-${{ github.run_id }}
+          path: ${{ needs.prepare.outputs.output_dir }}
           if-no-files-found: warn
           retention-days: 30

@@ -84,6 +84,10 @@
           "boolean"
         ]
       }
+    },
+    "tape_builder": {
+      "type": "string",
+      "pattern": "^scripts/.*\\.mjs$"
     }
   }
 }

@@ -2,10 +2,11 @@
   "schema": "maplefly.science-experiment.v1",
   "id": "neural-only-predictive-surprise32-cached",
   "script": "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs",
+  "tape_builder": "scripts/science/build-v15n-tapes.mjs",
   "output_dir": "results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32",
   "artifact_name": "maplefly-neural-only-predictive-surprise32-cached",
   "needs_malecns": true,
-  "simulation_contract": "science/simulations/v15n-deterministic-v2.json",
+  "simulation_contract": "science/simulations/v15n-deterministic-v3.json",
   "cohort_set": "science/cohorts/neural-only-predictive-surprise32.json",
   "dependencies": [
     {

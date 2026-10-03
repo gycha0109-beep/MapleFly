@@ -22,7 +22,7 @@ const safeRepoPath = (value) =>
 const allowed = new Set([
   "schema","id","script","output_dir","artifact_name","needs_malecns",
   "dependencies","env","simulation_contract","cohort_set",
-  "historical_run_id","migration_note",
+  "historical_run_id","migration_note","tape_builder",
 ]);
 for (const key of Object.keys(manifest)) {
   if (!allowed.has(key)) fail("unknown field " + key);
@@ -40,6 +40,12 @@ if (manifest.simulation_contract !== undefined) {
     fail("simulation_contract");
   }
   await readFile(manifest.simulation_contract);
+}
+if (manifest.tape_builder !== undefined) {
+  if (!safeRepoPath(manifest.tape_builder) || !manifest.tape_builder.startsWith("scripts/") || !manifest.tape_builder.endsWith(".mjs")) {
+    fail("tape_builder");
+  }
+  await readFile(manifest.tape_builder);
 }
 if (manifest.cohort_set !== undefined) {
   if (!safeRepoPath(manifest.cohort_set) || !manifest.cohort_set.startsWith("science/cohorts/") || !manifest.cohort_set.endsWith(".json")) {

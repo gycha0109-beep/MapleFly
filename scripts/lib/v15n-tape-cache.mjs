@@ -3,7 +3,7 @@ import {
   tapePackKey,
 } from "./tape-pack-cache.mjs";
 
-export const V15N_SIMULATION_CONTRACT_ID = "v15n-deterministic-v2";
+export const V15N_SIMULATION_CONTRACT_ID = "v15n-deterministic-v3";
 export const V15N_PINNED_CONNECTOME_COMMIT =
   "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e";
 
