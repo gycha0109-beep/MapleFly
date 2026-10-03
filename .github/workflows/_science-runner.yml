@@ -1,0 +1,65 @@
+name: Reusable MapleFly Science Runner
+
+on:
+  workflow_call:
+    inputs:
+      manifest_path:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: maplefly-science-heavy
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read manifest routing
+        id: manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "${{ inputs.manifest_path }}"
+          echo "script=$(jq -r '.script' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
+          echo "output_dir=$(jq -r '.output_dir' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=$(jq -r '.artifact_name' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
+          echo "needs_malecns=$(jq -r '.needs_malecns // true' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
+
+      - name: Shared science bootstrap
+        uses: ./.github/actions/science-bootstrap
+        with:
+          needs_malecns: ${{ steps.manifest.outputs.needs_malecns }}
+
+      - name: Validate science manifest
+        run: node scripts/ci/validate-science-manifest.mjs "${{ inputs.manifest_path }}"
+
+      - name: Fetch frozen dependencies
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ci/fetch-science-dependencies.mjs "${{ inputs.manifest_path }}"
+
+      - name: Syntax check experiment
+        run: node --check "${{ steps.manifest.outputs.script }}"
+
+      - name: Run experiment
+        env:
+          MAPLEFLY_TAPE_CACHE_DIR: .cache/maplefly-tapes
+        run: node "${{ steps.manifest.outputs.script }}"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.manifest.outputs.artifact_name }}-${{ github.run_id }}
+          path: ${{ steps.manifest.outputs.output_dir }}
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,35 @@
+name: MapleFly CI Architecture Guard
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - "science/**"
+      - "scripts/ci/**"
+      - "scripts/lib/tape-pack-cache.mjs"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - "science/**"
+      - "scripts/ci/**"
+      - "scripts/lib/tape-pack-cache.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Validate workflow policy
+        run: node scripts/ci/validate-workflow-policy.mjs
+      - name: Test Tape Pack cache
+        run: node scripts/ci/test-tape-pack-cache.mjs

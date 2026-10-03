@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "maplefly.science-experiment.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "script",
+    "output_dir",
+    "artifact_name",
+    "dependencies"
+  ],
+  "properties": {
+    "schema": {
+      "const": "maplefly.science-experiment.v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "script": {
+      "type": "string",
+      "pattern": "^scripts/.*\\.mjs$"
+    },
+    "output_dir": {
+      "type": "string",
+      "pattern": "^results/"
+    },
+    "artifact_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "needs_malecns": {
+      "type": "boolean",
+      "default": true
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "registry_key",
+          "env"
+        ],
+        "properties": {
+          "registry_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "env": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "file_key": {
+            "type": "string",
+            "default": "default"
+          }
+        }
+      }
+    },
+    "env": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      }
+    }
+  }
+}

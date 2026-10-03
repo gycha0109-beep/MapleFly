@@ -1,0 +1,52 @@
+import { readFile } from "node:fs/promises";
+import { posix } from "node:path";
+
+const path = process.argv[2];
+if (!path) throw new Error("manifest path required");
+
+const manifest = JSON.parse(await readFile(path, "utf8"));
+const registry = JSON.parse(
+  await readFile("science/artifacts/frozen.json", "utf8"),
+);
+
+const fail = (message) => {
+  throw new Error("invalid science manifest: " + message);
+};
+const safeRepoPath = (value) =>
+  typeof value === "string" &&
+  value.length > 0 &&
+  !value.startsWith("/") &&
+  !value.includes("..") &&
+  posix.normalize(value) === value;
+
+if (manifest.schema !== "maplefly.science-experiment.v1") fail("schema");
+if (!/^[a-z0-9][a-z0-9-]*$/.test(manifest.id ?? "")) fail("id");
+if (!safeRepoPath(manifest.script) || !manifest.script.startsWith("scripts/") || !manifest.script.endsWith(".mjs")) fail("script");
+if (!safeRepoPath(manifest.output_dir) || !manifest.output_dir.startsWith("results/")) fail("output_dir");
+if (typeof manifest.artifact_name !== "string" || !manifest.artifact_name) fail("artifact_name");
+if (!Array.isArray(manifest.dependencies)) fail("dependencies");
+
+const envs = new Set();
+for (const dep of manifest.dependencies) {
+  if (!registry.artifacts?.[dep.registry_key]) {
+    fail("unknown registry key " + dep.registry_key);
+  }
+  if (!/^[A-Z][A-Z0-9_]*$/.test(dep.env ?? "")) {
+    fail("invalid dependency env " + dep.env);
+  }
+  if (envs.has(dep.env)) fail("duplicate dependency env " + dep.env);
+  envs.add(dep.env);
+  const fileKey = dep.file_key ?? "default";
+  if (!registry.artifacts[dep.registry_key].files?.[fileKey]) {
+    fail("unknown file_key " + dep.registry_key + ":" + fileKey);
+  }
+}
+
+for (const [key, value] of Object.entries(manifest.env ?? {})) {
+  if (!/^[A-Z][A-Z0-9_]*$/.test(key)) fail("invalid env key " + key);
+  if (!["string", "number", "boolean"].includes(typeof value)) {
+    fail("invalid env value " + key);
+  }
+}
+
+console.log(JSON.stringify({ status: "PASS", id: manifest.id }, null, 2));

@@ -1,0 +1,17 @@
+name: MapleFly Science
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "science/active.json"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  authoritative:
+    uses: ./.github/workflows/_science-runner.yml
+    with:
+      manifest_path: science/active.json

@@ -1,0 +1,31 @@
+name: MapleFly science bootstrap
+description: Shared Node/MaleCNS/tape-cache setup for science jobs
+
+inputs:
+  needs_malecns:
+    description: Restore pinned MaleCNS cache
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v7
+      with:
+        node-version: "24"
+
+    - name: Restore pinned MaleCNS assets
+      if: ${{ inputs.needs_malecns == 'true' }}
+      uses: actions/cache@v6
+      with:
+        path: .cache/maplefly-connectome
+        key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+    - name: Restore rolling Tape Pack cache
+      uses: actions/cache@v6
+      with:
+        path: .cache/maplefly-tapes
+        key: maplefly-tapes-v1-${{ runner.os }}-${{ hashFiles('src/brain/**', 'src/headless/**', 'scripts/lib/tape-pack-cache.mjs') }}-${{ github.run_id }}
+        restore-keys: |
+          maplefly-tapes-v1-${{ runner.os }}-${{ hashFiles('src/brain/**', 'src/headless/**', 'scripts/lib/tape-pack-cache.mjs') }}-

@@ -1,0 +1,35 @@
+{
+  "schema": "maplefly.frozen-artifact-registry.v1",
+  "repository": "gycha0109-beep/MapleFly",
+  "pinnedConnectomeCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+  "artifacts": {
+    "v15e2_neural_core": {
+      "artifact_id": 10793265453,
+      "run_id": 35961707942,
+      "head_sha": "a04fc64f159079a3e51d6e7ed3663fce25cb83bc",
+      "digest": "sha256:a119bc0e425d08c5ce2381e6054c6ee358bf9402d5c442a57c00c916fd3b9405",
+      "files": {
+        "default": "v15e2_training.json"
+      }
+    },
+    "v15n_candidate": {
+      "artifact_id": 10846125740,
+      "run_id": 36089829819,
+      "head_sha": "d3e434fc5a9f9a8b9e83d96637b25e2058398274",
+      "digest": "sha256:2a4492b371eaaaccaf12cbb29f5062708833e722d0af111a50e7cd0112abf6e2",
+      "files": {
+        "default": "v15n_training.json"
+      }
+    },
+    "quadratic256_confirmatory": {
+      "artifact_id": 11232625088,
+      "run_id": 37006306772,
+      "head_sha": "644470e7b40fe02d397648b91dff126324b6feb8",
+      "digest": "sha256:7a4a5ec9d794746852dfb6649c0360814ee1a867e35879a676526d179332d176",
+      "evidence_sha256": "ffb4d8cbd0fecfa64ac84fc9cb90f079d3ab03a9d9e08df7b7ebff4139e398aa",
+      "files": {
+        "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
+      }
+    }
+  }
+}
