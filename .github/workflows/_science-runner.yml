@@ -30,6 +30,7 @@ jobs:
       cohort_set: ${{ steps.route.outputs.cohort_set }}
       tape_cache_key: ${{ steps.route.outputs.tape_cache_key }}
       tape_cache_restore_prefix: ${{ steps.route.outputs.tape_cache_restore_prefix }}
+      simulation_contract_id: ${{ steps.route.outputs.simulation_contract_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -52,7 +53,7 @@ jobs:
           echo "output_dir=$(jq -r '.output_dir' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "artifact_name=$(jq -r '.artifact_name' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "needs_malecns=$(jq -r '.needs_malecns // true' "$manifest")" >> "$GITHUB_OUTPUT"
-          echo "analysis_needs_malecns=$(jq -r '.analysis_needs_malecns // (.needs_malecns // true)' "$manifest")" >> "$GITHUB_OUTPUT"
+          echo "analysis_needs_malecns=$(jq -r 'if has("analysis_needs_malecns") then .analysis_needs_malecns elif ((.simulation_contract // "") != "" and (.cohort_set // "") != "") then false else (.needs_malecns // true) end' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "tape_builder=$(jq -r '.tape_builder // "scripts/science/build-v15n-tapes.mjs"' "$manifest")" >> "$GITHUB_OUTPUT"
 
           sim="$(jq -r '.simulation_contract // empty' "$manifest")"
@@ -63,10 +64,14 @@ jobs:
             test -f "$cohorts"
             sim_hash="$(sha256sum "$sim" | awk '{print $1}')"
             cohort_hash="$(sha256sum "$cohorts" | awk '{print $1}')"
+            sim_id="$(jq -r '.id' "$sim")"
+            test -n "$sim_id"
+            echo "simulation_contract_id=$sim_id" >> "$GITHUB_OUTPUT"
             echo "needs_tapes=true" >> "$GITHUB_OUTPUT"
             echo "tape_cache_key=${sim_hash}-${cohort_hash}" >> "$GITHUB_OUTPUT"
             echo "tape_cache_restore_prefix=${sim_hash}-" >> "$GITHUB_OUTPUT"
           else
+            echo "simulation_contract_id=" >> "$GITHUB_OUTPUT"
             echo "needs_tapes=false" >> "$GITHUB_OUTPUT"
             echo "tape_cache_key=none" >> "$GITHUB_OUTPUT"
             echo "tape_cache_restore_prefix=none-" >> "$GITHUB_OUTPUT"
@@ -104,6 +109,8 @@ jobs:
       - name: Build or restore simulation tapes
         env:
           MAPLEFLY_TAPE_CACHE_DIR: .cache/maplefly-tapes
+          MAPLEFLY_TAPE_BUILD_ALLOWED: "true"
+          MAPLEFLY_SIMULATION_CONTRACT_ID: ${{ needs.prepare.outputs.simulation_contract_id }}
         run: >
           node "${{ needs.prepare.outputs.tape_builder }}"
           "${{ needs.prepare.outputs.cohort_set }}"
@@ -136,6 +143,8 @@ jobs:
       - name: Run experiment analysis
         env:
           MAPLEFLY_TAPE_CACHE_DIR: .cache/maplefly-tapes
+          MAPLEFLY_TAPE_BUILD_ALLOWED: "false"
+          MAPLEFLY_SIMULATION_CONTRACT_ID: ${{ needs.prepare.outputs.simulation_contract_id }}
         run: node "${{ needs.prepare.outputs.script }}"
 
       - name: Upload evidence
