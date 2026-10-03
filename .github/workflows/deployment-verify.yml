@@ -42,7 +42,6 @@ on:
       - "src/headless/connectome-runtime.mjs"
       - "scripts/verify-*.mjs"
       - "scripts/experiment-v7-deploy-check.mjs"
-      - "science/artifacts/frozen.json"
 
 permissions:
   contents: read
@@ -53,11 +52,101 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  static-integrity:
+  plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 3
+    outputs:
+      potion: ${{ steps.flags.outputs.potion }}
+      movement: ${{ steps.flags.outputs.movement }}
+      attack: ${{ steps.flags.outputs.attack }}
+      jump: ${{ steps.flags.outputs.jump }}
+      interruption: ${{ steps.flags.outputs.interruption }}
+      integration: ${{ steps.flags.outputs.integration }}
+      runtime_any: ${{ steps.flags.outputs.runtime_any }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Classify changed responsibilities
+        id: flags
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            changed="__manual_full__"
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            changed="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")"
+          else
+            changed="$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}")"
+          fi
+
+          echo "$changed"
+
+          potion=false
+          movement=false
+          attack=false
+          jump=false
+          interruption=false
+          integration=false
+
+          if grep -qx "__manual_full__" <<<"$changed"; then
+            potion=true
+            movement=true
+            attack=true
+            jump=true
+            interruption=true
+            integration=true
+          else
+            if grep -Eq '^(src/brain/fly-skill-v15-potion\.js|scripts/verify-v15d-|index\.html)' <<<"$changed"; then
+              potion=true
+            fi
+            if grep -Eq '^(src/brain/fly-skill-v7\.js|scripts/experiment-v7-deploy-check\.mjs)' <<<"$changed"; then
+              movement=true
+            fi
+            if grep -Eq '^(src/brain/fly-skill-v10-|scripts/verify-v10f-)' <<<"$changed"; then
+              attack=true
+            fi
+            if grep -Eq '^(src/brain/fly-skill-v11h2-|scripts/verify-v11h2-|scripts/verify-v11-cross-skill-lc4\.mjs)' <<<"$changed"; then
+              jump=true
+            fi
+            if grep -Eq '^(src/brain/fly-interruption-v14b|scripts/verify-v14c-|scripts/verify-v11f-legacy-isolation\.mjs)' <<<"$changed"; then
+              interruption=true
+            fi
+            if grep -Eq '^(src/brain/fly-controller\.js|src/brain/fly-worker\.js|src/game\.js|src/headless/connectome-runtime\.mjs|index\.html)' <<<"$changed"; then
+              movement=true
+              attack=true
+              jump=true
+              interruption=true
+              potion=true
+              integration=true
+            fi
+          fi
+
+          if [[ "$movement" == true || "$attack" == true || "$jump" == true || "$interruption" == true || "$potion" == true || "$integration" == true ]]; then
+            runtime_any=true
+          else
+            runtime_any=false
+          fi
+
+          {
+            echo "potion=$potion"
+            echo "movement=$movement"
+            echo "attack=$attack"
+            echo "jump=$jump"
+            echo "interruption=$interruption"
+            echo "integration=$integration"
+            echo "runtime_any=$runtime_any"
+          } >> "$GITHUB_OUTPUT"
+
+  static-integrity:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+
       - name: Shared bootstrap
         uses: ./.github/actions/science-bootstrap
         with:
@@ -65,6 +154,7 @@ jobs:
           needs_tapes: "false"
 
       - name: Fetch frozen potion artifacts
+        if: ${{ needs.plan.outputs.potion == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
@@ -72,37 +162,46 @@ jobs:
           "v15a12_representation=V15A12_REPRESENTATION_FILE,v15b3_policy=V15B3_MODEL_FILE"
 
       - name: Potion artifact equivalence
+        if: ${{ needs.plan.outputs.potion == 'true' }}
         run: |
           node --check src/brain/fly-skill-v15-potion.js
           node --check scripts/verify-v15d-artifact-equivalence.mjs
           node scripts/verify-v15d-artifact-equivalence.mjs
 
       - name: Browser wiring
+        if: ${{ needs.plan.outputs.runtime_any == 'true' }}
         run: |
           node --check src/brain/fly-worker.js
           node --check src/brain/fly-controller.js
           node --check src/brain/fly-skill-v11h2-jump.js
           node --check src/game.js
-          node --check scripts/verify-v15d-browser-wiring.mjs
           node --check scripts/verify-v11h2-combined-browser-wiring.mjs
-          node scripts/verify-v15d-browser-wiring.mjs
           node scripts/verify-v11h2-combined-browser-wiring.mjs
           node scripts/verify-v14c-browser-wiring.mjs
 
-      - name: Deployment and legacy isolation contracts
+      - name: Potion deployment contracts
+        if: ${{ needs.plan.outputs.potion == 'true' }}
         run: |
           node --check scripts/verify-v15d-deployment-closure.mjs
+          node scripts/verify-v15d-browser-wiring.mjs
+          node scripts/verify-v15d-deployment-closure.mjs
+
+      - name: Interruption contracts
+        if: ${{ needs.plan.outputs.interruption == 'true' || needs.plan.outputs.integration == 'true' }}
+        run: |
           node --check scripts/verify-v14c-evaluator-equivalence.mjs
           node --check scripts/verify-v11f-legacy-isolation.mjs
-          node scripts/verify-v15d-deployment-closure.mjs
           node scripts/verify-v14c-evaluator-equivalence.mjs
           node scripts/verify-v11f-legacy-isolation.mjs
 
   runtime-smoke:
+    needs: plan
+    if: ${{ needs.plan.outputs.runtime_any == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v7
+
       - name: Shared bootstrap
         uses: ./.github/actions/science-bootstrap
         with:
@@ -110,26 +209,19 @@ jobs:
           needs_tapes: "false"
 
       - name: Fetch frozen potion artifacts
+        if: ${{ needs.plan.outputs.potion == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
           node scripts/ci/fetch-frozen-by-map.mjs
           "v15a12_representation=V15A12_REPRESENTATION_FILE,v15b3_policy=V15B3_MODEL_FILE"
 
-      - name: Syntax check runtime verifiers
-        run: |
-          node --check scripts/verify-v15d-real-input-equivalence.mjs
-          node --check scripts/verify-v10f-browser-equivalence.mjs
-          node --check scripts/verify-v10f-target-lc4-ablation.mjs
-          node --check scripts/verify-v11-cross-skill-lc4.mjs
-          node --check scripts/verify-v11h2-jump-real-input-equivalence.mjs
-          node --check scripts/verify-v11h2-browser-deployment-smoke.mjs
-          node --check scripts/verify-v14c-deployment-smoke.mjs
-
       - name: Potion real-input equivalence
+        if: ${{ needs.plan.outputs.potion == 'true' }}
         run: node scripts/verify-v15d-real-input-equivalence.mjs
 
       - name: Movement v7 smoke
+        if: ${{ needs.plan.outputs.movement == 'true' }}
         run: >
           node scripts/experiment-v7-deploy-check.mjs
           --episodes 40
@@ -138,17 +230,20 @@ jobs:
           --cache .cache/maplefly-connectome
 
       - name: Attack v10F checks
+        if: ${{ needs.plan.outputs.attack == 'true' }}
         run: |
           node scripts/verify-v10f-browser-equivalence.mjs
           node scripts/verify-v10f-target-lc4-ablation.mjs
 
       - name: Cross-skill and jump v11H2 checks
+        if: ${{ needs.plan.outputs.jump == 'true' }}
         run: |
           node scripts/verify-v11-cross-skill-lc4.mjs
           node scripts/verify-v11h2-jump-real-input-equivalence.mjs
           node scripts/verify-v11h2-browser-deployment-smoke.mjs
 
       - name: Interruption v14C integrated smoke
+        if: ${{ needs.plan.outputs.interruption == 'true' || needs.plan.outputs.integration == 'true' }}
         run: node scripts/verify-v14c-deployment-smoke.mjs
 
       - name: Upload consolidated runtime evidence
