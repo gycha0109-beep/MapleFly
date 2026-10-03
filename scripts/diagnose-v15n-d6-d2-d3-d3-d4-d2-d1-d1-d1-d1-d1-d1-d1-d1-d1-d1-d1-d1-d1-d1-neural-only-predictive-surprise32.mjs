@@ -2172,6 +2172,7 @@ async function collectTapesCached({
   dnSlot,
   attackPolicy,
   jumpPolicy,
+  getContext = null,
   baseSeeds,
   interruptionSeed,
   cohortName,
@@ -2181,15 +2182,26 @@ async function collectTapesCached({
     cohortName,
     baseSeeds,
     interruptionSeed,
-    build: () => collectTapes({
-      connectome,
-      dnSlot,
-      attackPolicy,
-      jumpPolicy,
-      baseSeeds,
-      interruptionRandom: mulberry32(interruptionSeed),
-      label,
-    }),
+    build: async () => {
+      let resolved = { connectome, dnSlot, attackPolicy, jumpPolicy };
+      if (
+        !resolved.connectome ||
+        !resolved.dnSlot ||
+        !resolved.attackPolicy ||
+        !resolved.jumpPolicy
+      ) {
+        if (typeof getContext !== "function") {
+          throw new Error("v15N simulation context unavailable on cache miss");
+        }
+        resolved = await getContext();
+      }
+      return collectTapes({
+        ...resolved,
+        baseSeeds,
+        interruptionRandom: mulberry32(interruptionSeed),
+        label,
+      });
+    },
     validate: async (rows) => {
       const expected = baseSeeds.length * 8;
       if (rows.length !== expected) {
@@ -9261,15 +9273,19 @@ export async function createV15nSimulationContext() {
 }
 
 export async function collectV15nCachedCohort({
-  context,
+  context = null,
+  getContext = null,
   baseSeeds,
   interruptionSeed,
   cohortName,
   label = cohortName,
 }) {
-  if (!context) throw new Error("v15N simulation context required");
+  if (!context && typeof getContext !== "function") {
+    throw new Error("v15N simulation context provider required");
+  }
   return collectTapesCached({
-    ...context,
+    ...(context ?? {}),
+    getContext,
     baseSeeds,
     interruptionSeed,
     cohortName,
@@ -9296,15 +9312,16 @@ async function main(){
   const artifactSha=createHash("sha256").update(artifactBytes).digest("hex");
   if(artifactSha!==V15N_D1_EVIDENCE_SHA256) throw new Error("v15N evidence SHA mismatch");
 
-  const {
-    connectome,
-    dnSlot,
-    attackPolicy,
-    jumpPolicy,
-  } = await createV15nSimulationContext();
+  let simulationContextPromise = null;
+  const getContext = () => {
+    if (!simulationContextPromise) {
+      simulationContextPromise = createV15nSimulationContext();
+    }
+    return simulationContextPromise;
+  };
 
   const trainFull=await collectTapesCached({
-    connectome,dnSlot,attackPolicy,jumpPolicy,
+    getContext,
     baseSeeds:NO_D1_TRAIN_BASE_SEEDS,
     interruptionSeed:NO_D1_TRAIN_INT,
     cohortName:"neural-only-predictive-surprise32/train",
@@ -9339,7 +9356,7 @@ async function main(){
   const model={phase,pca,zStats,predictor,residualStats};
 
   const calFull=await collectTapesCached({
-    connectome,dnSlot,attackPolicy,jumpPolicy,
+    getContext,
     baseSeeds:NO_D1_CAL_BASE_SEEDS,
     interruptionSeed:NO_D1_CAL_INT,
     cohortName:"neural-only-predictive-surprise32/calibration",
@@ -9384,14 +9401,14 @@ async function main(){
     " q="+NO_D1_Q+" tau="+threshold+" trainRows="+trainRows.length+" calScores="+quantile.count);
 
   const A=await collectTapesCached({
-    connectome,dnSlot,attackPolicy,jumpPolicy,
+    getContext,
     baseSeeds:NO_D1_A_BASE_SEEDS,
     interruptionSeed:NO_D1_A_INT,
     cohortName:"neural-only-predictive-surprise32/prospective-a",
     label:"neural-only-surprise-a"
   });
   const B=await collectTapesCached({
-    connectome,dnSlot,attackPolicy,jumpPolicy,
+    getContext,
     baseSeeds:NO_D1_B_BASE_SEEDS,
     interruptionSeed:NO_D1_B_INT,
     cohortName:"neural-only-predictive-surprise32/prospective-b",
