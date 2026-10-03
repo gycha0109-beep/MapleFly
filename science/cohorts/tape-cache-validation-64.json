@@ -1,0 +1,22 @@
+{
+  "schema": "maplefly.cohort-set.v1",
+  "id": "tape-cache-validation-64",
+  "simulation_contract": "v15n-deterministic-v3",
+  "make_block": "8 base seeds x 8 deterministic episodes = 64 tapes",
+  "cohorts": {
+    "validation": {
+      "cache_name": "tape-cache-validation-64/main",
+      "base_seeds": [
+        7881000,
+        7891000,
+        7901000,
+        7911000,
+        7921000,
+        7931000,
+        7941000,
+        7951000
+      ],
+      "interruption_seed": 7967000
+    }
+  }
+}

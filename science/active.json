@@ -1,0 +1,23 @@
+{
+  "schema": "maplefly.science-experiment.v1",
+  "id": "tape-cache-validation-64",
+  "script": "scripts/validate-tape-cache-64.mjs",
+  "tape_builder": "scripts/science/build-v15n-tapes.mjs",
+  "output_dir": "results/tape-cache-validation",
+  "artifact_name": "maplefly-tape-cache-validation",
+  "needs_malecns": true,
+  "simulation_contract": "science/simulations/v15n-deterministic-v3.json",
+  "cohort_set": "science/cohorts/tape-cache-validation-64.json",
+  "dependencies": [
+    {
+      "registry_key": "v15e2_neural_core",
+      "env": "V15E2_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "env": {
+    "MAPLEFLY_COHORT_SET": "science/cohorts/tape-cache-validation-64.json",
+    "MAPLEFLY_SIMULATION_CONTRACT": "science/simulations/v15n-deterministic-v3.json"
+  },
+  "migration_note": "CI 구조 검증용 64테이프 캐시 실측. 과학 결론에는 사용하지 않음."
+}
