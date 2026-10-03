@@ -28,19 +28,43 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f "${{ inputs.manifest_path }}"
-          echo "script=$(jq -r '.script' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
-          echo "output_dir=$(jq -r '.output_dir' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
-          echo "artifact_name=$(jq -r '.artifact_name' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
-          echo "needs_malecns=$(jq -r '.needs_malecns // true' "${{ inputs.manifest_path }}")" >> "$GITHUB_OUTPUT"
+          manifest="${{ inputs.manifest_path }}"
+          test -f "$manifest"
+          echo "script=$(jq -r '.script' "$manifest")" >> "$GITHUB_OUTPUT"
+          echo "output_dir=$(jq -r '.output_dir' "$manifest")" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=$(jq -r '.artifact_name' "$manifest")" >> "$GITHUB_OUTPUT"
+          echo "needs_malecns=$(jq -r '.needs_malecns // true' "$manifest")" >> "$GITHUB_OUTPUT"
+
+          sim="$(jq -r '.simulation_contract // empty' "$manifest")"
+          cohorts="$(jq -r '.cohort_set // empty' "$manifest")"
+          if [[ -n "$sim" && -n "$cohorts" ]]; then
+            test -f "$sim"
+            test -f "$cohorts"
+            sim_hash="$(sha256sum "$sim" | awk '{print $1}')"
+            cohort_hash="$(sha256sum "$cohorts" | awk '{print $1}')"
+            echo "needs_tapes=true" >> "$GITHUB_OUTPUT"
+            echo "tape_cache_key=${sim_hash}-${cohort_hash}" >> "$GITHUB_OUTPUT"
+            echo "tape_cache_restore_prefix=${sim_hash}-" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_tapes=false" >> "$GITHUB_OUTPUT"
+            echo "tape_cache_key=none" >> "$GITHUB_OUTPUT"
+            echo "tape_cache_restore_prefix=none-" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Shared science bootstrap
         uses: ./.github/actions/science-bootstrap
         with:
           needs_malecns: ${{ steps.manifest.outputs.needs_malecns }}
+          needs_tapes: ${{ steps.manifest.outputs.needs_tapes }}
+          tape_cache_key: ${{ steps.manifest.outputs.tape_cache_key }}
+          tape_cache_restore_prefix: ${{ steps.manifest.outputs.tape_cache_restore_prefix }}
 
       - name: Validate science manifest
         run: node scripts/ci/validate-science-manifest.mjs "${{ inputs.manifest_path }}"
+
+      - name: Validate simulation and cohort contract
+        if: ${{ steps.manifest.outputs.needs_tapes == 'true' }}
+        run: node scripts/ci/validate-science-tape-contract.mjs "${{ inputs.manifest_path }}"
 
       - name: Fetch frozen dependencies
         env:

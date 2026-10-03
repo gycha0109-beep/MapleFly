@@ -5,6 +5,7 @@
   "make_block": "8 base seeds x 8 deterministic episodes = 64 tapes",
   "cohorts": {
     "train": {
+      "cache_name": "neural-only-predictive-surprise32/train",
       "base_seeds": [
         7521000,
         7531000,
@@ -18,6 +19,7 @@
       "interruption_seed": 7607000
     },
     "calibration": {
+      "cache_name": "neural-only-predictive-surprise32/calibration",
       "base_seeds": [
         7611000,
         7621000,
@@ -31,6 +33,7 @@
       "interruption_seed": 7697000
     },
     "prospective_a": {
+      "cache_name": "neural-only-predictive-surprise32/prospective-a",
       "base_seeds": [
         7701000,
         7711000,
@@ -44,6 +47,7 @@
       "interruption_seed": 7787000
     },
     "prospective_b": {
+      "cache_name": "neural-only-predictive-surprise32/prospective-b",
       "base_seeds": [
         7791000,
         7801000,

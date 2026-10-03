@@ -17,6 +17,14 @@ for (const dep of manifest.dependencies ?? []) {
   envLines.push(`${dep.env}=${target}`);
 }
 
+for (const [key, rawValue] of Object.entries(manifest.env ?? {})) {
+  const value = String(rawValue);
+  if (value.includes("\n") || value.includes("\r")) {
+    throw new Error("multiline manifest env is forbidden: " + key);
+  }
+  envLines.push(`${key}=${value}`);
+}
+
 if (envLines.length) {
   await appendFile(githubEnv, envLines.join("\n") + "\n");
 }
