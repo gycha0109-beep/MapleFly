@@ -33,17 +33,50 @@ try {
 
   const first = await loadOrBuildTapePack({ cacheDir: dir, identity, build });
   const second = await loadOrBuildTapePack({ cacheDir: dir, identity, build });
+  const readOnlyHit = await loadOrBuildTapePack({
+    cacheDir: dir,
+    identity,
+    build: async () => {
+      throw new Error("read-only cache hit invoked builder");
+    },
+    allowBuild: false,
+  });
 
-  if (builds !== 1 || first.cacheHit || !second.cacheHit) {
+  if (
+    builds !== 1 ||
+    first.cacheHit ||
+    !second.cacheHit ||
+    !readOnlyHit.cacheHit
+  ) {
     throw new Error("Tape Pack cache hit contract failed");
   }
+
+  let readOnlyMissRejected = false;
+  try {
+    await loadOrBuildTapePack({
+      cacheDir: dir,
+      identity: { ...identity, cohort: [9, 9, 9] },
+      build,
+      allowBuild: false,
+    });
+  } catch (error) {
+    readOnlyMissRejected =
+      String(error?.message ?? "").includes("build is disabled");
+  }
+  if (!readOnlyMissRejected) {
+    throw new Error("read-only cache miss did not fail closed");
+  }
+
   const values = second.tapes[0].potionFrameEvents[0].values;
   if (!(values instanceof Float64Array) || values[1] !== 2.5) {
     throw new Error("typed-array round trip failed");
   }
 
   const neural = neuralOnlyTapeView(second.tapes[0]);
-  if ("damageEvents" in neural || Object.keys(neural).sort().join(",") !== "frames,seed") {
+  if (
+    "damageEvents" in neural ||
+    Object.keys(neural).sort().join(",") !== "frames,seed"
+  ) {
     throw new Error("neural-only projection leaked truth");
   }
   const truth = evaluatorTruthTapeView(second.tapes[0]);
@@ -55,6 +88,8 @@ try {
     status: "PASS",
     key: tapePackKey(identity),
     cacheHitOnSecondLoad: second.cacheHit,
+    readOnlyHit: readOnlyHit.cacheHit,
+    readOnlyMissRejected,
   }, null, 2));
 } finally {
   await rm(dir, { recursive: true, force: true });
