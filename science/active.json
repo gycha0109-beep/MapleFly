@@ -19,5 +19,6 @@
     "MAPLEFLY_COHORT_SET": "science/cohorts/tape-cache-validation-64.json",
     "MAPLEFLY_SIMULATION_CONTRACT": "science/simulations/v15n-deterministic-v3.json"
   },
-  "migration_note": "CI 구조 검증용 64테이프 캐시 실측. 과학 결론에는 사용하지 않음."
+  "migration_note": "CI 구조 검증용 64테이프 캐시 실측. 과학 결론에는 사용하지 않음.",
+  "request_id": "cache-hit-validation-2"
 }
