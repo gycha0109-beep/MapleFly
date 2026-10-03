@@ -1,0 +1,96 @@
+name: Diagnose MapleFly Neural-Only Predictive Surprise32 Deployability Bridge
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs"
+      - "history/prereg_v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.md"
+      - ".github/workflows/diagnose-neural-only-predictive-surprise32.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  neural-only-predictive-surprise32:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Syntax check
+        run: node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs
+
+      - name: Verify frozen neural-only contract
+        run: |
+          set -euo pipefail
+          f="scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs"
+          grep -q 'f11e04bb7dad3bcbc5324b66322e6d6e5d99aad6' "$f"
+          grep -q 'ffb4d8cbd0fecfa64ac84fc9cb90f079d3ab03a9d9e08df7b7ebff4139e398aa' "$f"
+          grep -q 'NO_D1_Q = 0.95' "$f"
+          grep -q 'NO_D1_PREDICTOR_LAGS = \[1,3,5\]' "$f"
+          grep -q 'preFreezeTruthAccess:false' "$f"
+          grep -q 'thresholdSelectionUsesTruth:false' "$f"
+          grep -q 'teacherUsed:false' "$f"
+          grep -q 'physical truth accessed before freeze' "$f"
+
+      - name: Fetch authoritative Quadratic256 confirmatory evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/q256-confirm
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11232625088" --jq '.workflow_run.head_sha')"
+          test "$head_sha" = "644470e7b40fe02d397648b91dff126324b6feb8"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/11232625088/zip" > /tmp/q256-confirm.zip
+          unzip -q /tmp/q256-confirm.zip -d .cache/q256-confirm
+          test -f .cache/q256-confirm/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+
+      - name: Fetch frozen v15N candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15n-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10846125740/zip" > /tmp/v15n.zip
+          unzip -q /tmp/v15n.zip -d .cache/v15n-artifact
+          test -f .cache/v15n-artifact/v15n_training.json
+
+      - name: Fetch frozen v15E2 neural core
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/v15e2-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10793265453/zip" > /tmp/v15e2.zip
+          unzip -q /tmp/v15e2.zip -d .cache/v15e2-artifact
+          test -f .cache/v15e2-artifact/v15e2_training.json
+
+      - name: Cache pinned MaleCNS assets
+        uses: actions/cache@v6
+        with:
+          path: .cache/maplefly-connectome
+          key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
+
+      - name: Run preregistered neural-only deployability bridge
+        env:
+          V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE: .cache/q256-confirm/v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json
+          V15N_ARTIFACT_FILE: .cache/v15n-artifact/v15n_training.json
+          V15E2_ARTIFACT_FILE: .cache/v15e2-artifact/v15e2_training.json
+        run: node scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs
+
+      - name: Upload neural-only evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-neural-only-predictive-surprise32-${{ github.run_id }}
+          path: results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32
+          if-no-files-found: warn
+          retention-days: 30
