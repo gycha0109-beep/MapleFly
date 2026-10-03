@@ -17,7 +17,7 @@ if (cohortSet.simulation_contract !== simulation.id) {
   throw new Error("cohort/simulation contract mismatch");
 }
 
-for (const source of simulation.runtime_sources ?? []) {
+const verifyBlob = (source) => {
   const actual = execFileSync("git", ["hash-object", source.path], {
     encoding: "utf8",
   }).trim();
@@ -26,7 +26,10 @@ for (const source of simulation.runtime_sources ?? []) {
       `simulation source drift ${source.path}: ${actual} != ${source.blob_sha}`,
     );
   }
-}
+};
+
+verifyBlob(simulation.source_anchor);
+for (const source of simulation.runtime_sources ?? []) verifyBlob(source);
 
 const identity = {
   simulation_contract: simulation.id,

@@ -19,12 +19,34 @@ const safeRepoPath = (value) =>
   !value.includes("..") &&
   posix.normalize(value) === value;
 
+const allowed = new Set([
+  "schema","id","script","output_dir","artifact_name","needs_malecns",
+  "dependencies","env","simulation_contract","cohort_set",
+  "historical_run_id","migration_note",
+]);
+for (const key of Object.keys(manifest)) {
+  if (!allowed.has(key)) fail("unknown field " + key);
+}
+
 if (manifest.schema !== "maplefly.science-experiment.v1") fail("schema");
 if (!/^[a-z0-9][a-z0-9-]*$/.test(manifest.id ?? "")) fail("id");
 if (!safeRepoPath(manifest.script) || !manifest.script.startsWith("scripts/") || !manifest.script.endsWith(".mjs")) fail("script");
 if (!safeRepoPath(manifest.output_dir) || !manifest.output_dir.startsWith("results/")) fail("output_dir");
 if (typeof manifest.artifact_name !== "string" || !manifest.artifact_name) fail("artifact_name");
 if (!Array.isArray(manifest.dependencies)) fail("dependencies");
+
+if (manifest.simulation_contract !== undefined) {
+  if (!safeRepoPath(manifest.simulation_contract) || !manifest.simulation_contract.startsWith("science/simulations/") || !manifest.simulation_contract.endsWith(".json")) {
+    fail("simulation_contract");
+  }
+  await readFile(manifest.simulation_contract);
+}
+if (manifest.cohort_set !== undefined) {
+  if (!safeRepoPath(manifest.cohort_set) || !manifest.cohort_set.startsWith("science/cohorts/") || !manifest.cohort_set.endsWith(".json")) {
+    fail("cohort_set");
+  }
+  await readFile(manifest.cohort_set);
+}
 
 const envs = new Set();
 for (const dep of manifest.dependencies) {

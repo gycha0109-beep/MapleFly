@@ -35,6 +35,21 @@
       "type": "boolean",
       "default": true
     },
+    "simulation_contract": {
+      "type": "string",
+      "pattern": "^science/simulations/.*\\.json$"
+    },
+    "cohort_set": {
+      "type": "string",
+      "pattern": "^science/cohorts/.*\\.json$"
+    },
+    "historical_run_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "migration_note": {
+      "type": "string"
+    },
     "dependencies": {
       "type": "array",
       "items": {
