@@ -33,10 +33,6 @@ on:
       - "scripts/verify-v15d-browser-wiring.mjs"
       - "scripts/verify-v15d-deployment-closure.mjs"
       - "scripts/verify-v15d-real-input-equivalence.mjs"
-      - "science/artifacts/frozen.json"
-      - "scripts/ci/frozen-artifacts.mjs"
-      - "scripts/ci/fetch-frozen-by-map.mjs"
-      - ".github/actions/science-bootstrap/action.yml"
       - ".github/workflows/deployment-verify.yml"
   pull_request:
     paths:
