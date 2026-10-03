@@ -27,6 +27,12 @@ runs:
       with:
         node-version: "24"
 
+    - name: Restore frozen artifact cache
+      uses: actions/cache@v6
+      with:
+        path: .cache/frozen
+        key: maplefly-frozen-v1-${{ hashFiles('science/artifacts/frozen.json') }}
+
     - name: Restore pinned MaleCNS assets
       if: ${{ inputs.needs_malecns == 'true' }}
       uses: actions/cache@v6

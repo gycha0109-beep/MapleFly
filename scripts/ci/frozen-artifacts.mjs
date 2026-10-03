@@ -33,6 +33,18 @@ export async function fetchFrozenArtifact({
 
   const dir = resolve(".cache/frozen", key);
   await mkdir(dir, { recursive: true });
+  const target = resolve(dir, relative);
+
+  try {
+    await readFile(target);
+    console.log(
+      `[frozen-artifact] CACHE-HIT ${key} id=${meta.artifact_id} file=${relative}`,
+    );
+    return { target, meta, cacheHit: true };
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+
   const zip = resolve("/tmp", `maplefly-${key}.zip`);
   const fh = await open(zip, "w");
   try {
@@ -50,11 +62,10 @@ export async function fetchFrozenArtifact({
     stdio: "inherit",
   });
 
-  const target = resolve(dir, relative);
   await readFile(target);
 
   console.log(
-    `[frozen-artifact] ${key} id=${meta.artifact_id} file=${relative}`,
+    `[frozen-artifact] DOWNLOAD ${key} id=${meta.artifact_id} file=${relative}`,
   );
-  return { target, meta };
+  return { target, meta, cacheHit: false };
 }

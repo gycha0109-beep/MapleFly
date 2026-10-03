@@ -26,5 +26,13 @@
     }
   ],
   "env": {},
-  "migration_note": "Template only. Copy to science/active.json only for an intentional authoritative run."
+  "migration_note": "Template only. Copy to science/active.json only for an intentional authoritative run.",
+  "simulation_dependencies": [
+    {
+      "registry_key": "v15e2_neural_core",
+      "env": "V15E2_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "analysis_needs_malecns": false
 }

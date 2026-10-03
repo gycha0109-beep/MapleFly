@@ -24,6 +24,7 @@ jobs:
       output_dir: ${{ steps.route.outputs.output_dir }}
       artifact_name: ${{ steps.route.outputs.artifact_name }}
       needs_malecns: ${{ steps.route.outputs.needs_malecns }}
+      analysis_needs_malecns: ${{ steps.route.outputs.analysis_needs_malecns }}
       needs_tapes: ${{ steps.route.outputs.needs_tapes }}
       tape_builder: ${{ steps.route.outputs.tape_builder }}
       cohort_set: ${{ steps.route.outputs.cohort_set }}
@@ -51,6 +52,7 @@ jobs:
           echo "output_dir=$(jq -r '.output_dir' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "artifact_name=$(jq -r '.artifact_name' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "needs_malecns=$(jq -r '.needs_malecns // true' "$manifest")" >> "$GITHUB_OUTPUT"
+          echo "analysis_needs_malecns=$(jq -r '.analysis_needs_malecns // (.needs_malecns // true)' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "tape_builder=$(jq -r '.tape_builder // "scripts/science/build-v15n-tapes.mjs"' "$manifest")" >> "$GITHUB_OUTPUT"
 
           sim="$(jq -r '.simulation_contract // empty' "$manifest")"
@@ -91,10 +93,10 @@ jobs:
           tape_cache_key: ${{ needs.prepare.outputs.tape_cache_key }}
           tape_cache_restore_prefix: ${{ needs.prepare.outputs.tape_cache_restore_prefix }}
 
-      - name: Fetch frozen dependencies
+      - name: Fetch simulation dependencies
         env:
           GH_TOKEN: ${{ github.token }}
-        run: node scripts/ci/fetch-science-dependencies.mjs "${{ inputs.manifest_path }}"
+        run: node scripts/ci/fetch-science-dependencies.mjs "${{ inputs.manifest_path }}" simulation
 
       - name: Syntax check tape builder
         run: node --check "${{ needs.prepare.outputs.tape_builder }}"
@@ -118,15 +120,15 @@ jobs:
       - name: Shared science bootstrap
         uses: ./.github/actions/science-bootstrap
         with:
-          needs_malecns: ${{ needs.prepare.outputs.needs_malecns }}
+          needs_malecns: ${{ needs.prepare.outputs.analysis_needs_malecns }}
           needs_tapes: ${{ needs.prepare.outputs.needs_tapes }}
           tape_cache_key: ${{ needs.prepare.outputs.tape_cache_key }}
           tape_cache_restore_prefix: ${{ needs.prepare.outputs.tape_cache_restore_prefix }}
 
-      - name: Fetch frozen dependencies
+      - name: Fetch analysis dependencies
         env:
           GH_TOKEN: ${{ github.token }}
-        run: node scripts/ci/fetch-science-dependencies.mjs "${{ inputs.manifest_path }}"
+        run: node scripts/ci/fetch-science-dependencies.mjs "${{ inputs.manifest_path }}" analysis
 
       - name: Syntax check experiment
         run: node --check "${{ needs.prepare.outputs.script }}"
