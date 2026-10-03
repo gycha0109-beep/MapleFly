@@ -1,0 +1,29 @@
+{
+  "schema": "maplefly.science-experiment.v1",
+  "id": "neural-only-predictive-surprise32-cached",
+  "script": "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs",
+  "output_dir": "results/v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32",
+  "artifact_name": "maplefly-neural-only-predictive-surprise32-cached",
+  "needs_malecns": true,
+  "simulation_contract": "science/simulations/v15n-deterministic-v2.json",
+  "cohort_set": "science/cohorts/neural-only-predictive-surprise32.json",
+  "dependencies": [
+    {
+      "registry_key": "quadratic256_confirmatory",
+      "env": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_ARTIFACT_FILE",
+      "file_key": "default"
+    },
+    {
+      "registry_key": "v15n_candidate",
+      "env": "V15N_ARTIFACT_FILE",
+      "file_key": "default"
+    },
+    {
+      "registry_key": "v15e2_neural_core",
+      "env": "V15E2_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "env": {},
+  "migration_note": "Template only. Copy to science/active.json only for an intentional authoritative run."
+}

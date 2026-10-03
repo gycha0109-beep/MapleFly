@@ -1,0 +1,78 @@
+{
+  "schema": "maplefly.simulation-contract.v1",
+  "id": "v15n-deterministic-v2",
+  "supersedes": "v15n-deterministic-v1",
+  "reason": "Tape Pack adapter integrated without changing simulation semantics.",
+  "source_anchor": {
+    "path": "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs",
+    "blob_sha": "375f149e8b6a5ff7dca8bc40d9cfb5d7a5c06c35"
+  },
+  "connectome": {
+    "repository": "FlyWire/FAFB",
+    "commit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
+    "descending_neurons": 1316
+  },
+  "timing": {
+    "simulation_step_ms": 20,
+    "connectome_tick_ms": 100
+  },
+  "runtime_sources": [
+    {
+      "path": "src/headless/connectome-runtime.mjs",
+      "blob_sha": "1774408df7abd2050bd66e4ae8e2668611032aa9"
+    },
+    {
+      "path": "src/brain/fly-controller.js",
+      "blob_sha": "fc75e5a48e8921d7f33f1c5992234d2acb050772"
+    },
+    {
+      "path": "src/brain/fly-skill-v7.js",
+      "blob_sha": "0e332de96221f76c88fb1a3ffc43ef44f2bba4bb"
+    },
+    {
+      "path": "src/brain/fly-skill-v10-attack.js",
+      "blob_sha": "6fd85b54884f622aa64f5ca1a05c35aa36991436"
+    },
+    {
+      "path": "src/brain/fly-skill-v10f-candidate.json",
+      "blob_sha": "4b57903e3718fa734e4d1f75c75939e8277fec7a"
+    },
+    {
+      "path": "src/brain/fly-skill-v11h2-jump.js",
+      "blob_sha": "aec949b821ccf4576e280f3bd94c6feb65f9e49e"
+    },
+    {
+      "path": "src/brain/fly-skill-v11h2-jump-candidate.json",
+      "blob_sha": "9d50a69b3b7a67d59174ca6b12e0528d4fb22a58"
+    },
+    {
+      "path": "src/brain/fly-interruption-v14b.js",
+      "blob_sha": "64e3d12bf814937283199eb04d5f9d192369e04d"
+    },
+    {
+      "path": "src/brain/fly-interruption-v14b-candidate.json",
+      "blob_sha": "95d04dae4ccabfecff4e04400e88b76c4503ab55"
+    },
+    {
+      "path": "src/brain/fly-skill-v15-potion.js",
+      "blob_sha": "9d83e58cfe9c52ac8121d4a4e3bbe60b8ebc15f9"
+    },
+    {
+      "path": "scripts/lib/tape-pack-cache.mjs",
+      "blob_sha": "8d3a090a01bf4e89e04d6ec16c5596f8c9813e4a"
+    },
+    {
+      "path": "scripts/lib/v15n-tape-cache.mjs",
+      "blob_sha": "673772e9ca0bdffa7e1378fcd78ab6a6bce8c5c7"
+    }
+  ],
+  "deployed_contract": {
+    "movement": "v7",
+    "attack": "v10f",
+    "jump": "v11h2",
+    "interruption": "v14b",
+    "potion": "v15d",
+    "potion_representation_sha256": "33fc31f636e1cde215841dd33b0a93b24d4571cdabd32e9a1edc8fa2e696c847",
+    "potion_policy_sha256": "47088bcb15ed2cd96f64d67a20169934bd7a866dcd56bacffea70b1f42537a59"
+  }
+}

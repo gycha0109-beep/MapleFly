@@ -1,7 +1,7 @@
 {
   "schema": "maplefly.cohort-set.v1",
   "id": "neural-only-predictive-surprise32",
-  "simulation_contract": "v15n-deterministic-v1",
+  "simulation_contract": "v15n-deterministic-v2",
   "make_block": "8 base seeds x 8 deterministic episodes = 64 tapes",
   "cohorts": {
     "train": {

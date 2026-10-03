@@ -15,6 +15,7 @@ import "../src/brain/fly-skill-v10-attack.js";
 import "../src/brain/fly-skill-v11h2-jump.js";
 import "../src/brain/fly-interruption-v14b.js";
 import "../src/brain/fly-skill-v15-potion.js";
+import { loadOrBuildV15nTapePack } from "./lib/v15n-tape-cache.mjs";
 
 const STEP_SECONDS = 0.02;
 const SETTLE_STEPS = 26;
@@ -2162,6 +2163,56 @@ async function collectTapes({
     }
   }
   return rows;
+}
+
+
+async function collectTapesCached({
+  connectome,
+  dnSlot,
+  attackPolicy,
+  jumpPolicy,
+  baseSeeds,
+  interruptionSeed,
+  cohortName,
+  label,
+}) {
+  const pack = await loadOrBuildV15nTapePack({
+    cohortName,
+    baseSeeds,
+    interruptionSeed,
+    build: () => collectTapes({
+      connectome,
+      dnSlot,
+      attackPolicy,
+      jumpPolicy,
+      baseSeeds,
+      interruptionRandom: mulberry32(interruptionSeed),
+      label,
+    }),
+    validate: async (rows) => {
+      const expected = baseSeeds.length * 8;
+      if (rows.length !== expected) {
+        throw new Error(
+          "v15N cached tape count mismatch " +
+          rows.length + " != " + expected,
+        );
+      }
+      for (const row of rows) {
+        if (
+          row.liveSteps !== MAX_STEPS ||
+          row.potionEvents.length !== 10
+        ) {
+          throw new Error("v15N cached tape contract mismatch");
+        }
+      }
+    },
+  });
+  console.log(
+    "[v15N-tape-pack] cohort=" + cohortName +
+    " cache=" + (pack.cacheHit ? "HIT" : "MISS") +
+    " key=" + pack.key,
+  );
+  return pack.tapes;
 }
 
 function normalSample(random) {
@@ -9223,10 +9274,11 @@ async function main(){
     connectome.inputGroups.set("taste_"+side,taste);
   }
 
-  const trainFull=await collectTapes({
+  const trainFull=await collectTapesCached({
     connectome,dnSlot,attackPolicy,jumpPolicy,
     baseSeeds:NO_D1_TRAIN_BASE_SEEDS,
-    interruptionRandom:mulberry32(NO_D1_TRAIN_INT),
+    interruptionSeed:NO_D1_TRAIN_INT,
+    cohortName:"neural-only-predictive-surprise32/train",
     label:"neural-only-surprise-train"
   });
   const trainViews=noD1NeuralViews(trainFull);
@@ -9257,10 +9309,11 @@ async function main(){
   const residualStats=noD1ResidualStats(trainRows,predictor);
   const model={phase,pca,zStats,predictor,residualStats};
 
-  const calFull=await collectTapes({
+  const calFull=await collectTapesCached({
     connectome,dnSlot,attackPolicy,jumpPolicy,
     baseSeeds:NO_D1_CAL_BASE_SEEDS,
-    interruptionRandom:mulberry32(NO_D1_CAL_INT),
+    interruptionSeed:NO_D1_CAL_INT,
+    cohortName:"neural-only-predictive-surprise32/calibration",
     label:"neural-only-surprise-cal"
   });
   const calViews=noD1NeuralViews(calFull);
@@ -9301,16 +9354,18 @@ async function main(){
   console.log("[neural-only] modelSha="+neuralOnlyModelSha256+
     " q="+NO_D1_Q+" tau="+threshold+" trainRows="+trainRows.length+" calScores="+quantile.count);
 
-  const A=await collectTapes({
+  const A=await collectTapesCached({
     connectome,dnSlot,attackPolicy,jumpPolicy,
     baseSeeds:NO_D1_A_BASE_SEEDS,
-    interruptionRandom:mulberry32(NO_D1_A_INT),
+    interruptionSeed:NO_D1_A_INT,
+    cohortName:"neural-only-predictive-surprise32/prospective-a",
     label:"neural-only-surprise-a"
   });
-  const B=await collectTapes({
+  const B=await collectTapesCached({
     connectome,dnSlot,attackPolicy,jumpPolicy,
     baseSeeds:NO_D1_B_BASE_SEEDS,
-    interruptionRandom:mulberry32(NO_D1_B_INT),
+    interruptionSeed:NO_D1_B_INT,
+    cohortName:"neural-only-predictive-surprise32/prospective-b",
     label:"neural-only-surprise-b"
   });
 
