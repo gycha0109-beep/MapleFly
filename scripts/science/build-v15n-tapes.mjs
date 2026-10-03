@@ -14,11 +14,15 @@ const set = JSON.parse(await readFile(cohortPath, "utf8"));
 const entries = Object.entries(set.cohorts ?? {});
 if (!entries.length) throw new Error("empty cohort set");
 
-const context = await createV15nSimulationContext();
+let contextPromise = null;
+const getContext = () => {
+  if (!contextPromise) contextPromise = createV15nSimulationContext();
+  return contextPromise;
+};
 
 for (const [name, cohort] of entries) {
   const tapes = await collectV15nCachedCohort({
-    context,
+    getContext,
     baseSeeds: cohort.base_seeds,
     interruptionSeed: cohort.interruption_seed,
     cohortName: cohort.cache_name,
