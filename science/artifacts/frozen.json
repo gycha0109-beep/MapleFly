@@ -3,6 +3,24 @@
   "repository": "gycha0109-beep/MapleFly",
   "pinnedConnectomeCommit": "95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e",
   "artifacts": {
+    "v15a12_representation": {
+      "artifact_id": 10768761312,
+      "run_id": 35898698946,
+      "head_sha": "353bbdc91bbe125434c1263d8c8d1be308e1844d",
+      "digest": "sha256:8aa759b04643d618e69aaa647d7251eb237816ee3b84bcc97a0f451d20cbba78",
+      "files": {
+        "default": "v15a12_screen.json"
+      }
+    },
+    "v15b3_policy": {
+      "artifact_id": 10770299335,
+      "run_id": 35904611372,
+      "head_sha": "6b82a15f2009779c945c19aa227a5d79a51a47b6",
+      "digest": "sha256:3f715ef7f4f62e854db02c4e0f05b8662d5dab2a46d1ea0675320bffbe3bc838",
+      "files": {
+        "default": "v15b3_training.json"
+      }
+    },
     "v15e2_neural_core": {
       "artifact_id": 10793265453,
       "run_id": 35961707942,

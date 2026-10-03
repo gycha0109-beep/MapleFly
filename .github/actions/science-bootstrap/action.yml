@@ -6,6 +6,10 @@ inputs:
     description: Restore pinned MaleCNS cache
     required: false
     default: "true"
+  needs_tapes:
+    description: Restore rolling Tape Pack cache
+    required: false
+    default: "true"
 
 runs:
   using: composite
@@ -23,6 +27,7 @@ runs:
         key: maplefly-male-cns-95a3dbcb05241b0a5c07028ca8ad945b23fbbe6e
 
     - name: Restore rolling Tape Pack cache
+      if: ${{ inputs.needs_tapes == 'true' }}
       uses: actions/cache@v6
       with:
         path: .cache/maplefly-tapes
