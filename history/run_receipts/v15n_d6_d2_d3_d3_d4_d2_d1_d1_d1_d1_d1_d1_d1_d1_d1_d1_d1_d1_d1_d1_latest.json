@@ -1,0 +1,80 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_NEURAL_ONLY_PREDICTIVE_SURPRISE32_EVENT_STREAM_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_PROSPECTIVE_FAILURE",
+  "authoritativeRun": {
+    "id": 37081864923,
+    "jobId": 111083917653,
+    "headSha": "c36f5d71be49336369adef19c892565d2b3e94cf",
+    "artifactId": 11261347073,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:9a1b598b06faa99568f902794ddaf9042d7d2ca5dcf5224a4b17792e4659c3cc",
+  "evidenceJsonSha256": "78549dfb7514c4d3732ca9e4f6239ad6b1bc88162cf10312b661494b1bbc9546",
+  "design": "dc4b7c7f9625e38557c91628ba0b6f2395d88477",
+  "preregistration": "f11e04bb7dad3bcbc5324b66322e6d6e5d99aad6",
+  "implementation": "23e36c3dbc9c8a70104b174310d9b2d6d7466baf",
+  "workflow": "c36f5d71be49336369adef19c892565d2b3e94cf",
+  "result": "7b2af77b2a4b3bdcd39723b53c4bce2feb3c63d8",
+  "supportPass": true,
+  "provenancePass": true,
+  "neuralOnlyModelSha256": "de8cc3c24cbb91a3a9a806aa2afe37ecd0294c0d2c4b5ce2d4a93c25d77a1cde",
+  "thresholdQuantile": 0.95,
+  "frozenThreshold": 1.574078960908224,
+  "train": {
+    "tapes": 64,
+    "predictiveRows": 30080
+  },
+  "calibration": {
+    "tapes": 64,
+    "finiteScores": 30080
+  },
+  "provenance": {
+    "strippedNeuralViews": true,
+    "preFreezeTruthAccess": false,
+    "thresholdSelectionUsesTruth": false,
+    "teacherUsed": false,
+    "supervisedReadoutUsed": false,
+    "physicalTruthEvaluatorOnly": true
+  },
+  "prospective": {
+    "A": {
+      "physicalImpacts": 1747,
+      "neuralEvents": 1435,
+      "matched": 192,
+      "falseEvents": 1243,
+      "missedImpacts": 1555,
+      "precision": 0.1337979094076655,
+      "recall": 0.10990269032627362,
+      "f1": 0.12067881835323696,
+      "eventCountRatio": 0.8214081282198054,
+      "countMae": 5.875,
+      "pass": false
+    },
+    "B": {
+      "physicalImpacts": 1704,
+      "neuralEvents": 1376,
+      "matched": 172,
+      "falseEvents": 1204,
+      "missedImpacts": 1532,
+      "precision": 0.125,
+      "recall": 0.10093896713615023,
+      "f1": 0.11168831168831168,
+      "eventCountRatio": 0.8075117370892019,
+      "countMae": 5.46875,
+      "pass": false
+    }
+  },
+  "modelRefitAfterProspective": false,
+  "thresholdQuantileChanged": false,
+  "thresholdSearchedAfterProspective": false,
+  "thresholdTunedOnProspective": false,
+  "teacherImported": false,
+  "diagnosticStackDeployable": false,
+  "deployabilityCandidate": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "NEURAL_ONLY_FAILURE_ATTRIBUTION"
+}
