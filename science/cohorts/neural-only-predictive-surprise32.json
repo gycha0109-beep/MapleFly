@@ -1,0 +1,60 @@
+{
+  "schema": "maplefly.cohort-set.v1",
+  "id": "neural-only-predictive-surprise32",
+  "simulation_contract": "v15n-deterministic-v1",
+  "make_block": "8 base seeds x 8 deterministic episodes = 64 tapes",
+  "cohorts": {
+    "train": {
+      "base_seeds": [
+        7521000,
+        7531000,
+        7541000,
+        7551000,
+        7561000,
+        7571000,
+        7581000,
+        7591000
+      ],
+      "interruption_seed": 7607000
+    },
+    "calibration": {
+      "base_seeds": [
+        7611000,
+        7621000,
+        7631000,
+        7641000,
+        7651000,
+        7661000,
+        7671000,
+        7681000
+      ],
+      "interruption_seed": 7697000
+    },
+    "prospective_a": {
+      "base_seeds": [
+        7701000,
+        7711000,
+        7721000,
+        7731000,
+        7741000,
+        7751000,
+        7761000,
+        7771000
+      ],
+      "interruption_seed": 7787000
+    },
+    "prospective_b": {
+      "base_seeds": [
+        7791000,
+        7801000,
+        7811000,
+        7821000,
+        7831000,
+        7841000,
+        7851000,
+        7861000
+      ],
+      "interruption_seed": 7877000
+    }
+  }
+}
