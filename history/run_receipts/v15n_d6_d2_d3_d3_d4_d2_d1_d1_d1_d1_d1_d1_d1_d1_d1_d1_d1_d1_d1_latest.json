@@ -1,0 +1,55 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_QUADRATIC256_CONFIRMATORY_REPLICATION_PASS",
+  "scientificValidity": "VALID_CONFIRMATORY_PASS",
+  "authoritativeRun": {
+    "id": 37006306772,
+    "headSha": "644470e7b40fe02d397648b91dff126324b6feb8",
+    "artifactId": 11232625088,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:7a4a5ec9d794746852dfb6649c0360814ee1a867e35879a676526d179332d176",
+  "evidenceJsonSha256": "ffb4d8cbd0fecfa64ac84fc9cb90f079d3ab03a9d9e08df7b7ebff4139e398aa",
+  "design": "3953421e3b55027b5af3d4beaff6b59ac9c9cbed",
+  "preregistration": "ace688eeba4b1df6bb259066dad182a0d52025bf",
+  "implementation": "88063afcc83cbc5a497813a236c9e9f996aded59",
+  "workflow": "644470e7b40fe02d397648b91dff126324b6feb8",
+  "result": "0981e2c95ec86689967a15d4ea961900b50ccfc6",
+  "supportPass": true,
+  "reconstructedQuadraticModelSha256": "6f72c6c5070b0a8bd9e3d64627614790fdb8c1c97b21b1f408ed1852ec5aaff7",
+  "frozenThreshold": 0.6097593618468664,
+  "confirmation": {
+    "A": {
+      "precision": 0.7954409118176364,
+      "recall": 0.7763466042154566,
+      "f1": 0.7857777777777777,
+      "eventCountRatio": 0.9759953161592506,
+      "countMae": 1.984375,
+      "pass": true
+    },
+    "B": {
+      "precision": 0.8062111801242235,
+      "recall": 0.7644287396937574,
+      "f1": 0.7847642079806529,
+      "eventCountRatio": 0.9481743227326266,
+      "countMae": 2.4375,
+      "pass": true
+    }
+  },
+  "modelRefit": false,
+  "calibrationRerun": false,
+  "thresholdCandidatesConstructed": false,
+  "thresholdSearched": false,
+  "thresholdTunedOnConfirmation": false,
+  "featureChanged": false,
+  "degreeChanged": false,
+  "horizonChanged": false,
+  "eventizerChanged": false,
+  "refractoryTuned": false,
+  "diagnosticStackDeployable": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v16c": "BLOCKED",
+  "next": "NEURAL_ONLY_DEPLOYABILITY_BRIDGE"
+}
