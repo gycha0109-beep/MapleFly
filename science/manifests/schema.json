@@ -88,6 +88,11 @@
     "tape_builder": {
       "type": "string",
       "pattern": "^scripts/.*\\.mjs$"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
     }
   }
 }

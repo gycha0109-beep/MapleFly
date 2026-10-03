@@ -7,6 +7,7 @@ on:
       - ".github/workflows/**"
       - ".github/actions/**"
       - "science/**"
+      - "!science/active.json"
       - "scripts/ci/**"
       - "scripts/lib/tape-pack-cache.mjs"
   pull_request:

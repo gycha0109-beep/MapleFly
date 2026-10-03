@@ -22,13 +22,14 @@ const safeRepoPath = (value) =>
 const allowed = new Set([
   "schema","id","script","output_dir","artifact_name","needs_malecns",
   "dependencies","env","simulation_contract","cohort_set",
-  "historical_run_id","migration_note","tape_builder",
+  "historical_run_id","migration_note","tape_builder","request_id",
 ]);
 for (const key of Object.keys(manifest)) {
   if (!allowed.has(key)) fail("unknown field " + key);
 }
 
 if (manifest.schema !== "maplefly.science-experiment.v1") fail("schema");
+if (manifest.request_id !== undefined && (typeof manifest.request_id !== "string" || !manifest.request_id.length || manifest.request_id.length > 128)) fail("request_id");
 if (!/^[a-z0-9][a-z0-9-]*$/.test(manifest.id ?? "")) fail("id");
 if (!safeRepoPath(manifest.script) || !manifest.script.startsWith("scripts/") || !manifest.script.endsWith(".mjs")) fail("script");
 if (!safeRepoPath(manifest.output_dir) || !manifest.output_dir.startsWith("results/")) fail("output_dir");
