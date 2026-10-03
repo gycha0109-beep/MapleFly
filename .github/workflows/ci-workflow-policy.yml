@@ -41,3 +41,8 @@ jobs:
           node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs
           node scripts/ci/tape-pack-identity.mjs             science/simulations/v15n-deterministic-v3.json             science/cohorts/neural-only-predictive-surprise32.json             train > /tmp/maplefly-tape-identity.json
           grep -q '"key"' /tmp/maplefly-tape-identity.json
+
+      - name: Validate reusable science template
+        run: |
+          node scripts/ci/validate-science-manifest.mjs             science/manifests/templates/neural-only-predictive-surprise32-cached.json
+          node scripts/ci/validate-science-tape-contract.mjs             science/manifests/templates/neural-only-predictive-surprise32-cached.json
