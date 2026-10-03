@@ -1,7 +1,7 @@
 {
-  "schema": "maplefly.legacy-workflow-allowlist.v1",
-  "frozen_at_head": "c36f5d71be49336369adef19c892565d2b3e94cf",
-  "note": "Legacy experiment-specific workflows may remain while migrating, but new files in these families are forbidden.",
+  "schema": "maplefly.legacy-workflow-archive.v2",
+  "archived_at_migration_from_head": "a510acfc73c39e7f214c1f5cb606a7ce1797d503",
+  "note": "These GitHub Actions definitions are provenance-only. They live under history/workflows/legacy and must not be reactivated. New science experiments use science/active.json + reusable runner.",
   "prefixes": [
     "audit-",
     "build-",
@@ -14,7 +14,8 @@
     "validate-",
     "verify-"
   ],
-  "files": [
+  "files": [],
+  "archived_files": [
     "audit-v11c-timing.yml",
     "audit-v11d-timing.yml",
     "audit-v15-injury-sensory-metadata.yml",

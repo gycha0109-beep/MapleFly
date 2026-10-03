@@ -1,0 +1,171 @@
+name: MapleFly Deployment Verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "index.html"
+      - "src/brain/fly-worker.js"
+      - "src/brain/fly-controller.js"
+      - "src/brain/fly-skill-v7.js"
+      - "src/brain/fly-skill-v10-attack.js"
+      - "src/brain/fly-skill-v10f-candidate.json"
+      - "src/brain/fly-skill-v11h2-jump.js"
+      - "src/brain/fly-skill-v11h2-jump-candidate.json"
+      - "src/brain/fly-interruption-v14b.js"
+      - "src/brain/fly-interruption-v14b-candidate.json"
+      - "src/brain/fly-skill-v15-potion.js"
+      - "src/game.js"
+      - "src/headless/connectome-runtime.mjs"
+      - "scripts/experiment-v7-deploy-check.mjs"
+      - "scripts/verify-v10f-browser-equivalence.mjs"
+      - "scripts/verify-v10f-target-lc4-ablation.mjs"
+      - "scripts/verify-v11-cross-skill-lc4.mjs"
+      - "scripts/verify-v11h2-browser-deployment-smoke.mjs"
+      - "scripts/verify-v11h2-combined-browser-wiring.mjs"
+      - "scripts/verify-v11h2-jump-real-input-equivalence.mjs"
+      - "scripts/verify-v14c-evaluator-equivalence.mjs"
+      - "scripts/verify-v14c-browser-wiring.mjs"
+      - "scripts/verify-v14c-deployment-smoke.mjs"
+      - "scripts/verify-v11f-legacy-isolation.mjs"
+      - "scripts/verify-v15d-artifact-equivalence.mjs"
+      - "scripts/verify-v15d-browser-wiring.mjs"
+      - "scripts/verify-v15d-deployment-closure.mjs"
+      - "scripts/verify-v15d-real-input-equivalence.mjs"
+      - "science/artifacts/frozen.json"
+      - "scripts/ci/frozen-artifacts.mjs"
+      - "scripts/ci/fetch-frozen-by-map.mjs"
+      - ".github/actions/science-bootstrap/action.yml"
+      - ".github/workflows/deployment-verify.yml"
+  pull_request:
+    paths:
+      - "index.html"
+      - "src/brain/**"
+      - "src/game.js"
+      - "src/headless/connectome-runtime.mjs"
+      - "scripts/verify-*.mjs"
+      - "scripts/experiment-v7-deploy-check.mjs"
+      - "science/artifacts/frozen.json"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: maplefly-deployment-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Shared bootstrap
+        uses: ./.github/actions/science-bootstrap
+        with:
+          needs_malecns: "false"
+          needs_tapes: "false"
+
+      - name: Fetch frozen potion artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          node scripts/ci/fetch-frozen-by-map.mjs
+          "v15a12_representation=V15A12_REPRESENTATION_FILE,v15b3_policy=V15B3_MODEL_FILE"
+
+      - name: Potion artifact equivalence
+        run: |
+          node --check src/brain/fly-skill-v15-potion.js
+          node --check scripts/verify-v15d-artifact-equivalence.mjs
+          node scripts/verify-v15d-artifact-equivalence.mjs
+
+      - name: Browser wiring
+        run: |
+          node --check src/brain/fly-worker.js
+          node --check src/brain/fly-controller.js
+          node --check src/brain/fly-skill-v11h2-jump.js
+          node --check src/game.js
+          node --check scripts/verify-v15d-browser-wiring.mjs
+          node --check scripts/verify-v11h2-combined-browser-wiring.mjs
+          node scripts/verify-v15d-browser-wiring.mjs
+          node scripts/verify-v11h2-combined-browser-wiring.mjs
+          node scripts/verify-v14c-browser-wiring.mjs
+
+      - name: Deployment and legacy isolation contracts
+        run: |
+          node --check scripts/verify-v15d-deployment-closure.mjs
+          node --check scripts/verify-v14c-evaluator-equivalence.mjs
+          node --check scripts/verify-v11f-legacy-isolation.mjs
+          node scripts/verify-v15d-deployment-closure.mjs
+          node scripts/verify-v14c-evaluator-equivalence.mjs
+          node scripts/verify-v11f-legacy-isolation.mjs
+
+  runtime-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v7
+      - name: Shared bootstrap
+        uses: ./.github/actions/science-bootstrap
+        with:
+          needs_malecns: "true"
+          needs_tapes: "false"
+
+      - name: Fetch frozen potion artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          node scripts/ci/fetch-frozen-by-map.mjs
+          "v15a12_representation=V15A12_REPRESENTATION_FILE,v15b3_policy=V15B3_MODEL_FILE"
+
+      - name: Syntax check runtime verifiers
+        run: |
+          node --check scripts/verify-v15d-real-input-equivalence.mjs
+          node --check scripts/verify-v10f-browser-equivalence.mjs
+          node --check scripts/verify-v10f-target-lc4-ablation.mjs
+          node --check scripts/verify-v11-cross-skill-lc4.mjs
+          node --check scripts/verify-v11h2-jump-real-input-equivalence.mjs
+          node --check scripts/verify-v11h2-browser-deployment-smoke.mjs
+          node --check scripts/verify-v14c-deployment-smoke.mjs
+
+      - name: Potion real-input equivalence
+        run: node scripts/verify-v15d-real-input-equivalence.mjs
+
+      - name: Movement v7 smoke
+        run: >
+          node scripts/experiment-v7-deploy-check.mjs
+          --episodes 40
+          --seed 9000
+          --out results/experiment-v7-deploy
+          --cache .cache/maplefly-connectome
+
+      - name: Attack v10F checks
+        run: |
+          node scripts/verify-v10f-browser-equivalence.mjs
+          node scripts/verify-v10f-target-lc4-ablation.mjs
+
+      - name: Cross-skill and jump v11H2 checks
+        run: |
+          node scripts/verify-v11-cross-skill-lc4.mjs
+          node scripts/verify-v11h2-jump-real-input-equivalence.mjs
+          node scripts/verify-v11h2-browser-deployment-smoke.mjs
+
+      - name: Interruption v14C integrated smoke
+        run: node scripts/verify-v14c-deployment-smoke.mjs
+
+      - name: Upload consolidated runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maplefly-deployment-runtime-${{ github.run_id }}
+          path: |
+            results/experiment-v7-deploy
+            results/verify-v10f-browser
+            results/verify-v10f-target-lc4-ablation
+            results/verify-v11-cross-skill-lc4
+            results/verify-v11h2-browser-deployment
+            results/verify-v14c-deployment
+          if-no-files-found: warn
+          retention-days: 30
