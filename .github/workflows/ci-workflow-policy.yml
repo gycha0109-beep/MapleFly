@@ -10,6 +10,9 @@ on:
       - "!science/active.json"
       - "scripts/ci/**"
       - "scripts/lib/tape-pack-cache.mjs"
+      - "scripts/lib/v15n-tape-cache.mjs"
+      - "scripts/science/build-v15n-tapes.mjs"
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs"
   pull_request:
     paths:
       - ".github/workflows/**"
@@ -17,6 +20,9 @@ on:
       - "science/**"
       - "scripts/ci/**"
       - "scripts/lib/tape-pack-cache.mjs"
+      - "scripts/lib/v15n-tape-cache.mjs"
+      - "scripts/science/build-v15n-tapes.mjs"
+      - "scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs"
 
 permissions:
   contents: read
@@ -40,7 +46,7 @@ jobs:
           node --check scripts/lib/v15n-tape-cache.mjs
           node --check scripts/science/build-v15n-tapes.mjs
           node --check scripts/diagnose-v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-neural-only-predictive-surprise32.mjs
-          node scripts/ci/tape-pack-identity.mjs             science/simulations/v15n-deterministic-v3.json             science/cohorts/neural-only-predictive-surprise32.json             train > /tmp/maplefly-tape-identity.json
+          node scripts/ci/tape-pack-identity.mjs             science/simulations/v15n-deterministic-v4.json             science/cohorts/neural-only-predictive-surprise32-v4.json             train > /tmp/maplefly-tape-identity.json
           grep -q '"key"' /tmp/maplefly-tape-identity.json
 
       - name: Validate reusable science template

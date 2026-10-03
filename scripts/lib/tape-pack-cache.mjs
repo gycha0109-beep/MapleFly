@@ -86,6 +86,7 @@ export async function loadOrBuildTapePack({
   identity,
   build,
   validate = null,
+  allowBuild = process.env.MAPLEFLY_TAPE_BUILD_ALLOWED !== "false",
 }) {
   const cached = await loadTapePack({ cacheDir, identity });
   if (cached) {
@@ -94,7 +95,13 @@ export async function loadOrBuildTapePack({
     return { ...cached, cacheHit: true };
   }
 
-  console.log("[tape-pack] MISS " + tapePackKey(identity));
+  const key = tapePackKey(identity);
+  console.log("[tape-pack] MISS " + key);
+  if (!allowBuild) {
+    throw new Error(
+      "[tape-pack] cache miss while build is disabled: " + key,
+    );
+  }
   const tapes = await build();
   if (validate) await validate(tapes);
   const saved = await saveTapePack({ cacheDir, identity, tapes });
