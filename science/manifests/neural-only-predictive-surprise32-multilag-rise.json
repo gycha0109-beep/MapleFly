@@ -1,0 +1,28 @@
+{
+  "schema": "maplefly.science-experiment.v1",
+  "id": "neural-only-predictive-surprise32-multilag-rise",
+  "script": "scripts/diagnose-neural-only-predictive-surprise32-multilag-rise.mjs",
+  "tape_builder": "scripts/science/build-v15n-tapes.mjs",
+  "output_dir": "results/neural-only-predictive-surprise32-multilag-rise",
+  "artifact_name": "maplefly-neural-only-predictive-surprise32-multilag-rise",
+  "needs_malecns": true,
+  "analysis_needs_malecns": false,
+  "simulation_contract": "science/simulations/v15n-deterministic-v4.json",
+  "cohort_set": "science/cohorts/neural-only-predictive-surprise32-multilag-rise-v4.json",
+  "dependencies": [
+    {
+      "registry_key": "neural_only_predictive_surprise32_failure_attribution",
+      "env": "SURPRISE32_ATTRIBUTION_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "simulation_dependencies": [
+    {
+      "registry_key": "v15e2_neural_core",
+      "env": "V15E2_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "env": {},
+  "migration_note": "기존 frozen predictive-surprise32 모델을 정확 재현한 뒤, preregistered score-frame lag 1/3/5 상승폭의 max(0, delta)만 사용한다. 기존 A/B는 repair tuning과 평가에 재사용하지 않고 fresh C/D만 prospective 평가한다."
+}
