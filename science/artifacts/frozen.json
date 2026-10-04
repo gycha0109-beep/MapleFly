@@ -77,6 +77,16 @@
       "files": {
         "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
       }
+    },
+    "neural_only_predictive_surprise32_multilag_rise_failure_attribution": {
+      "artifact_id": 11295075939,
+      "run_id": 37179198946,
+      "head_sha": "0536d354e6d62c03879efa2460ca0932e8d1d123",
+      "digest": "sha256:493ab7b5a7b8575d3a1af2f4a7a822aa35f3e3257e01e1b37185af3adb1d18b0",
+      "evidence_sha256": "4d34942cc294798c8363fab817a472469cea135cd8e5dc11a9587ff2ddeeca71",
+      "files": {
+        "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
+      }
     }
   }
 }
