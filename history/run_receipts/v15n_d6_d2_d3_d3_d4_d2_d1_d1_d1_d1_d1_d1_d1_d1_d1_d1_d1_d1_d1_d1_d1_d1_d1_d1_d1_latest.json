@@ -1,0 +1,84 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_NEURAL_ONLY_MAX_COMPONENT_SURPRISE32_FAILURE_ATTRIBUTED",
+  "scientificValidity": "VALID_FROZEN_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 37201941454,
+    "analyzeJobId": 111435458951,
+    "headSha": "7c5ba7450fa2fad1f1e2445e25cd0d91f02b5592",
+    "artifactId": 11303800018,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:51050dd8b26ee326130bba2c955c13f602c365a4b95bd47899fc75ec086d1585",
+  "evidenceJsonSha256": "18677b316b60564893eadd586b74f8fcb09957689bb381b18ad0ccaec0625509",
+  "prerequisiteFailureResult": "41e95ba575210da4fe02061301c137977262bd46",
+  "design": "6c725f2f8b58d24ce2aa105846a267684b397420",
+  "preregistration": "0ce7588247a29156f6a6aabb7b593d90bbbe16f4",
+  "implementation": "5add64587e55462a10b49f726b429ec200e971f3",
+  "workflow": "7c5ba7450fa2fad1f1e2445e25cd0d91f02b5592",
+  "result": "29a72558389f321ca62f32848af90c41c1dc5477",
+  "reproductionPass": true,
+  "supportPass": true,
+  "attributionAxis": "MAX_SIGNAL_ABSENT_DOMINANT",
+  "baseModelSha256": "de8cc3c24cbb91a3a9a806aa2afe37ecd0294c0d2c4b5ce2d4a93c25d77a1cde",
+  "baseThreshold": 1.574078960908224,
+  "repairModelSha256": "17c5b3e45a1748b940a903b02684c3683838825a6b77d4eeee04af963f9af6fb",
+  "repairThreshold": 12.389163171560895,
+  "missAttribution": {
+    "E": {
+      "PRE_HIT_MAX_CROSSING": 0.08817891373801917,
+      "LATE_POST_HIT_MAX_CROSSING": 0.2,
+      "NO_LOCAL_MAX_THRESHOLD_CROSSING": 0.7118210862619808
+    },
+    "F": {
+      "PRE_HIT_MAX_CROSSING": 0.0821917808219178,
+      "LATE_POST_HIT_MAX_CROSSING": 0.19053549190535493,
+      "NO_LOCAL_MAX_THRESHOLD_CROSSING": 0.7272727272727273
+    }
+  },
+  "falseEventBackgroundFraction": {
+    "E": 0.9089481946624803,
+    "F": 0.9149108589951378
+  },
+  "impactLocalQ95OverBackgroundQ95": {
+    "E": 1.214843868648868,
+    "F": 1.2470342047127843
+  },
+  "impactLocalQ99OverBackgroundQ99": {
+    "E": 1.2518023862349346,
+    "F": 1.2315251308218864
+  },
+  "falseEventArgmaxTop3Share": {
+    "E": 0.48508634222919944,
+    "F": 0.47974068071312803
+  },
+  "falseEventArgmaxNormalizedEntropy": {
+    "E": 0.7589263008329108,
+    "F": 0.7656878114144909
+  },
+  "provenance": {
+    "strippedNeuralViews": true,
+    "preFreezeTruthAccess": false,
+    "thresholdSelectionUsesTruth": false,
+    "teacherUsed": false,
+    "supervisedReadoutUsed": false,
+    "attributionCohortsUsedForFitting": false,
+    "attributionCohortsUsedForGeneralization": false,
+    "componentSelection": false,
+    "componentRemoval": false,
+    "topKSearch": false,
+    "weightingSearch": false,
+    "thresholdChanged": false,
+    "timingShiftSearch": false,
+    "tapeBuildAllowed": false,
+    "simulationContextInitialized": false
+  },
+  "diagnosticStackDeployable": false,
+  "deployabilityCandidate": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v15n": "CLOSED / BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "UPSTREAM_REPRESENTATION_REPAIR_AFTER_MAX_SIGNAL_ABSENT"
+}
