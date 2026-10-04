@@ -1,0 +1,127 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_NEURAL_ONLY_PREDICTIVE_SURPRISE32_FAILURE_ATTRIBUTED",
+  "scientificValidity": "VALID_FROZEN_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 37168311777,
+    "jobId": 111349797407,
+    "headSha": "094baf6969f4c6cf9cbb1dbb586d63f8412c9d15",
+    "artifactId": 11291943099,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:e3b3d06404ee4c6f5d8170979ae4c1b4746d07a2ad32d75247631fd8bf7f54ca",
+  "evidenceJsonSha256": "5952740e8403843872e370a94cc8d4d45699b2f5df77e54f14665b6b36c8a4f3",
+  "design": "063a1f6be925ee7145961306503543e28b133131",
+  "preregistration": "68f34facc1ee456c7b91fe649b57e893258cabea",
+  "clarification": "2707951db2a48dd0b793a690409b7c13e43bcd23",
+  "implementation": "190ea1d8a6e1ebc4985780cc997df58c46394fca",
+  "workflow": "094baf6969f4c6cf9cbb1dbb586d63f8412c9d15",
+  "result": "de832935668da237570c7eb00cb66de7527c90bd",
+  "reproductionPass": true,
+  "supportPass": true,
+  "attributionAxis": "NO_LOCAL_THRESHOLD_DOMINANT",
+  "neuralOnlyModelSha256": "de8cc3c24cbb91a3a9a806aa2afe37ecd0294c0d2c4b5ce2d4a93c25d77a1cde",
+  "thresholdQuantile": 0.95,
+  "frozenThreshold": 1.574078960908224,
+  "train": {
+    "tapes": 64,
+    "predictiveRows": 30080
+  },
+  "calibration": {
+    "tapes": 64,
+    "finiteScores": 30080
+  },
+  "reproducedProspective": {
+    "A": {
+      "physicalImpacts": 1747,
+      "neuralEvents": 1435,
+      "matched": 192,
+      "falseEvents": 1243,
+      "missedImpacts": 1555,
+      "precision": 0.1337979094076655,
+      "recall": 0.10990269032627362,
+      "f1": 0.12067881835323696,
+      "eventCountRatio": 0.8214081282198054,
+      "countMae": 5.875
+    },
+    "B": {
+      "physicalImpacts": 1704,
+      "neuralEvents": 1376,
+      "matched": 172,
+      "falseEvents": 1204,
+      "missedImpacts": 1532,
+      "precision": 0.125,
+      "recall": 0.10093896713615023,
+      "f1": 0.11168831168831168,
+      "eventCountRatio": 0.8075117370892019,
+      "countMae": 5.46875
+    }
+  },
+  "missAttribution": {
+    "A": {
+      "MATCH_CONFLICT": 0,
+      "REFRACTORY_SUPPRESSED_IN_WINDOW": 0,
+      "PRE_HIT_CROSSING": 0.10482315112540193,
+      "LATE_POST_HIT_CROSSING": 0.12411575562700965,
+      "ABOVE_THRESHOLD_NO_CROSSING_IN_WINDOW": 0.0012861736334405145,
+      "NO_LOCAL_THRESHOLD_CROSSING": 0.7697749196141479
+    },
+    "B": {
+      "MATCH_CONFLICT": 0,
+      "REFRACTORY_SUPPRESSED_IN_WINDOW": 0,
+      "PRE_HIT_CROSSING": 0.10117493472584857,
+      "LATE_POST_HIT_CROSSING": 0.13185378590078328,
+      "ABOVE_THRESHOLD_NO_CROSSING_IN_WINDOW": 0,
+      "NO_LOCAL_THRESHOLD_CROSSING": 0.7669712793733682
+    }
+  },
+  "falseEventTiming": {
+    "A": {
+      "PRE_HIT_200MS": 0.10378117457763475,
+      "RECENT_POST_HIT_200MS": 0,
+      "BACKGROUND": 0.8962188254223652
+    },
+    "B": {
+      "PRE_HIT_200MS": 0.10465116279069768,
+      "RECENT_POST_HIT_200MS": 0,
+      "BACKGROUND": 0.8953488372093024
+    }
+  },
+  "medianMissedImpactThresholdGap": {
+    "A": 0.3155247538858681,
+    "B": 0.32974259344805446
+  },
+  "nearestEventBoundaryRule": {
+    "search": "inclusive +/-20 steps",
+    "outsideNamedBuckets": "[-20,-10) and +20 => NONE",
+    "frozenBeforeAuthoritativeRun": true
+  },
+  "tapeProvenance": {
+    "cohortSetSha256": "5e72f94dcbee3aa70355d44ddfa7079a8f343a9c9b666b90e1de0209161d0db0",
+    "simulationContract": "v15n-deterministic-v4",
+    "allAnalysisCacheHits": true,
+    "tapeBuildAllowed": false,
+    "simulationContextInitialized": false
+  },
+  "provenance": {
+    "strippedNeuralViews": true,
+    "preFreezeTruthAccess": false,
+    "thresholdSelectionUsesTruth": false,
+    "teacherUsed": false,
+    "supervisedReadoutUsed": false,
+    "physicalTruthEvaluatorOnly": true,
+    "attributionCohortsUsedForFitting": false,
+    "attributionCohortsUsedForGeneralization": false,
+    "thresholdQuantileChanged": false,
+    "thresholdSearchedAfterProspective": false,
+    "modelRefitAfterProspective": false
+  },
+  "diagnosticStackDeployable": false,
+  "deployabilityCandidate": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v15n": "CLOSED / BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "NEURAL_ONLY_REPAIR_DESIGN_AFTER_NO_LOCAL_THRESHOLD_ATTRIBUTION"
+}
