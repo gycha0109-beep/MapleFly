@@ -50,8 +50,13 @@ assert.equal(falseCategory(100,[90,110]), 'BACKGROUND');
 assert.equal(nearestStep([120,80],100), 80);
 assert.equal(nearestStep([121],100), null);
 assert.throws(() => nearestEventCategory(-20,'UNRESOLVED'), /unresolved/);
-assert.equal(nearestEventCategory(-10,'UNRESOLVED'), 'PRE_200MS');
-assert.equal(nearestEventCategory(10,'UNRESOLVED'), 'LATE_200MS');
+const boundaryRule = 'OUTSIDE_NAMED_BUCKETS_NONE';
+assert.equal(nearestEventCategory(-20,boundaryRule), 'NONE');
+assert.equal(nearestEventCategory(-11,boundaryRule), 'NONE');
+assert.equal(nearestEventCategory(-10,boundaryRule), 'PRE_200MS');
+assert.equal(nearestEventCategory(10,boundaryRule), 'LATE_200MS');
+assert.equal(nearestEventCategory(19,boundaryRule), 'LATE_200MS');
+assert.equal(nearestEventCategory(20,boundaryRule), 'NONE');
 assert.deepEqual(localPeak([{step:90,score:2},{step:100,score:2},{step:120,score:99}],100,tau),
   {peakScore:2,peakOffsetSteps:-10,thresholdGap:tau-2,category:'PRE_HIT_PEAK'});
 
@@ -75,4 +80,4 @@ assert.equal(attr.falseEventTiming.total,1);
 assert.equal(attr.localPeakTiming.finitePeakFraction,1);
 assert.equal(attr.nearestEventDistance.counts.IN_WINDOW,1);
 console.log(JSON.stringify({status:'PASS', frozenFunctions:Object.keys(core).length-1,
-  fixtures:'freeze boundary, truth isolation, matching, precedence, interval edges, peak ties, strict dominance'}));
+  fixtures:'freeze boundary, truth isolation, matching, precedence, resolved nearest-event edges, peak ties, strict dominance'}));
