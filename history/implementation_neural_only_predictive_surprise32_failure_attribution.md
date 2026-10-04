@@ -1,6 +1,6 @@
 # neural-only predictive-surprise32 실패 귀인 구현
 
-상태: IMPLEMENTED. 권위 실행 전 설계 8절 분류 경계 확정 필요.
+상태: IMPLEMENTED / HOLD. 권위 실행 전 설계 8절 분류 경계 확정 필요.
 
 ## 기준점과 범위
 
@@ -67,6 +67,10 @@ node scripts/ci/test-tape-pack-cache.mjs
 ```
 
 모두 PASS. fixture는 freeze 이전 truth 차단, stripped view, 정확 matching, miss/false precedence, refractory, 구간 끝점, peak 동점 및 strict `> 0.50` A/B dominance를 확인한다.
+
+구현 커밋: `014a7c4034781bc7d8f61bae4bc62acf83b0cf62`. [PR #4](https://github.com/gycha0109-beep/MapleFly/pull/4)를 draft로 생성했다. 해당 HEAD의 [MapleFly CI Architecture Guard 실행 37166618562](https://github.com/gycha0109-beep/MapleFly/actions/runs/37166618562)은 job `111330730880`에서 success로 완료했다. `Validate workflow policy`, `Test Tape Pack cache`, `Check cached science base`, `Validate reusable science template`이 모두 성공했다. 이 CI 결과는 과학 재현·귀인 성공을 의미하지 않는다.
+
+필수 문제에 대한 한 번의 재검토에서 새 Critical·High, 보안·데이터 손실·공개 계약·migration drift 문제는 발견하지 않았다. 남은 완료 기준 미충족은 설계의 미정의 분류 경계와 아직 수행하지 않은 권위 실행·산출물 검증·결과/영수증 동결이다.
 
 실제 모델 SHA·tau·A/B metric 재현, attribution support 및 axis는 아직 권위 실행에서 검증하지 않았다. `science/active.json`은 기존 `cache-hit-validation-2` 상태를 보존한다.
 
