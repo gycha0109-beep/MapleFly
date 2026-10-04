@@ -1,6 +1,6 @@
 # neural-only predictive-surprise32 실패 귀인 구현
 
-상태: IMPLEMENTED / HOLD. 권위 실행 전 설계 8절 분류 경계 확정 필요.
+상태: IMPLEMENTED / READY FOR AUTHORITATIVE RUN. 설계 8절 nearest-event 경계 해석은 권위 실행 전에 별도 clarification으로 고정 완료.
 
 ## 기준점과 범위
 
@@ -36,18 +36,26 @@ model SHA와 tau가 일치해야 evaluator truth 접근을 열며, A/B metrics�
 
 분석 스크립트는 simulation module을 import하지 않는다. `allowBuild:false`와 `MAPLEFLY_TAPE_BUILD_ALLOWED=false`를 함께 요구하며, simulation context·정책·MaleCNS를 초기화하는 호출이 없다. 출력에는 각 pack key, 압축 파일 SHA256 및 cache HIT 여부를 기록한다.
 
-## 설계의 미정의 경계
+## nearest-event 경계 해석 고정
 
-설계 8절은 nearest event를 `+/-20 steps`에서 찾고, 분류를 다음으로 정의한다.
+권위 실행 전에 다음 clarification을 별도 커밋으로 고정했다.
 
 ```text
-PRE_200MS  [-10,0)
-IN_WINDOW [0,10)
-LATE_200MS [10,20)
-NONE
+history/clarification_neural_only_predictive_surprise32_failure_attribution_nearest_event_boundary.md
+commit 2707951db2a48dd0b793a690409b7c13e43bcd23
 ```
 
-`[-20,-10)` 및 `+20`에서 찾은 nearest event는 어느 bucket인지 정의되어 있지 않다. 이 부분을 임의로 확정하지 않는다. 원시 signed offset은 inclusive +/-20에서 기록하고, 정의된 bucket 밖은 NONE으로 집계하는 해석을 사용자에게 확인 요청했다. 확정 전 manifest에 그 규칙을 넣거나 `science/active.json`을 변경하지 않는다. 코드의 미정의 경계는 명시적으로 실패한다.
+검색은 기존대로 inclusive `+/-20 steps`를 유지하고, 사전등록에 이름이 붙은 세 구간을 확장하지 않는다.
+
+```text
+PRE_200MS   [-10,0)
+IN_WINDOW   [0,10)
+LATE_200MS  [10,20)
+[-20,-10)   -> NONE
++20         -> NONE
+```
+
+원시 signed offset은 그대로 보존한다. 이 보조 bucket은 최종 attribution axis 계산에 사용되지 않는다. frozen model, q, tau, eventizer, matching, miss attribution precedence 및 배포 상태는 변경하지 않는다.
 
 그 밖의 기술적 집계 관례는 결과와 함께 명시한다. 동일 거리 nearest 후보는 이른 step을 선택한다. peak 동점은 사전등록대로 이른 step을 선택한다. surprise 분포는 tape별 각 구간에 포함되는 finite score frame을 구간 내 한 번씩 집계하고 보간하지 않는다. impact 구간끼리 겹치면 같은 frame이 서로 다른 구간에 속할 수 있다.
 
@@ -70,9 +78,9 @@ node scripts/ci/test-tape-pack-cache.mjs
 
 구현 커밋: `014a7c4034781bc7d8f61bae4bc62acf83b0cf62`. [PR #4](https://github.com/gycha0109-beep/MapleFly/pull/4)를 draft로 생성했다. 해당 HEAD의 [MapleFly CI Architecture Guard 실행 37166618562](https://github.com/gycha0109-beep/MapleFly/actions/runs/37166618562)은 job `111330730880`에서 success로 완료했다. `Validate workflow policy`, `Test Tape Pack cache`, `Check cached science base`, `Validate reusable science template`이 모두 성공했다. 이 CI 결과는 과학 재현·귀인 성공을 의미하지 않는다.
 
-필수 문제에 대한 한 번의 재검토에서 새 Critical·High, 보안·데이터 손실·공개 계약·migration drift 문제는 발견하지 않았다. 남은 완료 기준 미충족은 설계의 미정의 분류 경계와 아직 수행하지 않은 권위 실행·산출물 검증·결과/영수증 동결이다.
+필수 문제에 대한 한 번의 재검토에서 새 Critical·High, 보안·데이터 손실·공개 계약·migration drift 문제는 발견하지 않았다. 남은 완료 기준 미충족은 권위 실행·산출물 검증·결과/영수증 동결이다.
 
-실제 모델 SHA·tau·A/B metric 재현, attribution support 및 axis는 아직 권위 실행에서 검증하지 않았다. `science/active.json`은 기존 `cache-hit-validation-2` 상태를 보존한다.
+실제 모델 SHA·tau·A/B metric 재현, attribution support 및 axis는 아직 권위 실행에서 검증하지 않았다. 경계 clarification 반영 후 `science/active.json`을 권위 실행용 manifest로 전환할 수 있는 상태다.
 
 ```text
 POTION v15D  DEPLOYED
