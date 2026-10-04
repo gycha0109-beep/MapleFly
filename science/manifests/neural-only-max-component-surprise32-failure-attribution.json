@@ -1,0 +1,28 @@
+{
+  "schema": "maplefly.science-experiment.v1",
+  "id": "neural-only-max-component-surprise32-failure-attribution",
+  "script": "scripts/diagnose-neural-only-max-component-surprise32-failure-attribution.mjs",
+  "tape_builder": "scripts/science/build-v15n-tapes.mjs",
+  "output_dir": "results/neural-only-max-component-surprise32-failure-attribution",
+  "artifact_name": "maplefly-neural-only-max-component-surprise32-failure-attribution",
+  "needs_malecns": true,
+  "analysis_needs_malecns": false,
+  "simulation_contract": "science/simulations/v15n-deterministic-v4.json",
+  "cohort_set": "science/cohorts/neural-only-max-component-surprise32-v4.json",
+  "dependencies": [
+    {
+      "registry_key": "neural_only_max_component_surprise32_failure",
+      "env": "MAX_COMPONENT_FAILURE_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "simulation_dependencies": [
+    {
+      "registry_key": "v15e2_neural_core",
+      "env": "V15E2_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "env": {},
+  "migration_note": "실패한 fresh E/F를 attribution-only로 재사용한다. base/max score와 권위 E/F metrics를 정확 재현한 뒤 miss timing, background separation, argmax component concentration만 descriptive하게 분석한다."
+}
