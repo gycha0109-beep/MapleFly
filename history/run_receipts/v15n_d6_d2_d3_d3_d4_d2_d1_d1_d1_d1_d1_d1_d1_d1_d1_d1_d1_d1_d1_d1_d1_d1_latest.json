@@ -1,0 +1,94 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_NEURAL_ONLY_PREDICTIVE_SURPRISE32_MULTILAG_RISE_EVENT_STREAM_NOT_DEMONSTRATED",
+  "scientificValidity": "VALID_PROSPECTIVE_FAILURE",
+  "authoritativeRun": {
+    "id": 37173877851,
+    "simulateJobId": 111352347436,
+    "analyzeJobId": 111359167247,
+    "headSha": "a1619b184ef9592aafaacfe239ef8ef739049bda",
+    "artifactId": 11293292628,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:82c80090244e5f8f0a025e92062b31d83bad4e19ea65490f465a24814db63217",
+  "evidenceJsonSha256": "e6220d2e027e5dd8dfa34bd862be1af731a03a76d967de91534977618919b98e",
+  "prerequisiteAttributionResult": "de832935668da237570c7eb00cb66de7527c90bd",
+  "design": "e579dc9e232938e45ed455df39f279ece5817bfe",
+  "preregistration": "48ab3eabdf94c85f14f12c6f58122a96d7ee9643",
+  "implementation": "3f8feaa75b07bb2a097cf9b48862b181eb735b93",
+  "workflow": "a1619b184ef9592aafaacfe239ef8ef739049bda",
+  "result": "b57448ba2ed20ddd08b5ff3853bc117324c0b178",
+  "baseReproductionPass": true,
+  "calibrationPass": true,
+  "supportPass": true,
+  "baseModelSha256": "de8cc3c24cbb91a3a9a806aa2afe37ecd0294c0d2c4b5ce2d4a93c25d77a1cde",
+  "baseThreshold": 1.574078960908224,
+  "repairModelSha256": "8556002505564c754f972abd62afc20ff8b89f0e7bca52b7e365a6f5120b275a",
+  "repairFormula": "max(0,s_t-s_(t-1),s_t-s_(t-3),s_t-s_(t-5))",
+  "repairLags": [
+    1,
+    3,
+    5
+  ],
+  "thresholdQuantile": 0.95,
+  "repairThreshold": 1.0756203121500945,
+  "refractory": 10,
+  "train": {
+    "tapes": 64,
+    "predictiveRows": 30080
+  },
+  "calibration": {
+    "tapes": 64,
+    "finiteScores": 29760
+  },
+  "prospective": {
+    "C": {
+      "physicalImpacts": 1721,
+      "neuralEvents": 1373,
+      "matched": 164,
+      "falseEvents": 1209,
+      "missedImpacts": 1557,
+      "precision": 0.11944646758922069,
+      "recall": 0.09529343404997094,
+      "f1": 0.10601163542340013,
+      "eventCountRatio": 0.7977919814061593,
+      "countMae": 6.3125,
+      "pass": false
+    },
+    "D": {
+      "physicalImpacts": 1703,
+      "neuralEvents": 1319,
+      "matched": 175,
+      "falseEvents": 1144,
+      "missedImpacts": 1528,
+      "precision": 0.1326762699014405,
+      "recall": 0.10275983558426306,
+      "f1": 0.11581733951025812,
+      "eventCountRatio": 0.7745155607751028,
+      "countMae": 6.53125,
+      "pass": false
+    }
+  },
+  "provenance": {
+    "strippedNeuralViews": true,
+    "preFreezeTruthAccess": false,
+    "thresholdSelectionUsesTruth": false,
+    "teacherUsed": false,
+    "supervisedReadoutUsed": false,
+    "attributionCohortsUsedForRepairFitting": false,
+    "attributionCohortsUsedForRepairEvaluation": false,
+    "repairLagSearch": false,
+    "thresholdCandidateSearch": false,
+    "thresholdQuantileChanged": false,
+    "tapeBuildAllowed": false,
+    "simulationContextInitialized": false
+  },
+  "diagnosticStackDeployable": false,
+  "deployabilityCandidate": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v15n": "CLOSED / BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "MULTILAG_RISE_FAILURE_ATTRIBUTION"
+}
