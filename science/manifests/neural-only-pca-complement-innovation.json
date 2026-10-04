@@ -1,0 +1,28 @@
+{
+  "schema": "maplefly.science-experiment.v1",
+  "id": "neural-only-pca-complement-innovation",
+  "script": "scripts/diagnose-neural-only-pca-complement-innovation.mjs",
+  "tape_builder": "scripts/science/build-v15n-tapes.mjs",
+  "output_dir": "results/neural-only-pca-complement-innovation",
+  "artifact_name": "maplefly-neural-only-pca-complement-innovation",
+  "needs_malecns": true,
+  "analysis_needs_malecns": false,
+  "simulation_contract": "science/simulations/v15n-deterministic-v4.json",
+  "cohort_set": "science/cohorts/neural-only-pca-complement-innovation-v4.json",
+  "dependencies": [
+    {
+      "registry_key": "neural_only_max_component_surprise32_failure_attribution",
+      "env": "MAX_COMPONENT_ATTRIBUTION_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "simulation_dependencies": [
+    {
+      "registry_key": "v15e2_neural_core",
+      "env": "V15E2_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "env": {},
+  "migration_note": "MAX_SIGNAL_ABSENT_DOMINANT 귀인 뒤 frozen PCA32가 버린 standardized full-DN innovation의 Gram-exact orthogonal-complement energy를 neural-only score로 사용한다. 기존 E/F는 tuning/평가에 재사용하지 않고 fresh G/H만 prospective 평가한다."
+}
