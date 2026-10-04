@@ -87,6 +87,16 @@
       "files": {
         "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
       }
+    },
+    "neural_only_max_component_surprise32_failure": {
+      "artifact_id": 11294069478,
+      "run_id": 37179603274,
+      "head_sha": "1c7643fa337b24422090739aa093f1c21a5bb4e7",
+      "digest": "sha256:3c23c8d3a6a1a44ada98641f6ca86e8a653b66d43321c6c8c7807074523a4f3e",
+      "evidence_sha256": "2838b9c29fd358a63348e0cc386b46bde7e36a0290f9ffdaf4e4526bb79d922c",
+      "files": {
+        "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
+      }
     }
   }
 }
