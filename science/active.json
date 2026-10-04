@@ -1,18 +1,18 @@
 {
   "schema": "maplefly.science-experiment.v1",
-  "id": "neural-only-max-component-surprise32",
-  "script": "scripts/diagnose-neural-only-max-component-surprise32.mjs",
+  "id": "neural-only-max-component-surprise32-failure-attribution",
+  "script": "scripts/diagnose-neural-only-max-component-surprise32-failure-attribution.mjs",
   "tape_builder": "scripts/science/build-v15n-tapes.mjs",
-  "output_dir": "results/neural-only-max-component-surprise32",
-  "artifact_name": "maplefly-neural-only-max-component-surprise32",
+  "output_dir": "results/neural-only-max-component-surprise32-failure-attribution",
+  "artifact_name": "maplefly-neural-only-max-component-surprise32-failure-attribution",
   "needs_malecns": true,
   "analysis_needs_malecns": false,
   "simulation_contract": "science/simulations/v15n-deterministic-v4.json",
   "cohort_set": "science/cohorts/neural-only-max-component-surprise32-v4.json",
   "dependencies": [
     {
-      "registry_key": "neural_only_predictive_surprise32_multilag_rise_failure_attribution",
-      "env": "MULTILAG_RISE_ATTRIBUTION_ARTIFACT_FILE",
+      "registry_key": "neural_only_max_component_surprise32_failure",
+      "env": "MAX_COMPONENT_FAILURE_ARTIFACT_FILE",
       "file_key": "default"
     }
   ],
@@ -24,6 +24,6 @@
     }
   ],
   "env": {},
-  "migration_note": "BASE_SIGNAL_ABSENT_DOMINANT 귀인 뒤 mean residual energy 대신 parameter-free max_j(r_j^2)를 사용한다. 기존 C/D는 tuning과 평가에 재사용하지 않고 fresh E/F만 prospective 평가한다.",
-  "request_id": "max-component-surprise32-1"
+  "migration_note": "실패한 fresh E/F를 attribution-only로 재사용한다. base/max score와 권위 E/F metrics를 정확 재현한 뒤 miss timing, background separation, argmax component concentration만 descriptive하게 분석한다.",
+  "request_id": "max-component-failure-attribution-1"
 }
