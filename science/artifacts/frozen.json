@@ -97,6 +97,16 @@
       "files": {
         "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
       }
+    },
+    "neural_only_max_component_surprise32_failure_attribution": {
+      "artifact_id": 11303800018,
+      "run_id": 37201941454,
+      "head_sha": "7c5ba7450fa2fad1f1e2445e25cd0d91f02b5592",
+      "digest": "sha256:51050dd8b26ee326130bba2c955c13f602c365a4b95bd47899fc75ec086d1585",
+      "evidence_sha256": "18677b316b60564893eadd586b74f8fcb09957689bb381b18ad0ccaec0625509",
+      "files": {
+        "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
+      }
     }
   }
 }
