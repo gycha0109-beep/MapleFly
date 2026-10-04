@@ -1,18 +1,18 @@
 {
   "schema": "maplefly.science-experiment.v1",
-  "id": "neural-only-predictive-surprise32-failure-attribution",
-  "script": "scripts/diagnose-neural-only-predictive-surprise32-failure-attribution.mjs",
+  "id": "neural-only-predictive-surprise32-multilag-rise",
+  "script": "scripts/diagnose-neural-only-predictive-surprise32-multilag-rise.mjs",
   "tape_builder": "scripts/science/build-v15n-tapes.mjs",
-  "output_dir": "results/neural-only-predictive-surprise32-failure-attribution",
-  "artifact_name": "maplefly-neural-only-predictive-surprise32-failure-attribution",
+  "output_dir": "results/neural-only-predictive-surprise32-multilag-rise",
+  "artifact_name": "maplefly-neural-only-predictive-surprise32-multilag-rise",
   "needs_malecns": true,
   "analysis_needs_malecns": false,
   "simulation_contract": "science/simulations/v15n-deterministic-v4.json",
-  "cohort_set": "science/cohorts/neural-only-predictive-surprise32-v4.json",
+  "cohort_set": "science/cohorts/neural-only-predictive-surprise32-multilag-rise-v4.json",
   "dependencies": [
     {
-      "registry_key": "neural_only_predictive_surprise32_failure",
-      "env": "SURPRISE32_FAILURE_ARTIFACT_FILE",
+      "registry_key": "neural_only_predictive_surprise32_failure_attribution",
+      "env": "SURPRISE32_ATTRIBUTION_ARTIFACT_FILE",
       "file_key": "default"
     }
   ],
@@ -24,6 +24,6 @@
     }
   ],
   "env": {},
-  "migration_note": "기존 train/calibration으로 고정 모델을 정확 재구축하며 prospective A/B는 귀인에만 사용한다. nearest-event의 이름 없는 경계 [-20,-10) 및 +20은 권위 실행 전 clarification commit 2707951db2a48dd0b793a690409b7c13e43bcd23에서 NONE으로 고정했다.",
-  "request_id": "surprise32-failure-attribution-1"
+  "migration_note": "기존 frozen predictive-surprise32 모델을 정확 재현한 뒤, preregistered score-frame lag 1/3/5 상승폭의 max(0, delta)만 사용한다. 기존 A/B는 repair tuning과 평가에 재사용하지 않고 fresh C/D만 prospective 평가한다.",
+  "request_id": "surprise32-multilag-rise-1"
 }
