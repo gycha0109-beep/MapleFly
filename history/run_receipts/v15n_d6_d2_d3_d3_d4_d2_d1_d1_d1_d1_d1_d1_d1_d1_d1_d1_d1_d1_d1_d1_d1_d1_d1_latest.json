@@ -1,0 +1,91 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_NEURAL_ONLY_PREDICTIVE_SURPRISE32_MULTILAG_RISE_FAILURE_ATTRIBUTED",
+  "scientificValidity": "VALID_FROZEN_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 37179198946,
+    "analyzeJobId": 111368268616,
+    "headSha": "0536d354e6d62c03879efa2460ca0932e8d1d123",
+    "artifactId": 11295075939,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:493ab7b5a7b8575d3a1af2f4a7a822aa35f3e3257e01e1b37185af3adb1d18b0",
+  "evidenceJsonSha256": "4d34942cc294798c8363fab817a472469cea135cd8e5dc11a9587ff2ddeeca71",
+  "prerequisiteFailureResult": "b57448ba2ed20ddd08b5ff3853bc117324c0b178",
+  "design": "40d439f188c2fdc55984f484b7a20404da36920f",
+  "preregistration": "d608390653b63b1e7e7a3e7431d7cf7263f77fa3",
+  "implementation": "eb21e7569874dfc75ce3375f5590f2525d163217",
+  "workflow": "0536d354e6d62c03879efa2460ca0932e8d1d123",
+  "result": "a14ee53782eafa8955144d575b89bd76ae44f564",
+  "reproductionPass": true,
+  "supportPass": true,
+  "attributionAxis": "BASE_SIGNAL_ABSENT_DOMINANT",
+  "baseModelSha256": "de8cc3c24cbb91a3a9a806aa2afe37ecd0294c0d2c4b5ce2d4a93c25d77a1cde",
+  "baseThreshold": 1.574078960908224,
+  "repairModelSha256": "8556002505564c754f972abd62afc20ff8b89f0e7bca52b7e365a6f5120b275a",
+  "repairThreshold": 1.0756203121500945,
+  "missAttribution": {
+    "C": {
+      "PRE_HIT_RISE_CROSSING": 0.09826589595375723,
+      "LATE_POST_HIT_RISE_CROSSING": 0.14322414900449582,
+      "NO_LOCAL_RISE_THRESHOLD_CROSSING": 0.7585099550417469
+    },
+    "D": {
+      "PRE_HIT_RISE_CROSSING": 0.09620418848167539,
+      "LATE_POST_HIT_RISE_CROSSING": 0.125,
+      "NO_LOCAL_RISE_THRESHOLD_CROSSING": 0.7787958115183246
+    }
+  },
+  "rawContextAllMisses": {
+    "C": {
+      "RAW_LOCAL_SUPRATHRESHOLD_PRESENT": 0.2581888246628131,
+      "RAW_LOCAL_SUBTHRESHOLD": 0.7418111753371869
+    },
+    "D": {
+      "RAW_LOCAL_SUPRATHRESHOLD_PRESENT": 0.23756544502617802,
+      "RAW_LOCAL_SUBTHRESHOLD": 0.762434554973822
+    }
+  },
+  "rawContextNoLocalRise": {
+    "C": {
+      "RAW_LOCAL_SUPRATHRESHOLD_PRESENT": 0.05249788314987299,
+      "RAW_LOCAL_SUBTHRESHOLD": 0.947502116850127
+    },
+    "D": {
+      "RAW_LOCAL_SUPRATHRESHOLD_PRESENT": 0.04873949579831933,
+      "RAW_LOCAL_SUBTHRESHOLD": 0.9512605042016806
+    }
+  },
+  "medianRiseThresholdGap": {
+    "C": 0.31168689560503293,
+    "D": 0.3119450146804202
+  },
+  "medianRawThresholdGap": {
+    "C": 0.33199412311938303,
+    "D": 0.32198429290454933
+  },
+  "provenance": {
+    "strippedNeuralViews": true,
+    "preFreezeTruthAccess": false,
+    "thresholdSelectionUsesTruth": false,
+    "teacherUsed": false,
+    "supervisedReadoutUsed": false,
+    "attributionCohortsUsedForFitting": false,
+    "attributionCohortsUsedForGeneralization": false,
+    "repairSelectedFromAttribution": false,
+    "thresholdChanged": false,
+    "lagSearch": false,
+    "smoothingSearch": false,
+    "timingShiftSearch": false,
+    "tapeBuildAllowed": false,
+    "simulationContextInitialized": false
+  },
+  "diagnosticStackDeployable": false,
+  "deployabilityCandidate": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v15n": "CLOSED / BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "REPRESENTATION_OR_AGGREGATION_REPAIR_DESIGN_AFTER_BASE_SIGNAL_ABSENT"
+}
