@@ -13,6 +13,11 @@ const OUTPUT_DIR = 'results/neural-only-predictive-surprise32-failure-attributio
 const MODEL_SHA = 'de8cc3c24cbb91a3a9a806aa2afe37ecd0294c0d2c4b5ce2d4a93c25d77a1cde';
 const THRESHOLD = 1.574078960908224;
 const EVIDENCE_SHA = '78549dfb7514c4d3732ca9e4f6239ad6b1bc88162cf10312b661494b1bbc9546';
+const BOUNDARY_RULE = 'OUTSIDE_NAMED_BUCKETS_NONE';
+const BOUNDARY_CLARIFICATION = {
+  path:'history/clarification_neural_only_predictive_surprise32_failure_attribution_nearest_event_boundary.md',
+  commit:'2707951db2a48dd0b793a690409b7c13e43bcd23',
+};
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const METRICS = ['tapes', 'physicalImpacts', 'neuralEvents', 'matched', 'falseEvents',
   'missedImpacts', 'precision', 'recall', 'f1', 'eventCountRatio', 'meanAbsolutePerTapeCountError'];
@@ -36,6 +41,7 @@ async function main() {
     schema:'maplefly.neural-only-predictive-surprise32-failure-attribution.1',
     preregistration:{path:'history/prereg_' + PHASE + '.md', commit:'68f34facc1ee456c7b91fe649b57e893258cabea'},
     design:{commit:'063a1f6be925ee7145961306503543e28b133131'},
+    protocolClarification:{...BOUNDARY_CLARIFICATION, nearestEventBucketRule:BOUNDARY_RULE},
     prerequisite:{runId:37081864923, jobId:111083917653, headSha:'c36f5d71be49336369adef19c892565d2b3e94cf',
       artifactId:11261347073, artifactDigest:'sha256:9a1b598b06faa99568f902794ddaf9042d7d2ca5dcf5224a4b17792e4659c3cc', evidenceSha256:EVIDENCE_SHA},
     reproduction:{pass:false}, support:{pass:false}, attributionAxis:null, attribution:null,
@@ -118,7 +124,7 @@ async function main() {
       output.outcome = PREFIX + 'ATTRIBUTION_IMPLEMENTATION_OR_PROVENANCE_INVALID';
       await writeEvidence(output); return;
     }
-    const boundaryRule = process.env.SURPRISE32_NEAREST_EVENT_BUCKET_RULE ?? 'UNRESOLVED';
+    const boundaryRule = BOUNDARY_RULE;
     const attrA = attributeCohort(A, scoreA, eventA, threshold, boundaryRule);
     const attrB = attributeCohort(B, scoreB, eventB, threshold, boundaryRule);
     function support(metrics, attr) {
