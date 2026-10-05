@@ -1,0 +1,28 @@
+{
+  "schema": "maplefly.science-experiment.v1",
+  "id": "neural-only-pca-complement-failure-attribution",
+  "script": "scripts/diagnose-neural-only-pca-complement-failure-attribution.mjs",
+  "tape_builder": "scripts/science/build-v15n-tapes.mjs",
+  "output_dir": "results/neural-only-pca-complement-failure-attribution",
+  "artifact_name": "maplefly-neural-only-pca-complement-failure-attribution",
+  "needs_malecns": true,
+  "analysis_needs_malecns": false,
+  "simulation_contract": "science/simulations/v15n-deterministic-v4.json",
+  "cohort_set": "science/cohorts/neural-only-pca-complement-innovation-v4.json",
+  "dependencies": [
+    {
+      "registry_key": "neural_only_pca_complement_innovation_failure",
+      "env": "PCA_COMPLEMENT_FAILURE_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "simulation_dependencies": [
+    {
+      "registry_key": "v15e2_neural_core",
+      "env": "V15E2_ARTIFACT_FILE",
+      "file_key": "default"
+    }
+  ],
+  "env": {},
+  "migration_note": "실패한 fresh G/H를 attribution-only로 재사용한다. base/complement contract와 G/H 권위 metrics를 정확 재현한 뒤 complement miss timing, background separation, base/max/complement local context만 descriptive하게 분석한다."
+}
