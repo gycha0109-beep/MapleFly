@@ -1,0 +1,64 @@
+{
+  "schema": "maplefly.cohort-set.v1",
+  "id": "neural-only-phase-residual-energy-v4",
+  "simulation_contract": "v15n-deterministic-v4",
+  "make_block": "8 base seeds x 8 deterministic episodes = 64 tapes",
+  "cohorts": {
+    "train": {
+      "cache_name": "neural-only-predictive-surprise32/train",
+      "base_seeds": [
+        7521000,
+        7531000,
+        7541000,
+        7551000,
+        7561000,
+        7571000,
+        7581000,
+        7591000
+      ],
+      "interruption_seed": 7607000
+    },
+    "calibration": {
+      "cache_name": "neural-only-predictive-surprise32/calibration",
+      "base_seeds": [
+        7611000,
+        7621000,
+        7631000,
+        7641000,
+        7651000,
+        7661000,
+        7671000,
+        7681000
+      ],
+      "interruption_seed": 7697000
+    },
+    "prospective_i": {
+      "cache_name": "neural-only-phase-residual-energy/prospective-i",
+      "base_seeds": [
+        8511000,
+        8521000,
+        8531000,
+        8541000,
+        8551000,
+        8561000,
+        8571000,
+        8581000
+      ],
+      "interruption_seed": 8597000
+    },
+    "prospective_j": {
+      "cache_name": "neural-only-phase-residual-energy/prospective-j",
+      "base_seeds": [
+        8601000,
+        8611000,
+        8621000,
+        8631000,
+        8641000,
+        8651000,
+        8661000,
+        8671000
+      ],
+      "interruption_seed": 8687000
+    }
+  }
+}
