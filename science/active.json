@@ -1,18 +1,18 @@
 {
   "schema": "maplefly.science-experiment.v1",
-  "id": "neural-only-pca-complement-failure-attribution",
-  "script": "scripts/diagnose-neural-only-pca-complement-failure-attribution.mjs",
+  "id": "neural-only-phase-residual-energy",
+  "script": "scripts/diagnose-neural-only-phase-residual-energy.mjs",
   "tape_builder": "scripts/science/build-v15n-tapes.mjs",
-  "output_dir": "results/neural-only-pca-complement-failure-attribution",
-  "artifact_name": "maplefly-neural-only-pca-complement-failure-attribution",
+  "output_dir": "results/neural-only-phase-residual-energy",
+  "artifact_name": "maplefly-neural-only-phase-residual-energy",
   "needs_malecns": true,
   "analysis_needs_malecns": false,
   "simulation_contract": "science/simulations/v15n-deterministic-v4.json",
-  "cohort_set": "science/cohorts/neural-only-pca-complement-innovation-v4.json",
+  "cohort_set": "science/cohorts/neural-only-phase-residual-energy-v4.json",
   "dependencies": [
     {
-      "registry_key": "neural_only_pca_complement_innovation_failure",
-      "env": "PCA_COMPLEMENT_FAILURE_ARTIFACT_FILE",
+      "registry_key": "neural_only_pca_complement_failure_attribution",
+      "env": "PCA_COMPLEMENT_ATTRIBUTION_ARTIFACT_FILE",
       "file_key": "default"
     }
   ],
@@ -24,6 +24,6 @@
     }
   ],
   "env": {},
-  "migration_note": "실패한 fresh G/H를 attribution-only로 재사용한다. base/complement contract와 G/H 권위 metrics를 정확 재현한 뒤 complement miss timing, background separation, base/max/complement local context만 descriptive하게 분석한다.",
-  "request_id": "pca-complement-failure-attribution-1"
+  "migration_note": "COMPLEMENT_SIGNAL_ABSENT_DOMINANT 귀인 뒤 공통 상류인 5-history innovation을 제거하고, frozen phase mean 대비 full-DN standardized residual mean energy를 neural-only score로 사용한다. G/H는 tuning/평가에 재사용하지 않고 fresh I/J만 prospective 평가한다.",
+  "request_id": "phase-residual-energy-1"
 }
