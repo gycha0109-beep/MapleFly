@@ -1,0 +1,79 @@
+{
+  "schema": "maplefly.run-receipt.v15n-d6-d2-d3-d3-d4-d2-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1-d1.1",
+  "phase": "v15N-D6-D2-D3-D3-D4-D2-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1-D1",
+  "outcome": "V15N_D6_D2_D3_D3_D4_D2_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_D1_NEURAL_ONLY_PCA_COMPLEMENT_INNOVATION_FAILURE_ATTRIBUTED",
+  "scientificValidity": "VALID_FROZEN_FAILURE_ATTRIBUTION",
+  "authoritativeRun": {
+    "id": 37260564427,
+    "analyzeJobId": 111607079673,
+    "headSha": "0445d63782063ffa5571b45683630d4488129845",
+    "artifactId": 11324835401,
+    "conclusion": "success"
+  },
+  "artifactDigest": "sha256:1021d1ded1ff600f3fc72503d7173d9aa3cf7be0dcef222889dccf184b797486",
+  "evidenceJsonSha256": "3c582b8925555e3e6603fc9b638993d9808554646db9f2e350a1ec60bb43f716",
+  "prerequisiteFailureResult": "52bb0c383ce948739e334152e888a7633e1465f8",
+  "design": "4211f7799426d555a39ad49de151bbd3f8af3b89",
+  "preregistration": "f6f5be8552efcc73bf462e9e2430fc2dc3f1e56c",
+  "implementation": "8b0c55a3fe8ce44623a131e4801a2251fe027aaa",
+  "workflow": "0445d63782063ffa5571b45683630d4488129845",
+  "result": "7fb143b60c53c2a656508b3c35e9f23cbee12f7a",
+  "reproductionPass": true,
+  "supportPass": true,
+  "attributionAxis": "COMPLEMENT_SIGNAL_ABSENT_DOMINANT",
+  "complementMissAttribution": {
+    "G": {
+      "PRE_HIT_COMPLEMENT_CROSSING": 0.12097304404996713,
+      "LATE_POST_HIT_COMPLEMENT_CROSSING": 0.09270216962524655,
+      "NO_LOCAL_COMPLEMENT_THRESHOLD_CROSSING": 0.7863247863247863
+    },
+    "H": {
+      "PRE_HIT_COMPLEMENT_CROSSING": 0.10278514588859416,
+      "LATE_POST_HIT_COMPLEMENT_CROSSING": 0.08090185676392574,
+      "NO_LOCAL_COMPLEMENT_THRESHOLD_CROSSING": 0.8163129973474801
+    }
+  },
+  "falseEventBackgroundFraction": {
+    "G": 0.8694601128122482,
+    "H": 0.8760984182776801
+  },
+  "impactLocalQ95OverBackgroundQ95": {
+    "G": 1.0841961818453738,
+    "H": 1.075877185714411
+  },
+  "impactLocalQ99OverBackgroundQ99": {
+    "G": 1.1016408770070103,
+    "H": 1.1038179127981382
+  },
+  "allThreeLocalAbsentFraction": {
+    "G": 0.5128205128205128,
+    "H": 0.5384615384615384
+  },
+  "complementOnlyLocalPresentFraction": {
+    "G": 0.08349769888231427,
+    "H": 0.07029177718832891
+  },
+  "provenance": {
+    "strippedNeuralViews": true,
+    "preFreezeTruthAccess": false,
+    "thresholdSelectionUsesTruth": false,
+    "teacherUsed": false,
+    "supervisedReadoutUsed": false,
+    "attributionCohortsUsedForFitting": false,
+    "attributionCohortsUsedForGeneralization": false,
+    "pcaDimensionSearch": false,
+    "dnSelection": false,
+    "scoreFusion": false,
+    "thresholdChanged": false,
+    "timingShiftSearch": false,
+    "tapeBuildAllowed": false,
+    "simulationContextInitialized": false
+  },
+  "diagnosticStackDeployable": false,
+  "deployabilityCandidate": false,
+  "deployment": "BLOCKED",
+  "deployedPotion": "v15D",
+  "v15n": "CLOSED / BLOCKED",
+  "v16c": "BLOCKED",
+  "next": "PHASE_RESIDUAL_REPRESENTATION_REPAIR_AFTER_COMMON_INNOVATION_SIGNAL_ABSENCE"
+}
