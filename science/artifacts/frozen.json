@@ -107,6 +107,16 @@
       "files": {
         "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
       }
+    },
+    "neural_only_pca_complement_innovation_failure": {
+      "artifact_id": 11304103673,
+      "run_id": 37202530369,
+      "head_sha": "57c5257cff919bf6dd3b87f5c120ad880c8be4a0",
+      "digest": "sha256:bd801b07b3b0bdbf63003314ad13350f354717524fd4784d3af9a41d28f76319",
+      "evidence_sha256": "cf2182a46b6d7ee9e233f01734a8f919df3914b0bd69835dc73062b4a7b1c2d5",
+      "files": {
+        "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
+      }
     }
   }
 }
