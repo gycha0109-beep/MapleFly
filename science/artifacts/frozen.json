@@ -117,6 +117,16 @@
       "files": {
         "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
       }
+    },
+    "neural_only_pca_complement_failure_attribution": {
+      "artifact_id": 11324835401,
+      "run_id": 37260564427,
+      "head_sha": "0445d63782063ffa5571b45683630d4488129845",
+      "digest": "sha256:1021d1ded1ff600f3fc72503d7173d9aa3cf7be0dcef222889dccf184b797486",
+      "evidence_sha256": "3c582b8925555e3e6603fc9b638993d9808554646db9f2e350a1ec60bb43f716",
+      "files": {
+        "default": "v15n_d6_d2_d3_d3_d4_d2_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1_d1.json"
+      }
     }
   }
 }
